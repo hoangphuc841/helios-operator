@@ -1,8 +1,11 @@
----
+# permissions for end users to edit heliosapps.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: manager-role
+  labels:
+    app.kubernetes.io/name: helios-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: heliosapp-editor-role
 rules:
 - apiGroups:
   - heliosapp.helios.dev
@@ -19,14 +22,6 @@ rules:
 - apiGroups:
   - heliosapp.helios.dev
   resources:
-  - heliosapps/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - heliosapp.helios.dev
-  resources:
   - heliosapps/status
   verbs:
   - get
-  - patch
-  - update
