@@ -29,20 +29,20 @@ type HeliosAppSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// +kubebuilder:validation:Required
-	GitRepo    string `json:"gitRepo"`
+	GitRepo string `json:"gitRepo"`
 
 	// +kubebuilder:validation:Required
-	ImageRepo  string `json:"imageRepo"`
+	ImageRepo string `json:"imageRepo"`
 
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=65535
-	Port       int32  `json:"port"`
+	Port int32 `json:"port"`
 
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=1
 	// +kubebuilder:validation:Minimum=0
-	Replicas   int32  `json:"replicas"`
+	Replicas int32 `json:"replicas"`
 }
 
 // HeliosAppStatus defines the observed state of HeliosApp
