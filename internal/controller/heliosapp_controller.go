@@ -51,6 +51,7 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	foundDeployment := &appsv1.Deployment{}
 	err := r.Get(ctx, types.NamespacedName{Name: heliosApp.Name, Namespace: heliosApp.Namespace}, foundDeployment)
+
 	if err != nil && errors.IsNotFound(err) {
 		dep := r.deploymentForHeliosApp(heliosApp)
 		log.Info("Creating new Deployment", "Namespace", dep.Namespace, "Name", dep.Name)
@@ -64,8 +65,26 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 
+	// If the Deployment exists, update the replicas
+	replicasChanged := *foundDeployment.Spec.Replicas != heliosApp.Spec.Replicas
+
+	if replicasChanged {
+		log.Info("Updating existing Deployment", "ReplicasChanged", replicasChanged)
+
+		foundDeployment.Spec.Replicas = &heliosApp.Spec.Replicas
+
+		if err = r.Update(ctx, foundDeployment); err != nil {
+			log.Error(err, "Failed to update Deployment")
+			return ctrl.Result{}, err
+		}
+
+		// Reconcile again to ensure the update is successful
+		return ctrl.Result{Requeue: true}, nil
+	}
+
 	foundService := &corev1.Service{}
 	err = r.Get(ctx, types.NamespacedName{Name: heliosApp.Name, Namespace: heliosApp.Namespace}, foundService)
+
 	if err != nil && errors.IsNotFound(err) {
 		svc := r.serviceForHeliosApp(heliosApp)
 		log.Info("Creating new Service", "Namespace", svc.Namespace, "Name", svc.Name)
@@ -77,6 +96,18 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	} else if err != nil {
 		log.Error(err, "Failed to get Service")
 		return ctrl.Result{}, err
+	}
+
+	// If the Service exists then check if it needs to be updated
+	portChanged := foundService.Spec.Ports[0].TargetPort.IntVal != heliosApp.Spec.Port
+	if portChanged {
+		log.Info("Updating existing Service", "PortChanged", portChanged)
+		foundService.Spec.Ports[0].TargetPort = intstr.FromInt(int(heliosApp.Spec.Port))
+		if err = r.Update(ctx, foundService); err != nil {
+			log.Error(err, "Failed to update Service")
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{Requeue: true}, nil
 	}
 
 	log.Info("Reconciliation loop completed successfully.")
