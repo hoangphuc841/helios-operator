@@ -28,11 +28,13 @@ type HeliosAppReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=heliosapp.helios.dev,resources=heliosapps,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=heliosapp.helios.dev,resources=heliosapps/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=heliosapp.helios.dev,resources=heliosapps/finalizers,verbs=update
-// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=heliosapp.helios.dev,resources=heliosapps,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=heliosapp.helios.dev,resources=heliosapps/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=heliosapp.helios.dev,resources=heliosapps/finalizers,verbs=update
+//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
 func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
