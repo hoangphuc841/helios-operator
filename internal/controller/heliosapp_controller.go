@@ -161,7 +161,7 @@ func (r *HeliosAppReconciler) serviceForHeliosApp(h *heliosappv1.HeliosApp) *cor
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{"app": h.Name},
 			Ports:    []corev1.ServicePort{{Protocol: corev1.ProtocolTCP, Port: 80, TargetPort: intstr.FromInt(int(h.Spec.Port))}},
-			Type:     corev1.ServiceTypeClusterIP,
+			Type:     corev1.ServiceTypeNodePort,
 		},
 	}
 	ctrl.SetControllerReference(h, svc, r.Scheme)
