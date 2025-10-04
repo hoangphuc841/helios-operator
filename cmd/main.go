@@ -19,6 +19,7 @@ package main
 import (
 	"crypto/tls"
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -45,6 +46,12 @@ import (
 var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
+
+	// Version information injected at build time via ldflags
+	version      = "dev"
+	commit       = "unknown"
+	date         = "unknown"
+	printVersion bool
 )
 
 func init() {
@@ -81,11 +88,21 @@ func main() {
 	flag.StringVar(&metricsCertKey, "metrics-cert-key", "tls.key", "The name of the metrics server key file.")
 	flag.BoolVar(&enableHTTP2, "enable-http2", false,
 		"If set, HTTP/2 will be enabled for the metrics and webhook servers")
+	flag.BoolVar(&printVersion, "version", false, "Print version information and exit")
 	opts := zap.Options{
 		Development: true,
 	}
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
+
+	// Print version information if requested
+	if printVersion {
+		fmt.Printf("Helios Operator\n")
+		fmt.Printf("  Version:    %s\n", version)
+		fmt.Printf("  Commit:     %s\n", commit)
+		fmt.Printf("  Build Date: %s\n", date)
+		os.Exit(0)
+	}
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 

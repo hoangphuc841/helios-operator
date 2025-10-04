@@ -28,26 +28,26 @@ type HeliosAppReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=heliosapp.helios.dev,resources=heliosapps,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=heliosapp.helios.dev,resources=heliosapps/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=heliosapp.helios.dev,resources=heliosapps/finalizers,verbs=update
-//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
-//+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
+// +kubebuilder:rbac:groups=platform.helios.io,resources=heliosapps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=platform.helios.io,resources=heliosapps/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=platform.helios.io,resources=heliosapps/finalizers,verbs=update
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
 func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := log.FromContext(ctx)
+	logger := log.FromContext(ctx)
 
-	log.Info("Reconciliation loop started...")
+	logger.Info("Reconciliation loop started...")
 
 	heliosApp := &heliosappv1.HeliosApp{}
 	if err := r.Get(ctx, req.NamespacedName, heliosApp); err != nil {
 		if errors.IsNotFound(err) {
-			log.Info("HeliosApp not found. It may have been deleted.")
+			logger.Info("HeliosApp not found. It may have been deleted.")
 			return ctrl.Result{}, nil
 		}
-		log.Error(err, "Error retrieving HeliosApp")
+		logger.Error(err, "Error retrieving HeliosApp")
 		return ctrl.Result{}, err
 	}
 
@@ -56,14 +56,14 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	if err != nil && errors.IsNotFound(err) {
 		dep := r.deploymentForHeliosApp(heliosApp)
-		log.Info("Creating new Deployment", "Namespace", dep.Namespace, "Name", dep.Name)
+		logger.Info("Creating new Deployment", "Namespace", dep.Namespace, "Name", dep.Name)
 		if err = r.Create(ctx, dep); err != nil {
-			log.Error(err, "Failed to create new Deployment")
+			logger.Error(err, "Failed to create new Deployment")
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{Requeue: true}, nil
 	} else if err != nil {
-		log.Error(err, "Failed to get Deployment")
+		logger.Error(err, "Failed to get Deployment")
 		return ctrl.Result{}, err
 	}
 
@@ -71,12 +71,12 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	replicasChanged := *foundDeployment.Spec.Replicas != heliosApp.Spec.Replicas
 
 	if replicasChanged {
-		log.Info("Updating existing Deployment", "ReplicasChanged", replicasChanged)
+		logger.Info("Updating existing Deployment", "ReplicasChanged", replicasChanged)
 
 		foundDeployment.Spec.Replicas = &heliosApp.Spec.Replicas
 
 		if err = r.Update(ctx, foundDeployment); err != nil {
-			log.Error(err, "Failed to update Deployment")
+			logger.Error(err, "Failed to update Deployment")
 			return ctrl.Result{}, err
 		}
 
@@ -89,30 +89,30 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	if err != nil && errors.IsNotFound(err) {
 		svc := r.serviceForHeliosApp(heliosApp)
-		log.Info("Creating new Service", "Namespace", svc.Namespace, "Name", svc.Name)
+		logger.Info("Creating new Service", "Namespace", svc.Namespace, "Name", svc.Name)
 		if err = r.Create(ctx, svc); err != nil {
-			log.Error(err, "Failed to create new Service")
+			logger.Error(err, "Failed to create new Service")
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{Requeue: true}, nil
 	} else if err != nil {
-		log.Error(err, "Failed to get Service")
+		logger.Error(err, "Failed to get Service")
 		return ctrl.Result{}, err
 	}
 
 	// If the Service exists then check if it needs to be updated
 	portChanged := foundService.Spec.Ports[0].TargetPort.IntVal != heliosApp.Spec.Port
 	if portChanged {
-		log.Info("Updating existing Service", "PortChanged", portChanged)
+		logger.Info("Updating existing Service", "PortChanged", portChanged)
 		foundService.Spec.Ports[0].TargetPort = intstr.FromInt(int(heliosApp.Spec.Port))
 		if err = r.Update(ctx, foundService); err != nil {
-			log.Error(err, "Failed to update Service")
+			logger.Error(err, "Failed to update Service")
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{Requeue: true}, nil
 	}
 
-	log.Info("Reconciliation loop completed successfully.")
+	logger.Info("Reconciliation loop completed successfully.")
 
 	return ctrl.Result{}, nil
 }
@@ -151,7 +151,9 @@ func (r *HeliosAppReconciler) deploymentForHeliosApp(h *heliosappv1.HeliosApp) *
 			},
 		},
 	}
-	ctrl.SetControllerReference(h, dep, r.Scheme)
+	if err := ctrl.SetControllerReference(h, dep, r.Scheme); err != nil {
+		return nil
+	}
 	return dep
 }
 
@@ -164,6 +166,8 @@ func (r *HeliosAppReconciler) serviceForHeliosApp(h *heliosappv1.HeliosApp) *cor
 			Type:     corev1.ServiceTypeNodePort,
 		},
 	}
-	ctrl.SetControllerReference(h, svc, r.Scheme)
+	if err := ctrl.SetControllerReference(h, svc, r.Scheme); err != nil {
+		return nil
+	}
 	return svc
 }

@@ -48,7 +48,7 @@ endif
 
 # Set the Operator SDK version to use. By default, what is installed on the system is used.
 # This is useful for CI or a project to utilize a specific version of the operator-sdk toolkit.
-OPERATOR_SDK_VERSION ?= v1.41.0
+OPERATOR_SDK_VERSION ?= v1.41.1
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
 
@@ -162,12 +162,23 @@ build: manifests generate fmt vet ## Build manager binary.
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./cmd/main.go
 
+# Version information
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+BUILD_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+
 # If you wish to build the manager image targeting other platforms you can use the --platform flag.
 # (i.e. docker build --platform linux/arm64). However, you must enable docker buildKit for it.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	$(CONTAINER_TOOL) build -t ${IMG} .
+	DOCKER_BUILDKIT=1 $(CONTAINER_TOOL) build \
+		--build-arg TARGETOS=linux \
+		--build-arg TARGETARCH=$(shell go env GOARCH) \
+		--build-arg VERSION=$(VERSION) \
+		--build-arg COMMIT=$(COMMIT) \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		-t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
@@ -179,16 +190,31 @@ docker-push: ## Push docker image with the manager.
 # - have enabled BuildKit. More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 # - be able to push the image to your registry (i.e. if you do not set a valid value via IMG=<myregistry/image:<tag>> then the export will fail)
 # To adequately provide solutions that are compatible with multiple platforms, you should consider using this option.
-PLATFORMS ?= linux/arm64,linux/amd64,linux/s390x,linux/ppc64le
+PLATFORMS ?= linux/amd64,linux/arm64
 .PHONY: docker-buildx
-docker-buildx: ## Build and push docker image for the manager for cross-platform support
-	# copy existing Dockerfile and insert --platform=${BUILDPLATFORM} into Dockerfile.cross, and preserve the original Dockerfile
-	sed -e '1 s/\(^FROM\)/FROM --platform=\$$\{BUILDPLATFORM\}/; t' -e ' 1,// s//FROM --platform=\$$\{BUILDPLATFORM\}/' Dockerfile > Dockerfile.cross
-	- $(CONTAINER_TOOL) buildx create --name helios-operator-builder
-	$(CONTAINER_TOOL) buildx use helios-operator-builder
-	- $(CONTAINER_TOOL) buildx build --push --platform=$(PLATFORMS) --tag ${IMG} -f Dockerfile.cross .
+docker-buildx: ## Build and push docker image for cross-platform support (amd64, arm64)
+	- $(CONTAINER_TOOL) buildx create --name helios-operator-builder --use
+	$(CONTAINER_TOOL) buildx build \
+		--push \
+		--platform=$(PLATFORMS) \
+		--build-arg VERSION=$(VERSION) \
+		--build-arg COMMIT=$(COMMIT) \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--tag ${IMG} \
+		--cache-from=type=registry,ref=${IMG}-buildcache \
+		--cache-to=type=registry,ref=${IMG}-buildcache,mode=max \
+		.
 	- $(CONTAINER_TOOL) buildx rm helios-operator-builder
-	rm Dockerfile.cross
+
+.PHONY: docker-inspect
+docker-inspect: ## Inspect the built Docker image
+	@echo "==> Image Information"
+	@$(CONTAINER_TOOL) images ${IMG} --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}"
+	@echo "\n==> Security Context"
+	@$(CONTAINER_TOOL) inspect ${IMG} --format='User: {{.Config.User}}'
+	@$(CONTAINER_TOOL) inspect ${IMG} --format='Entrypoint: {{.Config.Entrypoint}}'
+	@echo "\n==> Image Layers (count)"
+	@$(CONTAINER_TOOL) history ${IMG} --format "{{.CreatedBy}}" | wc -l
 
 .PHONY: build-installer
 build-installer: manifests generate kustomize ## Generate a consolidated YAML with CRDs and deployment.
@@ -235,13 +261,15 @@ ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v5.6.0
-CONTROLLER_TOOLS_VERSION ?= v0.18.0
+KUSTOMIZE_VERSION ?= v5.7.1
+CONTROLLER_TOOLS_VERSION ?= v0.19.0
 #ENVTEST_VERSION is the version of controller-runtime release branch to fetch the envtest setup script (i.e. release-0.20)
 ENVTEST_VERSION ?= $(shell go list -m -f "{{ .Version }}" sigs.k8s.io/controller-runtime | awk -F'[v.]' '{printf "release-%d.%d", $$2, $$3}')
 #ENVTEST_K8S_VERSION is the version of Kubernetes to use for setting up ENVTEST binaries (i.e. 1.31)
 ENVTEST_K8S_VERSION ?= $(shell go list -m -f "{{ .Version }}" k8s.io/api | awk -F'[v.]' '{printf "1.%d", $$3}')
-GOLANGCI_LINT_VERSION ?= v2.1.0
+GOLANGCI_LINT_VERSION ?= v2.5.0
+OPM_VERSION ?= v1.60.0
+
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
@@ -328,7 +356,7 @@ ifeq (,$(shell which opm 2>/dev/null))
 	set -e ;\
 	mkdir -p $(dir $(OPM)) ;\
 	OS=$(shell go env GOOS) && ARCH=$(shell go env GOARCH) && \
-	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/v1.55.0/$${OS}-$${ARCH}-opm ;\
+	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/$(OPM_VERSION)/$${OS}-$${ARCH}-opm ;\
 	chmod +x $(OPM) ;\
 	}
 else

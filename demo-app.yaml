@@ -1,0 +1,10 @@
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: demo-app
+  namespace: default
+spec:
+  gitRepo: 'https://github.com/example/demo'
+  imageRepo: 'asia-southeast1-docker.pkg.dev/helios-platform-dev-01/helios-images/helios-operator:latest'
+  port: 80
+  replicas: 2

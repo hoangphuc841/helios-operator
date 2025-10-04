@@ -7,17 +7,17 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: heliosapp-viewer-role
 rules:
-- apiGroups:
-  - heliosapp.helios.dev
-  resources:
-  - heliosapps
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - heliosapp.helios.dev
-  resources:
-  - heliosapps/status
-  verbs:
-  - get
+  - apiGroups:
+      - platform.helios.io
+    resources:
+      - heliosapps
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - platform.helios.io
+    resources:
+      - heliosapps/status
+    verbs:
+      - get

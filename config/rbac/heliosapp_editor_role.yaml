@@ -7,45 +7,45 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: heliosapp-editor-role
 rules:
-- apiGroups:
-  - heliosapp.helios.dev
-  resources:
-  - heliosapps
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - heliosapp.helios.dev
-  resources:
-  - heliosapps/status
-  verbs:
-  - get
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - "" # "" đại diện cho core API group
-  resources:
-  - services
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
+  - apiGroups:
+      - platform.helios.io
+    resources:
+      - heliosapps
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - platform.helios.io
+    resources:
+      - heliosapps/status
+    verbs:
+      - get
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - '' # "" đại diện cho core API group
+    resources:
+      - services
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch

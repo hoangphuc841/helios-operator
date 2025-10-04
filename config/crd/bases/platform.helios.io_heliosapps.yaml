@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.18.0
-  name: heliosapps.heliosapp.helios.dev
+  name: heliosapps.platform.helios.io
 spec:
-  group: heliosapp.helios.dev
+  group: platform.helios.io
   names:
     kind: HeliosApp
     listKind: HeliosAppList

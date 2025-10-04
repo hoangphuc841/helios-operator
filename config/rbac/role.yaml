@@ -5,9 +5,24 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - heliosapp.helios.dev
+  - ""
   resources:
-  - heliosapps
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services
   verbs:
   - create
   - delete
@@ -29,11 +44,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - ""
+  - platform.helios.io
   resources:
-  - services
-  - events
-  - pods
+  - heliosapps
   verbs:
   - create
   - delete
@@ -43,13 +56,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - heliosapp.helios.dev
+  - platform.helios.io
   resources:
   - heliosapps/finalizers
   verbs:
   - update
 - apiGroups:
-  - heliosapp.helios.dev
+  - platform.helios.io
   resources:
   - heliosapps/status
   verbs:
