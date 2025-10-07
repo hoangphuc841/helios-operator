@@ -41,6 +41,8 @@ spec:
             properties:
               gitRepo:
                 type: string
+              gitBranch:
+                type: string
               imageRepo:
                 type: string
               port:

@@ -31,6 +31,10 @@ type HeliosAppSpec struct {
 	// +kubebuilder:validation:Required
 	GitRepo string `json:"gitRepo"`
 
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default="main"
+	GitBranch string `json:"gitBranch,omitempty"`
+
 	// +kubebuilder:validation:Required
 	ImageRepo string `json:"imageRepo"`
 
