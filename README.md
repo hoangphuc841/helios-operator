@@ -1,6 +1,6 @@
 # Helios Operator
 
-[![Go Version](https://img.shields.io/badge/Go-1.25.1-blue.svg)](https://golang.org/)
+[![Go Version](https://img.shields.io/badge/Go-1.25.2-blue.svg)](https://golang.org/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.34.1-blue.svg)](https://kubernetes.io/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -20,9 +20,11 @@ Helios Operator simplifies application deployment on Kubernetes by watching `Hel
 - 🌐 Multi-platform support (amd64, arm64)
 - 📦 Minimal footprint (~55MB container image)
 
+**API Group:** `platform.helios.io/v1`
+
 ## Prerequisites
 
-- Go 1.25.1+
+- Go 1.25.2+
 - Docker 28.5.0+
 - kubectl v1.34.1+
 - Kubernetes cluster v1.34.1+

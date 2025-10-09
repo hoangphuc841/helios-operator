@@ -3,7 +3,7 @@
 # Build the manager binary
 # Using golang:1.25-alpine3.22 for latest stable Go 1.25.x with Alpine 3.22
 # alpine3.22 is the latest stable Alpine Linux (June 2024)
-FROM --platform=${BUILDPLATFORM:-linux/amd64} docker.io/golang:1.25-alpine3.22 AS builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} docker.io/golang:1.25.2-alpine3.22 AS builder
 
 # Build arguments for cross-platform builds and versioning
 ARG TARGETOS=linux

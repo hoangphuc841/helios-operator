@@ -387,3 +387,18 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+.PHONY: clean
+clean: ## Clean build artifacts and generated files
+	@echo "Cleaning build artifacts..."
+	rm -rf bin/
+	rm -rf dist/
+	rm -f cover.out coverage.html
+	rm -f deploy.yaml
+	@echo "Clean complete!"
+
+.PHONY: clean-all
+clean-all: clean ## Clean everything including downloaded tools
+	@echo "Cleaning all tools..."
+	rm -rf $(LOCALBIN)
+	@echo "Clean all complete!"

@@ -7,12 +7,16 @@ cover.out
 *.test
 *.out
 
+# Generated files (build artifacts)
+deploy.yaml
+
 # Development and CI/CD
 .git/
 .github/
 .gitignore
 .vscode/
 .idea/
+.devcontainer/
 
 # Documentation
 *.md
@@ -27,7 +31,6 @@ testdata/
 
 # Config and deployment files (not needed in build context)
 config/
-deploy.yaml
 *.yaml
 !go.mod
 !go.sum
@@ -41,3 +44,7 @@ Thumbs.db
 *.swo
 *~
 .tmp/
+
+# Go workspace
+go.work
+go.work.sum

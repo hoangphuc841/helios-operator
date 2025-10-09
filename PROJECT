@@ -2,22 +2,22 @@
 # This file is used to track the info used to scaffold your project
 # and allow the plugins properly work.
 # More info: https://book.kubebuilder.io/reference/project-config.html
-domain: helios.dev
+domain: helios.io
 layout:
-- go.kubebuilder.io/v4
+  - go.kubebuilder.io/v4
 plugins:
   manifests.sdk.operatorframework.io/v2: {}
   scorecard.sdk.operatorframework.io/v2: {}
 projectName: helios-operator
 repo: github.com/hoangphuc841/helios-operator
 resources:
-- api:
-    crdVersion: v1
-    namespaced: true
-  controller: true
-  domain: helios.dev
-  group: heliosapp
-  kind: HeliosApp
-  path: github.com/hoangphuc841/helios-operator/api/v1
-  version: v1
-version: "3"
+  - api:
+      crdVersion: v1
+      namespaced: true
+    controller: true
+    domain: helios.io
+    group: platform
+    kind: HeliosApp
+    path: github.com/hoangphuc841/helios-operator/api/v1
+    version: v1
+version: '3'
