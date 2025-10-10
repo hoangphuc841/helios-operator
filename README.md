@@ -5,6 +5,12 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
+[![Lint](https://github.com/hoangphuc841/helios-operator/actions/workflows/lint.yml/badge.svg)](https://github.com/hoangphuc841/helios-operator/actions/workflows/lint.yml)
+[![Tests](https://github.com/hoangphuc841/helios-operator/actions/workflows/test.yml/badge.svg)](https://github.com/hoangphuc841/helios-operator/actions/workflows/test.yml)
+[![E2E Tests](https://github.com/hoangphuc841/helios-operator/actions/workflows/test-e2e.yml/badge.svg)](https://github.com/hoangphuc841/helios-operator/actions/workflows/test-e2e.yml)
+[![Security](https://github.com/hoangphuc841/helios-operator/actions/workflows/security.yml/badge.svg)](https://github.com/hoangphuc841/helios-operator/actions/workflows/security.yml)
+[![Container Security](https://github.com/hoangphuc841/helios-operator/actions/workflows/container-security.yml/badge.svg)](https://github.com/hoangphuc841/helios-operator/actions/workflows/container-security.yml)
+
 A Kubernetes Operator for automating application deployment and management through custom resources.
 
 ## 📋 Overview
