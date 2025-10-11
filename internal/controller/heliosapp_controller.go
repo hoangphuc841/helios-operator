@@ -18,10 +18,13 @@ package controller
 
 import (
 	"context"
+	"reflect"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	heliosappv1 "github.com/hoangphuc841/helios-operator/api/v1"
@@ -47,11 +50,103 @@ type HeliosAppReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
 func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	logger := log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	var heliosApp heliosappv1.HeliosApp
+	if err := r.Get(ctx, req.NamespacedName, &heliosApp); err != nil {
+		logger.Error(err, "unable to fetch HeliosApp")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	name := heliosApp.Name
+	namespace := heliosApp.Namespace
+
+	// PVC name động: lấy từ spec hoặc quy ước
+	pvcName := heliosApp.Spec.PVCName
+	if pvcName == "" {
+		pvcName = "pvc-" + name
+	}
+
+	pipelineName := heliosApp.Spec.PipelineName
+	serviceAccount := heliosApp.Spec.ServiceAccount
+	githubSecret := heliosApp.Spec.WebhookSecret
+	workspace := map[string]interface{}{
+		"name": "shared-data",
+		"persistentVolumeClaim": map[string]interface{}{
+			"claimName": pvcName,
+		},
+	}
+
+	eventListener, err := GenerateEventListener(
+		name+"-el", namespace, name+"-trigger", name+"-trigger-binding", name+"-trigger-template", githubSecret,
+	)
+	if err != nil {
+		logger.Error(err, "failed to generate EventListener")
+		return ctrl.Result{}, err
+	}
+	triggerBinding, err := GenerateTriggerBinding(name+"-trigger-binding", namespace)
+	if err != nil {
+		logger.Error(err, "failed to generate TriggerBinding")
+		return ctrl.Result{}, err
+	}
+	triggerTemplate, err := GenerateTriggerTemplate(
+		name+"-trigger-template", namespace, name+"-pipelinerun", pipelineName, serviceAccount, workspace,
+	)
+	if err != nil {
+		logger.Error(err, "failed to generate TriggerTemplate")
+		return ctrl.Result{}, err
+	}
+
+	// Đặt owner reference để dọn dẹp tự động
+	for _, obj := range []*unstructured.Unstructured{eventListener, triggerBinding, triggerTemplate} {
+		obj.SetNamespace(namespace)
+		if err := controllerutil.SetControllerReference(&heliosApp, obj, r.Scheme); err != nil {
+			logger.Error(err, "failed to set owner reference", "name", obj.GetName())
+			return ctrl.Result{}, err
+		}
+
+		// Kiểm tra resource đã tồn tại chưa
+		existing := &unstructured.Unstructured{}
+		existing.SetGroupVersionKind(obj.GroupVersionKind())
+		err := r.Get(ctx, client.ObjectKey{Namespace: namespace, Name: obj.GetName()}, existing)
+		if err != nil {
+			// Nếu chưa có thì tạo mới
+			if client.IgnoreNotFound(err) == nil {
+				if err := r.Create(ctx, obj); err != nil {
+					logger.Error(err, "failed to create Tekton resource", "name", obj.GetName())
+					return ctrl.Result{}, err
+				}
+			} else {
+				logger.Error(err, "failed to get Tekton resource", "name", obj.GetName())
+				return ctrl.Result{}, err
+			}
+		} else {
+			// Nếu đã có, so sánh spec, nếu khác thì update
+			if !equalUnstructured(obj, existing) {
+				obj.SetResourceVersion(existing.GetResourceVersion())
+				if err := r.Update(ctx, obj); err != nil {
+					logger.Error(err, "failed to update Tekton resource", "name", obj.GetName())
+					return ctrl.Result{}, err
+				}
+			}
+		}
+	}
 
 	return ctrl.Result{}, nil
+}
+
+// Hàm so sánh spec của hai unstructured (chỉ so sánh phần spec)
+func equalUnstructured(a, b *unstructured.Unstructured) bool {
+	specA, foundA, _ := unstructured.NestedMap(a.Object, "spec")
+	specB, foundB, _ := unstructured.NestedMap(b.Object, "spec")
+
+    // Nếu một trong hai không có spec thì coi như không bằng nhau
+	if !foundA || !foundB {
+		return false
+	}
+    
+    // Sử dụng DeepEqual để so sánh nội dung
+	return reflect.DeepEqual(specA, specB)
 }
 
 // SetupWithManager sets up the controller with the Manager.

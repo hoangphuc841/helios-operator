@@ -1,0 +1,19 @@
+# config/samples/heliosapp_v1_heliosapp.yaml
+apiVersion: heliosapp.helios.dev/v1
+kind: HeliosApp
+metadata:
+  name: nginx-test-app
+  namespace: helios-apps # Namespace chúng ta đã tạo
+spec:
+  # --- Phần quan trọng cho Nginx ---
+  imageRepo: "nginx:latest" # Sử dụng image Nginx chính thức từ Docker Hub
+  port: 80                  # Nginx chạy ở port 80 mặc định
+  replicas: 2               # Chạy 2 bản sao Nginx
+
+  # --- Phần thông tin "giả" để Operator hoạt động ---
+  # Operator hiện tại yêu cầu các trường này, dù chúng ta không build gì cả.
+  gitRepo: "https://github.com/example/nginx.git" # Một repo placeholder
+  pipelineName: "placeholder-pipeline"
+  serviceAccount: "pipeline-sa"
+  webhookSecret: "github-webhook-secret"
+  pvcName: "placeholder-pvc"

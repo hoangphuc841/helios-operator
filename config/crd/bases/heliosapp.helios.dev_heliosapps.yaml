@@ -43,20 +43,35 @@ spec:
                 type: string
               imageRepo:
                 type: string
+              pipelineName:
+                description: Tên của Tekton Pipeline sẽ được kích hoạt.
+                type: string
               port:
                 format: int32
                 maximum: 65535
                 minimum: 1
                 type: integer
+              pvcName:
+                type: string
               replicas:
                 default: 1
                 format: int32
                 minimum: 0
                 type: integer
+              serviceAccount:
+                description: Tên của ServiceAccount mà PipelineRun sẽ sử dụng.
+                type: string
+              webhookSecret:
+                description: Tên của Secret chứa mã webhook cho GitHub.
+                type: string
             required:
             - gitRepo
             - imageRepo
+            - pipelineName
             - port
+            - pvcName
+            - serviceAccount
+            - webhookSecret
             type: object
           status:
             description: HeliosAppStatus defines the observed state of HeliosApp

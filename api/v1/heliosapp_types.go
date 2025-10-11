@@ -43,6 +43,20 @@ type HeliosAppSpec struct {
 	// +kubebuilder:default=1
 	// +kubebuilder:validation:Minimum=0
 	Replicas   int32  `json:"replicas"`
+
+	// +kubebuilder:validation:Required
+	// Tên của Tekton Pipeline sẽ được kích hoạt.
+	PipelineName string `json:"pipelineName"`
+
+	// +kubebuilder:validation:Required
+	// Tên của ServiceAccount mà PipelineRun sẽ sử dụng.
+	ServiceAccount string `json:"serviceAccount"`
+
+	// +kubebuilder:validation:Required
+	// Tên của Secret chứa mã webhook cho GitHub.
+	WebhookSecret string `json:"webhookSecret"`
+
+	PVCName   	string `json:"pvcName"`
 }
 
 // HeliosAppStatus defines the observed state of HeliosApp
