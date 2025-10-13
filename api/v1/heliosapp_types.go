@@ -46,7 +46,7 @@ type HeliosAppSpec struct {
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=1
 	// +kubebuilder:validation:Minimum=0
-	Replicas   int32  `json:"replicas"`
+	Replicas int32 `json:"replicas"`
 
 	// +kubebuilder:validation:Required
 	// Tên của Tekton Pipeline sẽ được kích hoạt.
@@ -60,7 +60,7 @@ type HeliosAppSpec struct {
 	// Tên của Secret chứa mã webhook cho GitHub.
 	WebhookSecret string `json:"webhookSecret"`
 
-	PVCName   	string `json:"pvcName"`
+	PVCName string `json:"pvcName"`
 }
 
 // HeliosAppStatus defines the observed state of HeliosApp

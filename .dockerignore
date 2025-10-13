@@ -7,9 +7,6 @@ cover.out
 *.test
 *.out
 
-# Generated files (build artifacts)
-deploy.yaml
-
 # Development and CI/CD
 .git/
 .github/
@@ -22,7 +19,6 @@ deploy.yaml
 *.md
 !README.md
 LICENSE
-CONTRIBUTING.md
 
 # Test files
 *_test.go

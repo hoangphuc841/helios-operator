@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - "hk/**"
       - "feature/**"
   pull_request:
     branches:
@@ -33,12 +32,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Setup Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}
           cache: true
@@ -88,7 +87,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: matrix.go-version == '1.25.2'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./cover.out
           flags: unittests
@@ -104,14 +103,31 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
           cache: true
 
+      - name: Cache envtest binaries
+        uses: actions/cache@v4
+        with:
+          path: bin/k8s
+          key: ${{ runner.os }}-envtest-${{ hashFiles('go.sum') }}
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Setup envtest assets
+        run: make setup-envtest
+
       - name: Run tests with race detector
         run: |
-          go test -race -short ./...
+          packages=$(go list ./... | grep -v "/e2e" || true)
+          if [ -z "${packages}" ]; then
+            echo "No packages found to test"
+            exit 0
+          fi
+          go test -race -short ${packages}
