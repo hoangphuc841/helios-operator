@@ -1,0 +1,49 @@
+# task-git-update-manifest.yaml (Definitive Fix)
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: git-update-manifest
+spec:
+  params:
+    - name: GITOPS_REPO_URL
+    - name: MANIFEST_PATH
+    - name: NEW_IMAGE_URL
+    - name: GITOPS_REPO_BRANCH
+  workspaces:
+    - name: gitops-repo
+  steps:
+    - name: update-manifest
+      image: alpine/git:v2.26.2
+      # CORRECTED SCRIPT BLOCK
+      script: |
+        #!/bin/sh
+        set -ex
+
+        TOKEN=$(cat /etc/git-secret/token)
+        REPO_URL_WITH_AUTH=$(echo "$(params.GITOPS_REPO_URL)" | sed "s#//github.com#//user:${TOKEN}@github.com#")
+
+        git clone "$REPO_URL_WITH_AUTH" "$(workspaces.gitops-repo.path)"
+        cd "$(workspaces.gitops-repo.path)"
+
+        git checkout -B "$(params.GITOPS_REPO_BRANCH)"
+
+        git config user.email "tekton-pipeline@helios.dev"
+        git config user.name "Tekton Pipeline"
+
+        # Remove any newline that might break sed
+        IMAGE_URL=$(echo "$(params.NEW_IMAGE_URL)" | tr -d '\n')
+
+        # Use a safe sed delimiter
+        sed -i "s#image: .*#image: ${IMAGE_URL}#g" "$(params.MANIFEST_PATH)"
+
+        git add "$(params.MANIFEST_PATH)"
+        git commit -m "chore: Update image to ${IMAGE_URL} [skip-ci]" || echo "Nothing to commit"
+        git push origin "$(params.GITOPS_REPO_BRANCH)" || echo "Nothing to push"
+      volumeMounts:
+        - name: git-secret
+          mountPath: /etc/git-secret
+          readOnly: true
+  volumes:
+    - name: git-secret
+      secret:
+        secretName: git-credentials
