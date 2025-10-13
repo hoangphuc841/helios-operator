@@ -1,5 +1,5 @@
 # config/samples/heliosapp_v1_heliosapp.yaml
-apiVersion: heliosapp.helios.dev/v1
+apiVersion: platform.helios.io/v1
 kind: HeliosApp
 metadata:
   # Giữ nguyên tên hoặc đổi nếu bạn muốn, nhưng nhớ dùng tên này trong các lệnh kubectl

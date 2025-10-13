@@ -12,9 +12,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.18.0
-  name: heliosapps.heliosapp.helios.dev
+  name: heliosapps.platform.helios.io
 spec:
-  group: heliosapp.helios.dev
+  group: platform.helios.io
   names:
     kind: HeliosApp
     listKind: HeliosAppList
@@ -196,7 +196,7 @@ metadata:
   name: helios-operator-heliosapp-editor-role
 rules:
 - apiGroups:
-  - heliosapp.helios.dev
+  - platform.helios.io
   resources:
   - heliosapps
   verbs:
@@ -208,7 +208,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - heliosapp.helios.dev
+  - platform.helios.io
   resources:
   - heliosapps/status
   verbs:
@@ -247,7 +247,7 @@ metadata:
   name: helios-operator-heliosapp-viewer-role
 rules:
 - apiGroups:
-  - heliosapp.helios.dev
+  - platform.helios.io
   resources:
   - heliosapps
   verbs:
@@ -255,7 +255,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - heliosapp.helios.dev
+  - platform.helios.io
   resources:
   - heliosapps/status
   verbs:
@@ -267,9 +267,24 @@ metadata:
   name: helios-operator-manager-role
 rules:
 - apiGroups:
-  - heliosapp.helios.dev
+  - ""
   resources:
-  - heliosapps
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services
   verbs:
   - create
   - delete
@@ -291,11 +306,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - ""
+  - platform.helios.io
   resources:
-  - services
-  - events
-  - pods
+  - heliosapps
   verbs:
   - create
   - delete
@@ -305,13 +318,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - heliosapp.helios.dev
+  - platform.helios.io
   resources:
   - heliosapps/finalizers
   verbs:
   - update
 - apiGroups:
-  - heliosapp.helios.dev
+  - platform.helios.io
   resources:
   - heliosapps/status
   verbs:
@@ -442,7 +455,7 @@ spec:
         - --health-probe-bind-address=:8081
         command:
         - /manager
-        image: ngocanhdo/helios-operator:v0.0.1
+        image: helios-operator:latest
         livenessProbe:
           httpGet:
             path: /healthz

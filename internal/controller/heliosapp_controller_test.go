@@ -51,7 +51,12 @@ var _ = Describe("HeliosApp Controller", func() {
 						Name:      resourceName,
 						Namespace: "default",
 					},
-					// TODO(user): Specify other spec details if needed.
+					Spec: heliosappv1.HeliosAppSpec{
+						GitRepo:   "https://github.com/example/test-app",
+						ImageRepo: "nginx:latest",
+						Port:      8080,
+						Replicas:  1,
+					},
 				}
 				Expect(k8sClient.Create(ctx, resource)).To(Succeed())
 			}
