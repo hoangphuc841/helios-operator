@@ -49,10 +49,6 @@ type HeliosAppSpec struct {
 	Replicas int32 `json:"replicas"`
 
 	// +kubebuilder:validation:Required
-	// Tên của Tekton Pipeline sẽ được kích hoạt.
-	PipelineName string `json:"pipelineName"`
-
-	// +kubebuilder:validation:Required
 	// Tên của ServiceAccount mà PipelineRun sẽ sử dụng.
 	ServiceAccount string `json:"serviceAccount"`
 
@@ -61,6 +57,20 @@ type HeliosAppSpec struct {
 	WebhookSecret string `json:"webhookSecret"`
 
 	PVCName string `json:"pvcName"`
+
+	// +kubebuilder:validation:Required
+	// GitOps Repository URL containing deployment manifests
+	GitopsRepo string `json:"gitopsRepo"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default=""
+	// Path in GitOps repository (defaults to app name if not specified)
+	GitopsPath string `json:"gitopsPath,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default="main"
+	// Target revision/branch in GitOps repo
+	GitopsBranch string `json:"gitopsBranch,omitempty"`
 }
 
 // HeliosAppStatus defines the observed state of HeliosApp
@@ -75,6 +85,42 @@ type HeliosAppStatus struct {
 	// Tag của image đã được deploy thành công
 	// +optional
 	DeployedVersion string `json:"deployedVersion,omitempty"`
+
+	// --- Build Status (from Tekton PipelineRun) ---
+
+	// Current build status: "Running", "Succeeded", "Failed", "Unknown"
+	// +optional
+	BuildStatus string `json:"buildStatus,omitempty"`
+
+	// Image version from the last successful build
+	// +optional
+	BuildVersion string `json:"buildVersion,omitempty"`
+
+	// Timestamp of the last build attempt
+	// +optional
+	LastBuildTime *metav1.Time `json:"lastBuildTime,omitempty"`
+
+	// Name of the current/last PipelineRun
+	// +optional
+	CurrentPipelineRun string `json:"currentPipelineRun,omitempty"`
+
+	// --- Deployment Health (from Deployment) ---
+
+	// Number of ready replicas
+	// +optional
+	ReadyReplicas int32 `json:"readyReplicas,omitempty"`
+
+	// Total desired replicas
+	// +optional
+	DesiredReplicas int32 `json:"desiredReplicas,omitempty"`
+
+	// Overall deployment health: "Healthy", "Progressing", "Degraded", "Unknown"
+	// +optional
+	DeploymentHealth string `json:"deploymentHealth,omitempty"`
+
+	// Timestamp when deployment last became healthy
+	// +optional
+	LastHealthyTime *metav1.Time `json:"lastHealthyTime,omitempty"`
 }
 
 // +kubebuilder:object:root=true

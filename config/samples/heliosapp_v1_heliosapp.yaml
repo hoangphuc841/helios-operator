@@ -1,19 +1,24 @@
-# config/samples/heliosapp_v1_heliosapp.yaml
 apiVersion: platform.helios.io/v1
 kind: HeliosApp
 metadata:
-  # Giữ nguyên tên hoặc đổi nếu bạn muốn, nhưng nhớ dùng tên này trong các lệnh kubectl
-  name: betaptinh-app 
+  name: helios-app
   namespace: helios-apps
 spec:
-  # --- Cập nhật thông tin cho ứng dụng "Bé tập tính" ---
-  gitRepo: "https://github.com/hoangphuc841/betaptinh.git" # <-- URL repo của bạn
-  imageRepo: "docker.io/hoangphuc842/betaptinh" # <-- Nơi bạn muốn lưu image
-  port: 80 
+  # --- Git source repository ---
+  gitRepo: "https://github.com/PhuocHoan/helios.git" # <-- URL repo của bạn
+  gitBranch: "main"
+
+  # --- GitOps repository ---
+  gitopsRepo: "https://github.com/PhuocHoan/helios-gitops.git" # <-- URL GitOps repo
+  gitopsPath: "helios-app" # Optional, defaults to app name if omitted
+  gitopsBranch: "main"
+
+  # --- Image configuration ---
+  imageRepo: "docker/hophuochoan/helios" # <-- Nơi bạn muốn lưu image
+  port: 80
   replicas: 1
 
-  # --- Cập nhật thông tin cho Tekton ---
-  pipelineName: "build-and-deploy-pipeline" # Tên pipeline do Người 4 tạo
+  # --- Tekton configuration ---
   serviceAccount: "pipeline-sa" # Tên Service Account cho pipeline
   webhookSecret: "github-webhook-secret" # Tên secret chứa mã webhook
-  pvcName: "betaptinh-pvc"
+  pvcName: "helios-pvc"

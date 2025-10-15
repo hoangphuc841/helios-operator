@@ -1,45 +1,162 @@
 version: "2"
+
 run:
   allow-parallel-runners: true
+  timeout: 10m
+  go: "1.25"
+  modules-download-mode: readonly
+
 linters:
   default: none
   enable:
-    - copyloopvar
-    - dupl
     - errcheck
-    - ginkgolinter
+    - errorlint
     - goconst
     - gocyclo
+    - gosec
     - govet
     - ineffassign
-    - lll
-    - misspell
     - nakedret
     - prealloc
-    - revive
-    - staticcheck
     - unconvert
     - unparam
     - unused
+    - misspell
+    - lll
+    - bodyclose
+    - gocritic
+    - godox
+    - ginkgolinter
+    - testpackage
+    - godot
+    - revive
+    - staticcheck
+    - dupl
+    - importas
+    - copyloopvar
+
+  disable: []
+
   settings:
+    gocyclo:
+      min-complexity: 15
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+      disabled-checks:
+        - dupImport
+        - ifElseChain
+        - octalLiteral
+        - whyNoLint
+        - wrapperFunc
+    govet:
+      settings:
+        printf:
+          funcs:
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+    lll:
+      line-length: 140
+    misspell:
+      locale: US
+    gosec:
+      severity: medium
+      confidence: medium
+      excludes:
+        - G204
+        - G304
     revive:
       rules:
         - name: comment-spacings
+          severity: warning
         - name: import-shadowing
-  exclusions:
-    generated: lax
-    rules:
-      - linters:
-          - lll
-        path: api/*
-      - linters:
-          - dupl
-          - lll
-        path: internal/*
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+          severity: error
+        - name: package-comments
+          severity: warning
+        - name: range-val-in-closure
+          severity: error
+        - name: time-naming
+          severity: warning
+        - name: var-naming
+          severity: warning
+        - name: var-declaration
+          severity: warning
+        - name: range-val-address
+          severity: error
+        - name: range
+          severity: warning
+        - name: unexported-return
+          severity: warning
+        - name: errorf
+          severity: error
+        - name: empty-block
+          severity: warning
+        - name: superfluous-else
+          severity: warning
+        - name: unreachable-code
+          severity: error
+        - name: redefines-builtin-id
+          severity: error
+    staticcheck:
+      checks: ["all"]
+    dupl:
+      threshold: 100
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+      exclude-functions:
+        - io/ioutil.ReadFile
+        - io.Copy(*bytes.Buffer)
+        - io.Copy(os.Stdout)
+    importas:
+      alias:
+        - pkg: k8s.io/api/core/v1
+          alias: corev1
+        - pkg: k8s.io/apimachinery/pkg/apis/meta/v1
+          alias: metav1
+        - pkg: k8s.io/apimachinery/pkg/runtime
+          alias: runtime
+        - pkg: sigs.k8s.io/controller-runtime/pkg/log
+          alias: log
+    testpackage:
+      skip-regexp: (export|internal)_test\.go
+    ginkgolinter:
+      suppress-async-assertion: false
+      suppress-len-assertion: false
+      suppress-nil-assertion: false
+      suppress-err-assertion: false
+      suppress-compare-assertion: false
+      forbid-focus-container: true
+
+severity:
+  default: error
+  rules:
+    - linters:
+        - gomnd
+        - dupl
+      severity: warning
+    - linters:
+        - gosec
+      severity: warning
+    - linters:
+        - gocyclo
+      severity: warning
+    - linters:
+        - lll
+      severity: warning
+    - linters:
+        - revive
+      severity: warning
+
 formatters:
   enable:
     - gofmt
@@ -50,3 +167,5 @@ formatters:
       - third_party$
       - builtin$
       - examples$
+      - api/v1/zz_generated\.go$
+      - config/crd/bases/.*\.yaml$

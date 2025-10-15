@@ -1,0 +1,23 @@
+apiVersion: v2
+name: helios-operator
+description: A Kubernetes operator for automated GitOps-based application deployment using Tekton and ArgoCD
+type: application
+version: 2.0.0
+appVersion: "2.0.0"
+home: https://github.com/hoangphuc841/helios-operator
+sources:
+  - https://github.com/hoangphuc841/helios-operator
+maintainers:
+  - name: Helios Team
+    email: support@helios.io
+keywords:
+  - kubernetes
+  - operator
+  - gitops
+  - tekton
+  - argocd
+  - cicd
+  - automation
+annotations:
+  category: CI/CD
+  licenses: Apache-2.0

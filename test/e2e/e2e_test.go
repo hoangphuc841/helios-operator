@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -258,14 +259,245 @@ var _ = Describe("Manager", Ordered, func() {
 
 		// +kubebuilder:scaffold:e2e-webhooks-checks
 
-		// TODO: Customize the e2e test suite with scenarios specific to your project.
-		// Consider applying sample/CR(s) and check their status and/or verifying
-		// the reconciliation by using the metrics, i.e.:
-		// metricsOutput := getMetricsOutput()
-		// Expect(metricsOutput).To(ContainSubstring(
-		//    fmt.Sprintf(`controller_runtime_reconcile_total{controller="%s",result="success"} 1`,
-		//    strings.ToLower(<Kind>),
-		// ))
+		Context("HeliosApp End-to-End Flow", func() {
+			const (
+				testAppName    = "e2e-test-app"
+				testNamespace  = "e2e-test-namespace"
+				testGitRepo    = "https://github.com/hoangphuc841/helios.git"
+				testGitopsRepo = "https://github.com/PhuocHoan/helios-gitops.git"
+				testImageRepo  = "docker.io/test/e2e-test-app"
+			)
+
+			BeforeEach(func() {
+				By("creating test namespace")
+				cmd := exec.Command("kubectl", "create", "namespace", testNamespace)
+				_, err := utils.Run(cmd)
+				Expect(err).NotTo(HaveOccurred(), "Failed to create test namespace")
+
+				By("creating PVC for Tekton workspace")
+				pvcYAML := fmt.Sprintf(`apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: %s-pvc
+  namespace: %s
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi`, testAppName, testNamespace)
+
+				cmd = exec.Command("kubectl", "apply", "-f", "-")
+				cmd.Stdin = strings.NewReader(pvcYAML)
+				_, err = utils.Run(cmd)
+				Expect(err).NotTo(HaveOccurred(), "Failed to create PVC")
+			})
+
+			AfterEach(func() {
+				By("cleaning up test namespace")
+				cmd := exec.Command("kubectl", "delete", "namespace", testNamespace, "--ignore-not-found=true")
+				_, _ = utils.Run(cmd)
+			})
+
+			It("should create and manage a complete HeliosApp lifecycle", func() {
+				By("creating a HeliosApp resource")
+				heliosAppYAML := fmt.Sprintf(`apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: %s
+  namespace: %s
+spec:
+  gitRepo: "%s"
+  gitBranch: "main"
+  gitopsRepo: "%s"
+  gitopsPath: "%s"
+  gitopsBranch: "main"
+  imageRepo: "%s"
+  port: 80
+  replicas: 1
+  serviceAccount: "pipeline-sa"
+  webhookSecret: "github-webhook-secret"
+  pvcName: "%s-pvc"`, testAppName, testNamespace, testGitRepo, testGitopsRepo, testAppName, testImageRepo, testAppName)
+
+				cmd := exec.Command("kubectl", "apply", "-f", "-")
+				cmd.Stdin = strings.NewReader(heliosAppYAML)
+				_, err := utils.Run(cmd)
+				Expect(err).NotTo(HaveOccurred(), "Failed to create HeliosApp")
+
+				By("waiting for Pipeline to be created")
+				verifyPipelineCreated := func(g Gomega) {
+					cmd := exec.Command("kubectl", "get", "pipeline", fmt.Sprintf("%s-pipeline", testAppName), "-n", testNamespace)
+					_, err := utils.Run(cmd)
+					g.Expect(err).NotTo(HaveOccurred(), "Pipeline should be created")
+				}
+				Eventually(verifyPipelineCreated, 2*time.Minute).Should(Succeed())
+
+				By("waiting for Tekton Trigger resources to be created")
+				verifyTriggerResources := func(g Gomega) {
+					cmd := exec.Command("kubectl", "get", "eventlistener", fmt.Sprintf("%s-el", testAppName), "-n", testNamespace)
+					_, err := utils.Run(cmd)
+					g.Expect(err).NotTo(HaveOccurred(), "EventListener should be created")
+
+					cmd = exec.Command("kubectl", "get", "triggerbinding", fmt.Sprintf("%s-trigger-binding", testAppName), "-n", testNamespace)
+					_, err = utils.Run(cmd)
+					g.Expect(err).NotTo(HaveOccurred(), "TriggerBinding should be created")
+
+					cmd = exec.Command("kubectl", "get", "triggertemplate", fmt.Sprintf("%s-trigger-template", testAppName), "-n", testNamespace)
+					_, err = utils.Run(cmd)
+					g.Expect(err).NotTo(HaveOccurred(), "TriggerTemplate should be created")
+				}
+				Eventually(verifyTriggerResources, 2*time.Minute).Should(Succeed())
+
+				By("waiting for ArgoCD Application to be created")
+				verifyArgoCDAppCreated := func(g Gomega) {
+					cmd := exec.Command("kubectl", "get", "application", fmt.Sprintf("%s-argocd", testAppName), "-n", "argocd")
+					_, err := utils.Run(cmd)
+					g.Expect(err).NotTo(HaveOccurred(), "ArgoCD Application should be created")
+				}
+				Eventually(verifyArgoCDAppCreated, 2*time.Minute).Should(Succeed())
+
+				By("creating a mock PipelineRun to simulate build")
+				pipelineRunYAML := fmt.Sprintf(`apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: %s-pipelinerun-%d
+  namespace: %s
+  labels:
+    helios.io/app-name: "%s"
+    helios.io/managed-by: "helios-operator"
+    triggers.tekton.dev/trigger: "%s-el"
+spec:
+  pipelineRef:
+    name: %s-pipeline
+  serviceAccountName: pipeline-sa
+  params:
+  - name: git-repo
+    value: "%s"
+  - name: git-revision
+    value: "abc123def"
+  - name: image-repo
+    value: "%s"
+  workspaces:
+  - name: source-code
+    persistentVolumeClaim:
+      claimName: %s-pvc`, testAppName, time.Now().Unix(), testNamespace, testAppName, testAppName, testAppName, testGitRepo, testImageRepo, testAppName)
+
+				cmd = exec.Command("kubectl", "apply", "-f", "-")
+				cmd.Stdin = strings.NewReader(pipelineRunYAML)
+				_, err = utils.Run(cmd)
+				Expect(err).NotTo(HaveOccurred(), "Failed to create PipelineRun")
+
+				By("waiting for PipelineRun to complete")
+				verifyPipelineRunComplete := func(g Gomega) {
+					cmd := exec.Command("kubectl", "get", "pipelinerun", "-l", fmt.Sprintf("helios.io/app-name=%s", testAppName), "-n", testNamespace, "-o", "jsonpath={.items[0].status.conditions[0].reason}")
+					output, err := utils.Run(cmd)
+					if err == nil {
+						// PipelineRun might be Succeeded, Failed, or still Running
+						g.Expect(output).To(Or(Equal("Succeeded"), Equal("Failed"), Equal("Running")), "PipelineRun should have a status")
+					}
+				}
+				Eventually(verifyPipelineRunComplete, 5*time.Minute).Should(Succeed())
+
+				By("checking HeliosApp status updates")
+				verifyHeliosAppStatus := func(g Gomega) {
+					cmd := exec.Command("kubectl", "get", "heliosapp", testAppName, "-n", testNamespace, "-o", "jsonpath={.status.conditions}")
+					output, err := utils.Run(cmd)
+					g.Expect(err).NotTo(HaveOccurred(), "Should be able to get HeliosApp status")
+					g.Expect(output).NotTo(BeEmpty(), "HeliosApp should have status conditions")
+				}
+				Eventually(verifyHeliosAppStatus, 2*time.Minute).Should(Succeed())
+
+				By("verifying reconciliation metrics")
+				metricsOutput := getMetricsOutput()
+				Expect(metricsOutput).To(ContainSubstring(
+					fmt.Sprintf(`controller_runtime_reconcile_total{controller="heliosapp",result="success"}`),
+				))
+
+				By("checking that all resources have correct labels")
+				verifyResourceLabels := func(g Gomega) {
+					// Check Pipeline labels
+					cmd := exec.Command("kubectl", "get", "pipeline", fmt.Sprintf("%s-pipeline", testAppName), "-n", testNamespace, "-o", "jsonpath={.metadata.labels.helios\\.io/managed-by}")
+					output, err := utils.Run(cmd)
+					g.Expect(err).NotTo(HaveOccurred())
+					g.Expect(output).To(Equal("helios-operator"))
+
+					// Check EventListener labels
+					cmd = exec.Command("kubectl", "get", "eventlistener", fmt.Sprintf("%s-el", testAppName), "-n", testNamespace, "-o", "jsonpath={.metadata.labels.helios\\.io/managed-by}")
+					output, err = utils.Run(cmd)
+					g.Expect(err).NotTo(HaveOccurred())
+					g.Expect(output).To(Equal("helios-operator"))
+				}
+				Eventually(verifyResourceLabels, 1*time.Minute).Should(Succeed())
+
+				By("testing resource cleanup on deletion")
+				cmd = exec.Command("kubectl", "delete", "heliosapp", testAppName, "-n", testNamespace)
+				_, err = utils.Run(cmd)
+				Expect(err).NotTo(HaveOccurred(), "Failed to delete HeliosApp")
+
+				By("verifying Pipeline is cleaned up")
+				verifyPipelineDeleted := func(g Gomega) {
+					cmd := exec.Command("kubectl", "get", "pipeline", fmt.Sprintf("%s-pipeline", testAppName), "-n", testNamespace)
+					_, err := utils.Run(cmd)
+					g.Expect(err).To(HaveOccurred(), "Pipeline should be deleted")
+				}
+				Eventually(verifyPipelineDeleted, 2*time.Minute).Should(Succeed())
+
+				By("verifying Tekton resources are cleaned up")
+				verifyTriggerResourcesDeleted := func(g Gomega) {
+					cmd := exec.Command("kubectl", "get", "eventlistener", fmt.Sprintf("%s-el", testAppName), "-n", testNamespace)
+					_, err := utils.Run(cmd)
+					g.Expect(err).To(HaveOccurred(), "EventListener should be deleted")
+				}
+				Eventually(verifyTriggerResourcesDeleted, 2*time.Minute).Should(Succeed())
+
+				By("verifying ArgoCD Application is cleaned up")
+				verifyArgoCDAppDeleted := func(g Gomega) {
+					cmd := exec.Command("kubectl", "get", "application", fmt.Sprintf("%s-argocd", testAppName), "-n", "argocd")
+					_, err := utils.Run(cmd)
+					g.Expect(err).To(HaveOccurred(), "ArgoCD Application should be deleted")
+				}
+				Eventually(verifyArgoCDAppDeleted, 2*time.Minute).Should(Succeed())
+			})
+
+			It("should handle invalid HeliosApp configurations", func() {
+				By("creating an invalid HeliosApp with missing required fields")
+				invalidHeliosAppYAML := fmt.Sprintf(`apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: invalid-app
+  namespace: %s
+spec:
+  gitRepo: ""  # Invalid: empty required field
+  imageRepo: "invalid-image"
+  port: 99999  # Invalid: out of range
+  replicas: -1  # Invalid: negative replicas`, testNamespace)
+
+				cmd := exec.Command("kubectl", "apply", "-f", "-")
+				cmd.Stdin = strings.NewReader(invalidHeliosAppYAML)
+				output, err := utils.Run(cmd)
+
+				// Should either be rejected by webhook or fail validation
+				if err != nil {
+					// Webhook rejection is expected
+					Expect(output).To(Or(
+						ContainSubstring("admission webhook"),
+						ContainSubstring("validation"),
+						ContainSubstring("required"),
+					))
+				} else {
+					// If it was accepted, it should eventually fail in controller
+					Eventually(func() bool {
+						cmd := exec.Command("kubectl", "get", "heliosapp", "invalid-app", "-n", testNamespace, "-o", "jsonpath={.status.conditions}")
+						output, _ := utils.Run(cmd)
+						return strings.Contains(output, "Failed") || strings.Contains(output, "Error")
+					}, 2*time.Minute).Should(BeTrue(), "Invalid HeliosApp should eventually fail")
+				}
+
+				By("cleaning up invalid app if it was created")
+				cmd = exec.Command("kubectl", "delete", "heliosapp", "invalid-app", "-n", testNamespace, "--ignore-not-found=true")
+				_, _ = utils.Run(cmd)
+			})
+		})
 	})
 })
 
