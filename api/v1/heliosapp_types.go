@@ -14,6 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package v1 contains API Schema definitions for the platform v1 API group.
+// It defines the HeliosApp custom resource which provides a simplified interface
+// for deploying applications using GitOps with Tekton Pipelines and ArgoCD.
+//
+// The main resource is HeliosApp, which automatically provisions:
+//   - Tekton Pipeline for building container images from source
+//   - Tekton Triggers for webhook-based automation
+//   - ArgoCD Application for GitOps-based deployment
+//   - Comprehensive status tracking for the entire CI/CD workflow
 package v1
 
 import (

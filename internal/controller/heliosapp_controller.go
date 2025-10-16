@@ -1,7 +1,22 @@
 /*
 Copyright 2025.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 
+// Package controller implements the Kubernetes controller for HeliosApp resources.
+// It provides GitOps-based CI/CD automation by orchestrating Tekton Pipelines
+// for builds and ArgoCD Applications for deployments.
 package controller
 
 import (
@@ -33,7 +48,12 @@ import (
 	"github.com/hoangphuc841/helios-operator/internal/resources"
 )
 
-// HeliosAppReconciler reconciles a HeliosApp object
+// HeliosAppReconciler reconciles a HeliosApp object.
+// It manages the complete lifecycle of GitOps-based applications by:
+//   - Creating and managing Tekton Pipelines for CI/CD
+//   - Setting up Tekton Triggers for webhook-based automation
+//   - Creating and syncing ArgoCD Applications for deployment
+//   - Tracking build and deployment status comprehensively
 type HeliosAppReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
@@ -53,7 +73,8 @@ type HeliosAppReconciler struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get
 
-// fetchHeliosApp retrieves the HeliosApp resource from the cluster
+// fetchHeliosApp retrieves the HeliosApp resource from the cluster.
+// It returns the resource if found, or an error if it doesn't exist or cannot be fetched.
 func (r *HeliosAppReconciler) fetchHeliosApp(ctx context.Context, namespacedName types.NamespacedName) (*heliosappv1.HeliosApp, error) {
 	var heliosApp heliosappv1.HeliosApp
 	if err := r.Get(ctx, namespacedName, &heliosApp); err != nil {
@@ -62,6 +83,21 @@ func (r *HeliosAppReconciler) fetchHeliosApp(ctx context.Context, namespacedName
 	return &heliosApp, nil
 }
 
+// Reconcile implements the main reconciliation loop for HeliosApp resources.
+// It orchestrates the creation and management of:
+//   - Tekton Pipelines for building container images
+//   - Tekton Triggers (EventListener, TriggerBinding, TriggerTemplate) for webhook automation
+//   - ArgoCD Applications for GitOps-based deployment
+//   - Comprehensive status tracking for builds and deployments
+//
+// The reconciliation process includes:
+//  1. Fetching the HeliosApp resource
+//  2. Reconciling Tekton Pipeline resources
+//  3. Reconciling Tekton Trigger resources
+//  4. Reconciling ArgoCD Application
+//  5. Updating comprehensive status with build and deployment information
+//
+// Metrics are automatically recorded for each phase and overall reconciliation duration.
 func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
@@ -1030,6 +1066,13 @@ func (r *HeliosAppReconciler) updateComprehensiveStatus(ctx context.Context, hel
 }
 
 // SetupWithManager sets up the controller with the Manager.
+// It configures watches for:
+//   - HeliosApp resources (primary resource)
+//   - ArgoCD Applications (for deployment status)
+//   - Tekton PipelineRuns (for build status)
+//   - Deployments (for pod health)
+//
+// Each watch includes predicates to filter relevant events and reduce unnecessary reconciliations.
 func (r *HeliosAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// Create an unstructured object for ArgoCD Application
 	argoApp := &unstructured.Unstructured{}
