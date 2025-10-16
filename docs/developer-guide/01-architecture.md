@@ -88,21 +88,21 @@ sequenceDiagram
 
     User->>K8s: Create HeliosApp
     K8s->>Ctrl: Reconcile Event
-    
+
     Ctrl->>K8s: Create Tekton Pipeline
     Ctrl->>K8s: Create EventListener
     Ctrl->>K8s: Create TriggerBinding
     Ctrl->>K8s: Create TriggerTemplate
     Ctrl->>K8s: Create ArgoCD Application
     Ctrl->>K8s: Update Status (Ready)
-    
+
     Git->>Tekton: Webhook (Push Event)
     Tekton->>Tekton: Run PipelineRun
     Tekton->>Git: Push Updated Manifest
-    
+
     ArgoCD->>Git: Sync GitOps Repo
     ArgoCD->>K8s: Deploy Application
-    
+
     Ctrl->>K8s: Update Status (Deployed)
 ```
 
@@ -112,32 +112,62 @@ sequenceDiagram
 
 **Location:** `internal/controller/heliosapp_controller.go`
 
-The main reconciliation controller that manages the entire lifecycle of HeliosApp resources.
+The main reconciliation controller that manages the entire lifecycle of HeliosApp resources with intelligent error handling and specialized phase management.
 
 **Key Responsibilities:**
 
 - Fetch and validate HeliosApp resources
-- Reconcile Tekton Pipelines
+- Manage finalizers for proper resource cleanup
+- Reconcile Tekton Pipelines with intelligent error handling
 - Reconcile Tekton Triggers (EventListener, TriggerBinding, TriggerTemplate)
-- Reconcile ArgoCD Applications
+- Reconcile ArgoCD Applications with smart retry logic
 - Update comprehensive status with build and deployment information
+- Handle transient errors with exponential backoff
 
-**Reconciliation Phases:**
+**Enhanced Reconciliation Phases:**
 
 1. **Fetch Phase**: Retrieve HeliosApp resource from cluster
-2. **Pipeline Phase**: Create/update Tekton Pipeline
-3. **Triggers Phase**: Create/update webhook triggers
-4. **ArgoCD Phase**: Create/update ArgoCD Application
-5. **Status Phase**: Update status with build and deployment health
+2. **Finalizer Phase**: Handle finalizer logic for resource cleanup
+3. **Pipeline Phase**: Create/update Tekton Pipeline with error recovery
+4. **Triggers Phase**: Create/update webhook triggers with retry logic
+5. **ArgoCD Phase**: Create/update ArgoCD Application with smart requeuing
+6. **Status Phase**: Update status with build and deployment health
 
-### 2. Resource Generators
+**Intelligent Error Handling:**
+
+- **Transient Error Detection**: Automatically identifies temporary failures
+- **Exponential Backoff**: Smart retry timing (30s → 60s → 120s → 5min max)
+- **Graceful Degradation**: Continues processing other phases when one fails
+- **Comprehensive Logging**: Phase-specific error context and metrics
+
+### 2. Specialized Reconcile Functions
+
+**Location:** `internal/controller/reconcile_phases.go`
+
+Specialized functions for each reconciliation phase with intelligent error handling and detailed status reporting.
+
+**Phase Functions:**
+
+- **`ReconcilePipeline()`**: Handles Tekton Pipeline creation/updates with error recovery
+- **`ReconcileTriggers()`**: Manages EventListener, TriggerBinding, TriggerTemplate resources
+- **`ReconcileArgoCD()`**: Creates/updates ArgoCD Applications with smart retry logic
+- **`ReconcileStatus()`**: Comprehensive status aggregation from all child resources
+
+**Key Features:**
+
+- **ReconcileResult Structure**: Each function returns detailed status information
+- **Transient Error Handling**: Automatic retry with exponential backoff
+- **Status Aggregation**: Comprehensive status reporting from all phases
+- **Independent Testing**: Each phase can be tested in isolation
+
+### 3. Resource Generators
 
 **Location:** `internal/resources/`
 
 Modules responsible for generating Kubernetes resources:
 
 - **`argocd.go`**: ArgoCD Application resource generation
-- **`tekton.go`**: Tekton Pipeline resource generation  
+- **`tekton.go`**: Tekton Pipeline resource generation
 - **`pipeline.go`**: Pipeline task definitions
 
 **Key Functions:**
@@ -146,7 +176,7 @@ Modules responsible for generating Kubernetes resources:
 - Parameter substitution
 - Ownership reference management
 
-### 3. Webhook Validation
+### 4. Webhook Validation
 
 **Location:** `api/v1/heliosapp_webhook.go`
 
@@ -161,7 +191,7 @@ Admission webhook for validating HeliosApp resources before they're created or u
 - Immutable field enforcement (gitRepo, imageRepo)
 - Update impact warnings
 
-### 4. Metrics System
+### 5. Metrics System
 
 **Location:** `internal/controller/metrics.go`
 
@@ -196,7 +226,7 @@ Comprehensive Prometheus metrics for observability.
 - `heliosapp_webhook_validations_total`: Validation attempts
 - `heliosapp_webhook_validation_duration_seconds`: Validation duration
 
-### 5. Health Checks
+### 6. Health Checks
 
 **Location:** `internal/health/health.go`
 
@@ -213,7 +243,7 @@ Health check endpoints for Kubernetes probes.
 - Webhook certificate validity
 - Leader election status
 
-### 6. Configuration Management
+### 7. Configuration Management
 
 **Location:** `internal/config/config.go`
 
@@ -231,39 +261,13 @@ Centralized configuration management with environment variable support.
 
 ### High-Level Reconciliation Process
 
-```mermaid
+````mermaid
 graph TD
     A[Reconcile Triggered] --> B{Resource Exists?}
     B -->|No| C[Handle Deletion]
     B -->|Yes| D[Fetch Phase]
-    
+
     D --> E[Pipeline Phase]
-    E --> F{Pipeline Created?}
-    F -->|Error| G[Record Error & Retry]
-    F -->|Success| H[Triggers Phase]
-    
-    H --> I{Triggers Created?}
-    I -->|Error| G
-    I -->|Success| J[ArgoCD Phase]
-    
-    J --> K{ArgoCD App Created?}
-    K -->|Error| G
-    K -->|Success| L[Status Phase]
-    
-    L --> M[Update Status Conditions]
-    M --> N[Record Metrics]
-    N --> O[Complete Reconciliation]
-    
-    C --> P[Remove Finalizers]
-    P --> Q[Cleanup Resources]
-    Q --> O
-    
-    G --> R{Retry Limit?}
-    R -->|Exceeded| S[Set Error Status]
-    R -->|Not Exceeded| T[Requeue with Backoff]
-    S --> O
-    T --> O
-```
 
 ### Detailed Reconciliation Phases
 
@@ -277,58 +281,61 @@ sequenceDiagram
 
     Note over R: Start Reconciliation
     R->>M: Start Overall Timer
-    
+
     R->>K: Fetch HeliosApp
     K-->>R: HeliosApp Resource
     R->>M: Record Fetch Duration
-    
+
     R->>K: Generate Pipeline
     R->>T: CreateOrUpdate Pipeline
     T-->>R: Pipeline Created/Updated
     R->>M: Record Pipeline Duration
-    
+
     R->>K: Generate EventListener
     R->>T: CreateOrUpdate EventListener
     T-->>R: EventListener Ready
-    
+
     R->>K: Generate TriggerBinding
     R->>T: CreateOrUpdate TriggerBinding
     T-->>R: TriggerBinding Ready
-    
+
     R->>K: Generate TriggerTemplate
     R->>T: CreateOrUpdate TriggerTemplate
     T-->>R: TriggerTemplate Ready
     R->>M: Record Triggers Duration
-    
+
     R->>K: Generate ArgoCD Application
     R->>A: CreateOrUpdate Application
     A-->>R: Application Created
     R->>M: Record ArgoCD Duration
-    
+
     R->>K: Update HeliosApp Status
     R->>K: Set Conditions (Ready, Synced, BuildSucceeded)
     K-->>R: Status Updated
     R->>M: Record Status Duration
-    
+
     R->>M: Record Overall Duration
     R->>M: Increment Success Counter
     Note over R: Reconciliation Complete
-```
+````
 
 ### Phase Breakdown
 
 1. **Fetch Phase** (`fetch`)
+
    - Retrieve HeliosApp resource from Kubernetes API
    - Return if resource not found (deletion case)
    - Log fetch errors with context
 
 2. **Pipeline Phase** (`pipeline`)
+
    - Generate Tekton Pipeline from template
    - Apply owner references
    - CreateOrUpdate Pipeline resource
    - Handle pipeline creation errors
 
 3. **Triggers Phase** (`triggers`)
+
    - Generate EventListener for webhook reception
    - Generate TriggerBinding for parameter extraction
    - Generate TriggerTemplate for PipelineRun instantiation
@@ -336,6 +343,7 @@ sequenceDiagram
    - Handle trigger creation errors
 
 4. **ArgoCD Phase** (`argocd`)
+
    - Generate ArgoCD Application manifest
    - Configure GitOps repository sync
    - Apply sync policy and health checks
@@ -361,7 +369,7 @@ graph LR
     A[HeliosApp Changes] --> C[Reconciler]
     B[ArgoCD App Changes] --> C
     D[PipelineRun Changes] --> C
-    
+
     C --> E{Predicate Filter}
     E -->|Generation Changed| F[Full Reconcile]
     E -->|Status Only| G[Status Update Only]
@@ -400,16 +408,19 @@ All metrics are automatically registered with the controller-runtime metrics reg
 Recommended dashboard panels:
 
 1. **Reconciliation Performance**
+
    - Average reconciliation duration
    - P95/P99 reconciliation latency
    - Phase-by-phase breakdown
 
 2. **Error Rates**
+
    - Errors by phase
    - Error rate over time
    - Error types distribution
 
 3. **Application Health**
+
    - Deployment health by application
    - ArgoCD sync status
    - Build success rate
@@ -471,12 +482,18 @@ The operator requires specific permissions:
 
 - ValidatingWebhookConfiguration: Update for webhook setup
 
-### Pod Security
+### Pod Security Standards
 
-- Runs with non-root user
-- Read-only root filesystem
-- Dropped capabilities
-- Resource limits enforced
+The operator implements **restricted** Pod Security Standards compliance:
+
+- **Non-root execution**: Runs as user 65532 with fsGroup 65532
+- **Read-only root filesystem**: Container root filesystem is read-only with tmp volume
+- **Dropped capabilities**: All Linux capabilities are dropped
+- **Seccomp profile**: Runtime default seccomp profile enabled
+- **No privilege escalation**: Privilege escalation is disabled
+- **Namespace security labels**: All relevant namespaces enforce restricted security
+
+For detailed security implementation, see [Pod Security Standards Documentation](../security/pod-security-standards.md).
 
 ### Admission Control
 
@@ -489,43 +506,88 @@ Webhook validation prevents:
 
 ## Error Handling
 
-### Custom Error Types
+### Enhanced Error Handling System
 
 **Location:** `internal/common/errors.go`
+
+The operator implements intelligent error handling with automatic transient error detection and smart retry logic.
+
+### Custom Error Types
 
 - `ReconciliationError`: General reconciliation failures
 - `ResourceGenerationError`: Resource generation issues
 - `ValidationError`: Validation failures
 - `StatusUpdateError`: Status update problems
+- `ReconcileResult`: Comprehensive result structure with status information
 
 All errors support wrapping with `Unwrap()` for error chain inspection.
 
-### Retry Strategy
+### Transient Error Detection
 
-- Exponential backoff with jitter
-- Configurable max retries
-- Phase-specific error handling
-- Automatic requeue on transient failures
+**Function:** `IsTransientError()`
+
+Automatically identifies errors that should be retried:
+
+- **Kubernetes API Errors**: Conflict, ServerTimeout, ServiceUnavailable, Timeout, TooManyRequests, InternalError
+- **Network Errors**: Temporary network failures, connection issues
+- **Pattern Matching**: Detects common transient error messages
+
+### Smart Retry Strategy
+
+**Function:** `GetRequeueDelay()`
+
+- **Exponential Backoff**: 30s → 60s → 120s → 240s → 5min max
+- **Jitter**: ±25% randomness to prevent thundering herd
+- **Phase-Specific Handling**: Each reconciliation phase handles errors independently
+- **Graceful Degradation**: Continues processing other phases when one fails
+
+### ReconcileResult Structure
+
+Each reconciliation phase returns a detailed result:
+
+```go
+type ReconcileResult struct {
+    Success      bool
+    Error        error
+    RequeueAfter time.Duration
+    Status       ReconcileStatus
+}
+```
+
+This enables:
+
+- **Intelligent Requeuing**: Only requeue when necessary
+- **Status Aggregation**: Comprehensive status from all phases
+- **Error Context**: Detailed error information with phase context
 
 ## Testing
 
 ### Unit Tests
 
-- Controller logic tests
-- Resource generation tests
-- Validation tests
-- Metrics tests
+**Location:** `internal/controller/reconcile_phases_test.go`
+
+- **Error Detection Tests**: Verify transient vs permanent error classification
+- **Backoff Logic Tests**: Validate exponential backoff with jitter
+- **Reconcile Result Tests**: Test result structure and behavior
+- **Phase-Specific Tests**: Individual reconciliation phase testing
+- **Controller Logic Tests**: Main reconciliation loop testing
+- **Resource Generation Tests**: Resource creation and updates
+- **Validation Tests**: Input validation and error handling
+- **Metrics Tests**: Prometheus metrics collection
 
 ### Integration Tests
 
-- envtest for Kubernetes API simulation
-- Full reconciliation workflow tests
-- Watch predicate tests
+- **envtest**: Kubernetes API simulation for full workflow testing
+- **Reconciliation Workflow**: End-to-end reconciliation testing
+- **Watch Predicate Tests**: Event filtering and triggering
+- **Error Recovery Tests**: Transient error handling and retry logic
 
-### Coverage Target
+### Test Coverage
 
-- Minimum 80% code coverage
-- Critical paths: 100% coverage
+- **Minimum 80% code coverage** across all packages
+- **Critical paths: 100% coverage** (error handling, reconciliation logic)
+- **Phase-specific coverage**: Each reconcile function thoroughly tested
+- **Error scenario coverage**: All error types and retry scenarios tested
 
 ## Future Enhancements
 

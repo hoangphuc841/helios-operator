@@ -151,7 +151,7 @@ func TestResourceGenerationError_Unwrap(t *testing.T) {
 
 func TestNewResourceGenerationError(t *testing.T) {
 	originalErr := errors.New("test error")
-	
+
 	tests := []struct {
 		name     string
 		resource string
@@ -231,8 +231,8 @@ func TestValidationError_Error(t *testing.T) {
 
 func TestValidationError_Unwrap(t *testing.T) {
 	tests := []struct {
-		name        string
-		err         *ValidationError
+		name         string
+		err          *ValidationError
 		shouldUnwrap bool
 	}{
 		{
@@ -272,7 +272,7 @@ func TestValidationError_Unwrap(t *testing.T) {
 
 func TestNewValidationError(t *testing.T) {
 	originalErr := errors.New("test error")
-	
+
 	tests := []struct {
 		name   string
 		field  string

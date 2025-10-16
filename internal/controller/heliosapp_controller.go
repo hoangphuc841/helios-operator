@@ -22,7 +22,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
@@ -99,7 +98,7 @@ func (r *HeliosAppReconciler) fetchHeliosApp(ctx context.Context, namespacedName
 //
 // Metrics are automatically recorded for each phase and overall reconciliation duration.
 func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx)
+	logger := log.FromContext(ctx).WithName("heliosapp")
 
 	// Add structured fields to logger for this reconciliation
 	logger = logger.WithValues(
@@ -146,6 +145,41 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, nil
 	}
 
+	// Handle finalizer logic
+	if heliosApp.DeletionTimestamp != nil {
+		// Resource is being deleted, clean up resources
+		logger.Info("HeliosApp is being deleted, cleaning up resources")
+		if err := r.cleanupResources(ctx, heliosApp, logger); err != nil {
+			logger.Error(err, "Failed to cleanup resources during deletion")
+			reconcileResult = "error"
+			ReconciliationErrorsTotal.WithLabelValues(req.Namespace, req.Name, "cleanup").Inc()
+			return ctrl.Result{}, err
+		}
+
+		// Remove finalizer
+		if controllerutil.ContainsFinalizer(heliosApp, common.FinalizerName) {
+			controllerutil.RemoveFinalizer(heliosApp, common.FinalizerName)
+			if err := r.Update(ctx, heliosApp); err != nil {
+				logger.Error(err, "Failed to remove finalizer")
+				return ctrl.Result{}, err
+			}
+			logger.Info("Finalizer removed, deletion complete")
+		}
+		return ctrl.Result{}, nil
+	}
+
+	// Add finalizer if not present
+	if !controllerutil.ContainsFinalizer(heliosApp, common.FinalizerName) {
+		controllerutil.AddFinalizer(heliosApp, common.FinalizerName)
+		if err := r.Update(ctx, heliosApp); err != nil {
+			logger.Error(err, "Failed to add finalizer")
+			return ctrl.Result{}, err
+		}
+		logger.Info("Finalizer added")
+		// Requeue to continue processing after adding finalizer
+		return ctrl.Result{Requeue: true}, nil
+	}
+
 	// Add generation to logger for tracking spec changes
 	logger = logger.WithValues("generation", heliosApp.Generation)
 	logger.Info("Processing HeliosApp",
@@ -156,78 +190,94 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	name := heliosApp.Name
 	namespace := heliosApp.Namespace
 
-	// PVC name động: lấy từ spec hoặc quy ước
-	pvcName := heliosApp.Spec.PVCName
-	if pvcName == "" {
-		pvcName = "pvc-" + name
-	}
+	// Derive commonly used names and workspace from spec
+	pipelineName, serviceAccount, githubSecret, workspace := r.deriveRuntimeParams(heliosApp)
 
-	// Generate pipeline name from app name
-	pipelineName := resources.GetPipelineName(name)
-	serviceAccount := heliosApp.Spec.ServiceAccount
-	githubSecret := heliosApp.Spec.WebhookSecret
-	workspace := map[string]interface{}{
-		"name": "shared-data",
-		"persistentVolumeClaim": map[string]interface{}{
-			"claimName": pvcName,
-		},
-	}
+	// Enhanced reconciliation with intelligent error handling
+	reconcileResults := make(map[string]*common.ReconcileResult)
 
 	// Reconcile Tekton Pipeline
 	pipelinePhase := NewPhaseTimer(req.Namespace, req.Name, "pipeline")
-	if err := r.reconcilePipeline(ctx, heliosApp, logger); err != nil {
+	pipelineResult := r.ReconcilePipeline(ctx, heliosApp, logger)
+	reconcileResults["pipeline"] = pipelineResult
+	pipelinePhase.ObserveDuration()
+
+	if !pipelineResult.Success {
 		reconcileResult = "error"
 		ReconciliationErrorsTotal.WithLabelValues(req.Namespace, req.Name, "pipeline").Inc()
-		pipelinePhase.ObserveDuration()
-		return ctrl.Result{}, err
+		if pipelineResult.RequeueAfter > 0 {
+			logger.Info("Pipeline reconciliation failed with transient error, requeuing",
+				"error", pipelineResult.Error,
+				"requeueAfter", pipelineResult.RequeueAfter)
+			return ctrl.Result{RequeueAfter: pipelineResult.RequeueAfter}, nil
+		}
+		return ctrl.Result{}, pipelineResult.Error
 	}
-	pipelinePhase.ObserveDuration()
 
 	// Reconcile Tekton Triggers
 	triggersPhase := NewPhaseTimer(req.Namespace, req.Name, "triggers")
-	if err := r.reconcileTriggers(ctx, heliosApp, name, namespace, pipelineName, serviceAccount, githubSecret, workspace, logger); err != nil {
+	triggersResult := r.ReconcileTriggers(ctx, heliosApp, name, namespace, pipelineName, serviceAccount, githubSecret, workspace, logger)
+	reconcileResults["triggers"] = triggersResult
+	triggersPhase.ObserveDuration()
+
+	if !triggersResult.Success {
 		reconcileResult = "error"
 		ReconciliationErrorsTotal.WithLabelValues(req.Namespace, req.Name, "triggers").Inc()
-		triggersPhase.ObserveDuration()
-		return ctrl.Result{}, err
+		if triggersResult.RequeueAfter > 0 {
+			logger.Info("Triggers reconciliation failed with transient error, requeuing",
+				"error", triggersResult.Error,
+				"requeueAfter", triggersResult.RequeueAfter)
+			return ctrl.Result{RequeueAfter: triggersResult.RequeueAfter}, nil
+		}
+		return ctrl.Result{}, triggersResult.Error
 	}
-	triggersPhase.ObserveDuration()
 
 	// Reconcile ArgoCD Application
 	argoCDPhase := NewPhaseTimer(req.Namespace, req.Name, "argocd")
-	if err := r.reconcileArgoCD(ctx, heliosApp, name, namespace, logger); err != nil {
+	argoCDResult := r.ReconcileArgoCD(ctx, heliosApp, name, namespace, logger)
+	reconcileResults["argocd"] = argoCDResult
+	argoCDPhase.ObserveDuration()
+
+	if !argoCDResult.Success {
 		reconcileResult = "error"
 		ReconciliationErrorsTotal.WithLabelValues(req.Namespace, req.Name, "argocd").Inc()
-		argoCDPhase.ObserveDuration()
-		return ctrl.Result{}, err
+		if argoCDResult.RequeueAfter > 0 {
+			logger.Info("ArgoCD reconciliation failed with transient error, requeuing",
+				"error", argoCDResult.Error,
+				"requeueAfter", argoCDResult.RequeueAfter)
+			return ctrl.Result{RequeueAfter: argoCDResult.RequeueAfter}, nil
+		}
+		return ctrl.Result{}, argoCDResult.Error
 	}
-	argoCDPhase.ObserveDuration()
 
 	// Update comprehensive status
 	statusPhase := NewPhaseTimer(req.Namespace, req.Name, "status")
-	if err := r.updateComprehensiveStatus(ctx, heliosApp, name, namespace, logger); err != nil {
-		logger.Error(err, "Failed to update comprehensive status")
+	statusResult := r.ReconcileStatus(ctx, heliosApp, name, namespace, logger)
+	reconcileResults["status"] = statusResult
+	statusPhase.ObserveDuration()
+
+	if !statusResult.Success {
 		reconcileResult = "error"
 		ReconciliationErrorsTotal.WithLabelValues(req.Namespace, req.Name, "status").Inc()
-		statusPhase.ObserveDuration()
-		return ctrl.Result{}, common.NewStatusUpdateError("HeliosApp", name, err)
+		if statusResult.RequeueAfter > 0 {
+			logger.Info("Status reconciliation failed with transient error, requeuing",
+				"error", statusResult.Error,
+				"requeueAfter", statusResult.RequeueAfter)
+			return ctrl.Result{RequeueAfter: statusResult.RequeueAfter}, nil
+		}
+		return ctrl.Result{}, statusResult.Error
 	}
-	statusPhase.ObserveDuration()
+
+	// Log successful reconciliation summary
+	logger.Info("All reconciliation phases completed successfully",
+		"pipeline", reconcileResults["pipeline"].Status.Status,
+		"triggers", reconcileResults["triggers"].Status.Status,
+		"argocd", reconcileResults["argocd"].Status.Status,
+		"status", reconcileResults["status"].Status.Status)
 
 	reconcileResult = "success"
 	// Success log is in defer function
 	return ctrl.Result{}, nil
-}
-
-// Hàm so sánh spec của hai unstructured (chỉ so sánh phần spec)
-func equalUnstructured(a, b *unstructured.Unstructured) bool {
-	// Compare spec using JSON marshaling to avoid deep copy issues
-	specA, okA := a.Object["spec"]
-	specB, okB := b.Object["spec"]
-	if !okA || !okB {
-		return false
-	}
-	return reflect.DeepEqual(specA, specB)
 }
 
 // updateStatus updates the HeliosApp status with the given condition
@@ -771,151 +821,33 @@ func (r *HeliosAppReconciler) deploymentToHeliosApp(ctx context.Context, obj cli
 // Helper Methods for Reconciliation
 // ===================================
 
-// reconcilePipeline creates or updates the Tekton Pipeline
-func (r *HeliosAppReconciler) reconcilePipeline(ctx context.Context, heliosApp *heliosappv1.HeliosApp, logger logr.Logger) error {
-	logger = logger.WithValues("phase", "pipeline")
-	logger.V(1).Info("Reconciling Tekton Pipeline")
+// deriveRuntimeParams computes runtime parameters from a HeliosApp:
+// - pipeline name (derived from app name)
+// - service account
+// - webhook secret
+// - workspace PVC reference (explicit or defaulted)
+func (r *HeliosAppReconciler) deriveRuntimeParams(heliosApp *heliosappv1.HeliosApp) (pipelineName, serviceAccount, githubSecret string, workspace map[string]interface{}) {
+	name := heliosApp.Name
 
-	pipeline, err := resources.GeneratePipeline(heliosApp)
-	if err != nil {
-		logger.Error(err, "Failed to generate Pipeline resource")
-		return common.NewResourceGenerationError("Pipeline", heliosApp.Name, err)
+	// Determine PVC name from spec or default convention
+	pvcName := heliosApp.Spec.PVCName
+	if pvcName == "" {
+		pvcName = "pvc-" + name
 	}
 
-	pipeline.SetNamespace(heliosApp.Namespace)
-	if err := controllerutil.SetControllerReference(heliosApp, pipeline, r.Scheme); err != nil {
-		logger.Error(err, "Failed to set controller reference for Pipeline",
-			"pipelineName", pipeline.GetName())
-		return common.NewReconciliationError("Pipeline", pipeline.GetName(), "set owner reference", err)
+	// Generate pipeline name from app name
+	pipelineName = resources.GetPipelineName(name)
+	serviceAccount = heliosApp.Spec.ServiceAccount
+	githubSecret = heliosApp.Spec.WebhookSecret
+
+	// Build Tekton workspace definition
+	workspace = map[string]interface{}{
+		"name": "shared-data",
+		"persistentVolumeClaim": map[string]interface{}{
+			"claimName": pvcName,
+		},
 	}
-
-	if err := r.createOrUpdateResource(ctx, pipeline, logger); err != nil {
-		return err
-	}
-
-	logger.V(1).Info("Pipeline reconciled successfully", "pipelineName", pipeline.GetName())
-	return nil
-}
-
-// reconcileTriggers creates or updates Tekton Trigger resources
-func (r *HeliosAppReconciler) reconcileTriggers(ctx context.Context, heliosApp *heliosappv1.HeliosApp, name, namespace, pipelineName, serviceAccount, githubSecret string, workspace map[string]interface{}, logger logr.Logger) error {
-	logger = logger.WithValues("phase", "triggers")
-	logger.V(1).Info("Reconciling Tekton Triggers",
-		"eventListener", name+"-el",
-		"triggerBinding", name+"-trigger-binding",
-		"triggerTemplate", name+"-trigger-template",
-	)
-
-	eventListener, err := resources.GenerateEventListener(
-		name+"-el", namespace, name+"-trigger", name+"-trigger-binding", name+"-trigger-template", githubSecret,
-	)
-	if err != nil {
-		logger.Error(err, "Failed to generate EventListener resource")
-		return common.NewResourceGenerationError("EventListener", name+"-el", err)
-	}
-
-	triggerBinding, err := resources.GenerateTriggerBinding(name+"-trigger-binding", namespace)
-	if err != nil {
-		logger.Error(err, "Failed to generate TriggerBinding resource")
-		return common.NewResourceGenerationError("TriggerBinding", name+"-trigger-binding", err)
-	}
-
-	triggerTemplate, err := resources.GenerateTriggerTemplate(
-		name+"-trigger-template", namespace, name+"-pipelinerun", pipelineName, serviceAccount, workspace,
-	)
-	if err != nil {
-		logger.Error(err, "Failed to generate TriggerTemplate resource")
-		return common.NewResourceGenerationError("TriggerTemplate", name+"-trigger-template", err)
-	}
-
-	for _, obj := range []*unstructured.Unstructured{eventListener, triggerBinding, triggerTemplate} {
-		obj.SetNamespace(namespace)
-		if err := controllerutil.SetControllerReference(heliosApp, obj, r.Scheme); err != nil {
-			logger.Error(err, "Failed to set controller reference",
-				"kind", obj.GetKind(),
-				"resourceName", obj.GetName())
-			return common.NewReconciliationError(obj.GetKind(), obj.GetName(), "set owner reference", err)
-		}
-
-		if err := r.createOrUpdateResource(ctx, obj, logger); err != nil {
-			return err
-		}
-	}
-
-	logger.V(1).Info("Triggers reconciled successfully")
-	return nil
-}
-
-// reconcileArgoCD creates or updates the ArgoCD Application
-func (r *HeliosAppReconciler) reconcileArgoCD(ctx context.Context, heliosApp *heliosappv1.HeliosApp, name, namespace string, logger logr.Logger) error {
-	logger = logger.WithValues("phase", "argocd")
-
-	argoApp, err := resources.GenerateArgoApplication(heliosApp)
-	if err != nil {
-		logger.Error(err, "Failed to generate ArgoCD Application resource")
-		return common.NewResourceGenerationError("ArgoCD Application", name+"-argocd", err)
-	}
-
-	// Set namespace explicitly (ArgoCD Application lives in argocd namespace)
-	argoApp.SetNamespace("argocd")
-
-	// Set labels for tracking (instead of owner references for cross-namespace)
-	labels := argoApp.GetLabels()
-	if labels == nil {
-		labels = make(map[string]string)
-	}
-	labels["helios.io/managed-by"] = "helios-operator"
-	labels["helios.io/app-name"] = name
-	labels["helios.io/app-namespace"] = namespace
-	argoApp.SetLabels(labels)
-
-	// Default gitopsPath for logging
-	gitopsPath := heliosApp.Spec.GitopsPath
-	if gitopsPath == "" {
-		gitopsPath = name
-	}
-
-	logger.V(1).Info("Reconciling ArgoCD Application",
-		"appName", argoApp.GetName(),
-		"gitopsRepo", heliosApp.Spec.GitopsRepo,
-		"gitopsPath", gitopsPath,
-	)
-
-	// Create or update ArgoCD Application
-	existingArgoApp := &unstructured.Unstructured{}
-	existingArgoApp.SetGroupVersionKind(argoApp.GroupVersionKind())
-	err = r.Get(ctx, client.ObjectKey{Namespace: "argocd", Name: argoApp.GetName()}, existingArgoApp)
-	if err != nil {
-		if client.IgnoreNotFound(err) == nil {
-			logger.Info("Creating ArgoCD Application",
-				"appName", argoApp.GetName(),
-				"gitopsRepo", heliosApp.Spec.GitopsRepo,
-				"gitopsPath", gitopsPath)
-			if err := r.Create(ctx, argoApp); err != nil {
-				return common.NewReconciliationError("ArgoCD Application", argoApp.GetName(), "create", err)
-			}
-			return nil
-		}
-		logger.Error(err, "Failed to get ArgoCD Application")
-		return common.NewReconciliationError("ArgoCD Application", argoApp.GetName(), "get", err)
-	}
-
-	// Update if spec changed
-	if !equalUnstructured(argoApp, existingArgoApp) {
-		logger.Info("Updating ArgoCD Application",
-			"appName", argoApp.GetName(),
-			"gitopsRepo", heliosApp.Spec.GitopsRepo,
-			"gitopsPath", gitopsPath)
-		argoApp.SetResourceVersion(existingArgoApp.GetResourceVersion())
-		if err := r.Update(ctx, argoApp); err != nil {
-			return common.NewReconciliationError("ArgoCD Application", argoApp.GetName(), "update", err)
-		}
-	} else {
-		logger.V(1).Info("ArgoCD Application is up-to-date")
-	}
-
-	logger.V(1).Info("ArgoCD Application reconciled successfully")
-	return nil
+	return
 }
 
 // createOrUpdateResource creates or updates a Kubernetes resource
@@ -945,7 +877,7 @@ func (r *HeliosAppReconciler) createOrUpdateResource(ctx context.Context, obj *u
 	}
 
 	// Update if spec changed
-	if !equalUnstructured(obj, existing) {
+	if !r.equalUnstructured(obj, existing) {
 		resourceLogger.Info("Updating resource (spec changed)")
 		obj.SetResourceVersion(existing.GetResourceVersion())
 		if err := r.Update(ctx, obj); err != nil {
@@ -957,111 +889,6 @@ func (r *HeliosAppReconciler) createOrUpdateResource(ctx context.Context, obj *u
 		resourceLogger.V(1).Info("Resource is up-to-date, no changes needed")
 	}
 
-	return nil
-}
-
-// updateComprehensiveStatus updates the HeliosApp status with build, deployment, and ArgoCD sync information
-func (r *HeliosAppReconciler) updateComprehensiveStatus(ctx context.Context, heliosApp *heliosappv1.HeliosApp, name, namespace string, logger logr.Logger) error {
-	logger = logger.WithValues("phase", "status-update")
-	logger.V(1).Info("Updating comprehensive status")
-
-	// Get PipelineRun status
-	buildStatus, buildVersion, pipelineRunName, lastBuildTime, err := r.getPipelineRunStatus(ctx, heliosApp)
-	if err != nil {
-		logger.V(1).Info("Could not retrieve PipelineRun status", "error", err.Error())
-	} else {
-		heliosApp.Status.BuildStatus = buildStatus
-		heliosApp.Status.BuildVersion = buildVersion
-		heliosApp.Status.CurrentPipelineRun = pipelineRunName
-		heliosApp.Status.LastBuildTime = lastBuildTime
-		logger.Info("Build status updated",
-			"status", buildStatus,
-			"version", buildVersion,
-			"pipelineRun", pipelineRunName)
-
-		// Update metrics
-		BuildsTotal.WithLabelValues(namespace, name, buildStatus).Inc()
-
-		// Update build condition
-		if buildStatus == "Succeeded" {
-			_ = r.updateStatus(ctx, heliosApp, "BuildSucceeded", metav1.ConditionTrue, "BuildCompleted", fmt.Sprintf("Build succeeded: %s", buildVersion))
-		} else if buildStatus == "Failed" {
-			_ = r.updateStatus(ctx, heliosApp, "BuildSucceeded", metav1.ConditionFalse, "BuildFailed", "Build failed")
-		} else if buildStatus == "Running" {
-			_ = r.updateStatus(ctx, heliosApp, "BuildSucceeded", metav1.ConditionFalse, "BuildInProgress", "Build is in progress")
-		}
-	}
-
-	// Get Deployment health
-	deployHealth, readyReplicas, desiredReplicas, lastHealthyTime, err := r.getDeploymentHealth(ctx, heliosApp)
-	if err != nil {
-		logger.V(1).Info("Could not retrieve Deployment health", "error", err.Error())
-	} else {
-		heliosApp.Status.DeploymentHealth = deployHealth
-		heliosApp.Status.ReadyReplicas = readyReplicas
-		heliosApp.Status.DesiredReplicas = desiredReplicas
-		if lastHealthyTime != nil {
-			heliosApp.Status.LastHealthyTime = lastHealthyTime
-		}
-		logger.Info("Deployment health updated",
-			"health", deployHealth,
-			"readyReplicas", readyReplicas,
-			"desiredReplicas", desiredReplicas)
-
-		// Update metrics
-		DeploymentHealthGauge.WithLabelValues(namespace, name).Set(DeploymentHealthToMetric(deployHealth))
-		ReplicasGauge.WithLabelValues(namespace, name, "desired").Set(float64(desiredReplicas))
-		ReplicasGauge.WithLabelValues(namespace, name, "ready").Set(float64(readyReplicas))
-
-		// Update deployment condition
-		if deployHealth == "Healthy" {
-			_ = r.updateStatus(ctx, heliosApp, "DeploymentHealthy", metav1.ConditionTrue, "AllReplicasReady", fmt.Sprintf("All %d replicas are ready", readyReplicas))
-		} else if deployHealth == "Progressing" {
-			_ = r.updateStatus(ctx, heliosApp, "DeploymentHealthy", metav1.ConditionFalse, "RollingOut", fmt.Sprintf("Rolling out: %d/%d replicas ready", readyReplicas, desiredReplicas))
-		} else if deployHealth == "Degraded" {
-			_ = r.updateStatus(ctx, heliosApp, "DeploymentHealthy", metav1.ConditionFalse, "NoReplicasReady", "No replicas are ready")
-		}
-	}
-
-	// Update status with ArgoCD sync information
-	syncStatus, healthStatus, err := r.getArgoAppSyncStatus(ctx, name)
-	if err != nil {
-		logger.V(1).Info("Could not retrieve ArgoCD sync status", "error", err.Error())
-	} else {
-		logger.Info("ArgoCD sync status updated",
-			"syncStatus", syncStatus,
-			"healthStatus", healthStatus)
-
-		// Update metrics
-		ArgoCDSyncStatus.WithLabelValues(namespace, name).Set(SyncStatusToMetric(syncStatus))
-		ArgoCDHealthStatus.WithLabelValues(namespace, name).Set(HealthStatusToMetric(healthStatus))
-
-		// Update DeployedVersion if synced
-		if syncStatus == "Synced" && healthStatus == "Healthy" {
-			// Use build version if available, otherwise use timestamp
-			if buildVersion != "" {
-				heliosApp.Status.DeployedVersion = buildVersion
-			} else {
-				heliosApp.Status.DeployedVersion = "synced-" + time.Now().Format("20060102-150405")
-			}
-		}
-
-		// Update ArgoCD sync condition
-		if syncStatus == "Synced" {
-			_ = r.updateStatus(ctx, heliosApp, "ApplicationSynced", metav1.ConditionTrue, "Synced", "ArgoCD Application is synced")
-		} else {
-			_ = r.updateStatus(ctx, heliosApp, "ApplicationSynced", metav1.ConditionFalse, "NotSynced", "ArgoCD Application sync status: "+syncStatus)
-		}
-	}
-
-	// Final status update
-	logger.V(1).Info("Persisting status updates to API server")
-	if err := r.Status().Update(ctx, heliosApp); err != nil {
-		logger.Error(err, "Failed to persist status updates")
-		return err
-	}
-
-	logger.V(1).Info("Status updates persisted successfully")
 	return nil
 }
 
@@ -1119,4 +946,98 @@ func (r *HeliosAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			builder.WithPredicates(r.deploymentPredicate()),
 		).
 		Complete(r)
+}
+
+// cleanupResources cleans up resources when HeliosApp is being deleted
+func (r *HeliosAppReconciler) cleanupResources(ctx context.Context, heliosApp *heliosappv1.HeliosApp, logger logr.Logger) error {
+	logger = logger.WithValues("phase", "cleanup")
+	logger.V(1).Info("Starting resource cleanup")
+
+	// Clean up Tekton resources
+	if err := r.cleanupTektonResources(ctx, heliosApp, logger); err != nil {
+		logger.Error(err, "Failed to cleanup Tekton resources")
+		return err
+	}
+
+	// Clean up ArgoCD Application
+	if err := r.cleanupArgoCDApplication(ctx, heliosApp, logger); err != nil {
+		logger.Error(err, "Failed to cleanup ArgoCD Application")
+		return err
+	}
+
+	logger.V(1).Info("Resource cleanup completed successfully")
+	return nil
+}
+
+// cleanupTektonResources cleans up Tekton Pipeline and Trigger resources
+func (r *HeliosAppReconciler) cleanupTektonResources(ctx context.Context, heliosApp *heliosappv1.HeliosApp, logger logr.Logger) error {
+	namespace := heliosApp.Namespace
+	name := heliosApp.Name
+
+	// List of resources to clean up
+	resources := []struct {
+		kind string
+		name string
+		gvk  schema.GroupVersionKind
+	}{
+		{"Pipeline", name + "-pipeline", schema.GroupVersionKind{Group: "tekton.dev", Version: "v1", Kind: "Pipeline"}},
+		{"EventListener", name + "-eventlistener", schema.GroupVersionKind{Group: "triggers.tekton.dev", Version: "v1beta1", Kind: "EventListener"}},
+		{"TriggerBinding", name + "-triggerbinding", schema.GroupVersionKind{Group: "triggers.tekton.dev", Version: "v1beta1", Kind: "TriggerBinding"}},
+		{"TriggerTemplate", name + "-triggertemplate", schema.GroupVersionKind{Group: "triggers.tekton.dev", Version: "v1beta1", Kind: "TriggerTemplate"}},
+	}
+
+	for _, resource := range resources {
+		obj := &unstructured.Unstructured{}
+		obj.SetGroupVersionKind(resource.gvk)
+		obj.SetName(resource.name)
+		obj.SetNamespace(namespace)
+
+		if err := r.Delete(ctx, obj); err != nil {
+			if client.IgnoreNotFound(err) != nil {
+				logger.Error(err, "Failed to delete Tekton resource",
+					"kind", resource.kind,
+					"name", resource.name)
+				return err
+			}
+			logger.V(1).Info("Tekton resource not found, skipping deletion",
+				"kind", resource.kind,
+				"name", resource.name)
+		} else {
+			logger.V(1).Info("Deleted Tekton resource",
+				"kind", resource.kind,
+				"name", resource.name)
+		}
+	}
+
+	return nil
+}
+
+// cleanupArgoCDApplication cleans up the ArgoCD Application
+func (r *HeliosAppReconciler) cleanupArgoCDApplication(ctx context.Context, heliosApp *heliosappv1.HeliosApp, logger logr.Logger) error {
+	name := heliosApp.Name
+	namespace := heliosApp.Namespace
+
+	argoApp := &unstructured.Unstructured{}
+	argoApp.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "argoproj.io",
+		Version: "v1alpha1",
+		Kind:    "Application",
+	})
+	argoApp.SetName(name + "-argocd")
+	argoApp.SetNamespace(namespace)
+
+	if err := r.Delete(ctx, argoApp); err != nil {
+		if client.IgnoreNotFound(err) != nil {
+			logger.Error(err, "Failed to delete ArgoCD Application",
+				"name", argoApp.GetName())
+			return err
+		}
+		logger.V(1).Info("ArgoCD Application not found, skipping deletion",
+			"name", argoApp.GetName())
+	} else {
+		logger.V(1).Info("Deleted ArgoCD Application",
+			"name", argoApp.GetName())
+	}
+
+	return nil
 }

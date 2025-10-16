@@ -54,10 +54,9 @@ var (
 	setupLog = ctrl.Log.WithName("setup")
 
 	// Version information injected at build time via ldflags
-	version      = "dev"
-	commit       = "unknown"
-	date         = "unknown"
-	printVersion bool
+	version = "dev"
+	commit  = "unknown"
+	date    = "unknown"
 )
 
 // Config holds all command line flags and configuration

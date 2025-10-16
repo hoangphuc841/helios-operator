@@ -6,16 +6,16 @@ This guide covers all aspects of testing in the Helios Operator project, from un
 
 Current test coverage across packages (as of Phase 4):
 
-| Package                 | Coverage | Status | Test Files                     |
-| ----------------------- | -------- | ------ | ------------------------------ |
-| `api/v1`                | 73.9%    | ✅     | `*_test.go`, `*_webhook_test.go` |
-| `internal/common`       | 100.0%   | ✅     | `errors_test.go`               |
-| `internal/health`       | 100.0%   | ✅     | `health_test.go`               |
-| `internal/config`       | 92.0%    | ✅     | `config_test.go`               |
-| `internal/resources`    | 89.7%    | ✅     | `argocd_test.go`, `pipeline_test.go`, `tekton_test.go` |
-| `internal/controller`   | 28.5%    | ⚠️     | `*_controller_test.go`, `helper_functions_test.go` |
-| `cmd`                   | 0.0%     | ⚠️     | (main package, not tested)     |
-| `test/e2e`              | Ready    | ✅     | (kind cluster configured)      |
+| Package               | Coverage | Status | Test Files                                             |
+| --------------------- | -------- | ------ | ------------------------------------------------------ |
+| `api/v1`              | 73.9%    | ✅     | `*_test.go`, `*_webhook_test.go`                       |
+| `internal/common`     | 100.0%   | ✅     | `errors_test.go`                                       |
+| `internal/health`     | 100.0%   | ✅     | `health_test.go`                                       |
+| `internal/config`     | 92.0%    | ✅     | `config_test.go`                                       |
+| `internal/resources`  | 89.7%    | ✅     | `argocd_test.go`, `pipeline_test.go`, `tekton_test.go` |
+| `internal/controller` | 28.5%    | ⚠️     | `*_controller_test.go`, `helper_functions_test.go`     |
+| `cmd`                 | 0.0%     | ⚠️     | (main package, not tested)                             |
+| `test/e2e`            | Ready    | ✅     | (kind cluster configured)                              |
 
 **Overall**: 5 out of 6 core packages have >80% coverage ✅
 
@@ -26,21 +26,33 @@ Current test coverage across packages (as of Phase 4):
 - Configured kind cluster for E2E testing
 - Fixed implementation bugs discovered during testing
 
+**Recent Improvements (Phase 3 E2E Tests)**:
+
+- Enhanced E2E test reliability with improved timeouts and polling intervals
+- Added comprehensive webhook validation tests with multiple test cases
+- Implemented error recovery scenario testing
+- Created reusable helper functions for better test maintainability
+- Added parameterized test cases for different validation scenarios
+- Improved test structure and error handling
+
 ## 🎯 **Testing Strategy**
 
 Our testing strategy follows the testing pyramid approach:
 
-```
-    /\
-   /  \
-  /E2E \     <- End-to-End Tests (Few, Slow, High Confidence)
- /______\
-/        \
-/Integration\ <- Integration Tests (Some, Medium Speed, Medium Confidence)
-/____________\
-/              \
-/    Unit Tests   \ <- Unit Tests (Many, Fast, Low Confidence)
-/__________________\
+```mermaid
+graph TB
+    subgraph "Testing Pyramid"
+        E2E["End-to-End Tests<br/>(Few, Slow, High Confidence)"]
+        Integration["Integration Tests<br/>(Some, Medium Speed, Medium Confidence)"]
+        Unit["Unit Tests<br/>(Many, Fast, Low Confidence)"]
+
+        Unit --> Integration
+        Integration --> E2E
+    end
+
+    style E2E fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    style Integration fill:#4dabf7,stroke:#1864ab,color:#fff
+    style Unit fill:#51cf66,stroke:#2b8a3e,color:#fff
 ```
 
 ### Test Categories
@@ -90,39 +102,53 @@ go test ./... -race
 go test ./internal/resources/... -cover
 ```
 
-### Test Structure
+### Unit Test File Organization
 
 The project follows a clear test structure with tests organized by functionality:
 
-```
-├── api/v1/                          # API layer tests
-│   ├── heliosapp_types_test.go      # HeliosApp type tests (DeepCopy, conditions)
-│   └── heliosapp_webhook_test.go    # Webhook validation tests
-├── internal/
-│   ├── common/
-│   │   └── errors_test.go           # Error type tests (100% coverage)
-│   ├── config/
-│   │   └── config_test.go           # Config loading and validation (92% coverage)
-│   ├── health/
-│   │   └── health_test.go           # Health checker tests (100% coverage)
-│   ├── controller/                   # Controller tests
-│   │   ├── heliosapp_controller_test.go # Main controller tests
-│   │   └── suite_test.go             # Test suite setup
-│   └── resources/                    # Resource generation tests
-│       ├── argocd_test.go           # ArgoCD Application generation
-│       ├── pipeline_test.go         # Tekton Pipeline generation
-│       └── tekton_test.go           # Tekton EventListener/Binding/Template
-└── test/                            # E2E tests
-    ├── e2e/
-    │   ├── e2e_test.go              # E2E test scenarios
-    │   └── e2e_suite_test.go        # E2E test setup
-    └── utils/
-        └── utils.go                 # Test utilities
+```mermaid
+graph TD
+    Root[Test Files Structure]
+
+    Root --> API[api/v1/]
+    API --> APITypes[heliosapp_types_test.go<br/>DeepCopy, conditions]
+    API --> APIWebhook[heliosapp_webhook_test.go<br/>Webhook validation]
+
+    Root --> Internal[internal/]
+    Internal --> Common[common/]
+    Common --> Errors[errors_test.go<br/>100% coverage]
+
+    Internal --> Config[config/]
+    Config --> ConfigTest[config_test.go<br/>92% coverage]
+
+    Internal --> Health[health/]
+    Health --> HealthTest[health_test.go<br/>100% coverage]
+
+    Internal --> Controller[controller/]
+    Controller --> ControllerTest[heliosapp_controller_test.go]
+    Controller --> SuiteTest[suite_test.go]
+
+    Internal --> Resources[resources/]
+    Resources --> ArgoTest[argocd_test.go]
+    Resources --> PipelineTest[pipeline_test.go]
+    Resources --> TektonTest[tekton_test.go]
+
+    Root --> Test[test/]
+    Test --> E2E[e2e/]
+    E2E --> E2ETest[e2e_test.go]
+    E2E --> E2ESuite[e2e_suite_test.go]
+
+    Test --> Utils[utils/]
+    Utils --> UtilsFile[utils.go]
+
+    style API fill:#e3f2fd
+    style Internal fill:#f3e5f5
+    style Test fill:#e8f5e9
 ```
 
 ### Test Framework Examples
 
-#### Unit Test Example (testify/assert)
+#### Unit Test Example (Using testify/assert)
 
 ```go
 package resources
@@ -158,13 +184,13 @@ func TestGenerateArgoApplication(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             result, err := GenerateArgoApplication(tt.heliosApp)
-            
+
             if tt.expectErr {
                 assert.Error(t, err)
                 assert.Nil(t, result)
                 return
             }
-            
+
             assert.NoError(t, err)
             assert.NotNil(t, result)
             assert.Equal(t, "Application", result.GetKind())
@@ -190,15 +216,15 @@ var _ = Describe("HeliosApp Controller", func() {
         It("should generate a Pipeline with correct name", func() {
             // Test implementation
         })
-````
+```
 
-## 🧪 **Unit Testing**
+## 🧪 **Unit Testing Details**
 
-### Test Framework
+### Testing Frameworks
 
 We use the standard Go testing package with [Ginkgo](https://onsi.github.io/ginkgo/) and [Gomega](https://onsi.github.io/gomega/) for BDD-style testing.
 
-### Available Makefile Targets
+### Makefile Test Targets
 
 The project provides several Makefile targets for testing:
 
@@ -208,7 +234,7 @@ The project provides several Makefile targets for testing:
 | `make test-e2e`      | Run end-to-end tests with 30-minute timeout               | `go test ./test/e2e/ -v -timeout=30m`                              |
 | `make test-coverage` | Run tests with coverage report and HTML output            | `go test ./... -race -coverprofile=coverage.out -covermode=atomic` |
 
-### Running Unit Tests
+### Running Tests
 
 ```bash
 # Run all unit tests
@@ -227,25 +253,40 @@ make test
 make test
 ```
 
-### Test Structure
+### Unit Test Directory Structure
 
 The project follows a clear test structure with tests organized by functionality:
 
-```
-├── api/v1/                          # API layer tests
-│   ├── heliosapp_types_test.go      # HeliosApp type tests
-│   └── heliosapp_webhook_test.go    # Webhook validation tests
-├── internal/controller/              # Controller tests
-│   ├── heliosapp_controller_test.go # Main controller tests
-│   └── suite_test.go                # Test suite setup
-├── internal/resources/               # Resource generation tests
-│   └── argocd_test.go               # ArgoCD resource tests
-└── test/                            # E2E tests
-    ├── e2e/
-    │   ├── e2e_test.go              # E2E test scenarios
-    │   └── e2e_suite_test.go        # E2E test setup
-    └── utils/
-        └── utils.go                 # Test utilities
+```mermaid
+graph LR
+    subgraph "API Tests"
+        A1[heliosapp_types_test.go]
+        A2[heliosapp_webhook_test.go]
+    end
+
+    subgraph "Controller Tests"
+        C1[heliosapp_controller_test.go]
+        C2[suite_test.go]
+    end
+
+    subgraph "Resource Tests"
+        R1[argocd_test.go]
+    end
+
+    subgraph "E2E Tests"
+        E1[e2e_test.go]
+        E2[e2e_suite_test.go]
+        E3[utils.go]
+    end
+
+    style A1 fill:#bbdefb
+    style A2 fill:#bbdefb
+    style C1 fill:#c5e1a5
+    style C2 fill:#c5e1a5
+    style R1 fill:#fff9c4
+    style E1 fill:#ffccbc
+    style E2 fill:#ffccbc
+    style E3 fill:#ffccbc
 ```
 
 ### Test Framework Example
@@ -339,36 +380,46 @@ var _ = Describe("HeliosApp Webhook", func() {
 
 ## 🔗 **Integration Testing**
 
-### Test Framework
+### Integration Test Framework
 
 Integration tests use the same Ginkgo/Gomega framework but run against a real Kubernetes cluster.
 
-### Running Integration Tests
+### Running Integration Test Suite
 
 ```bash
 # Run integration tests (using unit test framework)
 make test
 
 # Run specific integration test
-make test
+go test ./internal/controller/... -v -run=TestIntegration
 
 # Run with specific focus
-make test
+go test ./api/v1/... -v -run=TestWebhook
 ```
 
-### Integration Test Structure
+### Integration Test Directory Layout
 
-```
-internal/controller/
-├── heliosapp_controller_test.go    # Main controller tests
-└── suite_test.go                   # Test suite setup
+```mermaid
+graph TD
+    subgraph "internal/controller"
+        IC1[heliosapp_controller_test.go<br/>Main controller tests]
+        IC2[suite_test.go<br/>Test suite setup]
+    end
 
-api/v1/
-├── heliosapp_types_test.go         # API types tests
-└── heliosapp_webhook_test.go       # Webhook tests
+    subgraph "api/v1"
+        AV1[heliosapp_types_test.go<br/>API types tests]
+        AV2[heliosapp_webhook_test.go<br/>Webhook tests]
+    end
 
-internal/resources/
-└── argocd_test.go                  # Resource generation tests
+    subgraph "internal/resources"
+        IR1[argocd_test.go<br/>Resource generation tests]
+    end
+
+    style IC1 fill:#81c784
+    style IC2 fill:#81c784
+    style AV1 fill:#64b5f6
+    style AV2 fill:#64b5f6
+    style IR1 fill:#ffb74d
 ```
 
 ### Test Setup
@@ -417,11 +468,11 @@ var _ = Describe("Pipeline Integration", func() {
 
 ## 🎬 **End-to-End Testing**
 
-### Test Framework
+### E2E Test Framework
 
 E2E tests use Ginkgo/Gomega and run against a complete Kubernetes cluster with all dependencies.
 
-### Running E2E Tests
+### Running E2E Test Suite
 
 ```bash
 # Set project image
@@ -437,18 +488,28 @@ make test-e2e
 make test-e2e
 ```
 
-### E2E Test Structure
+### E2E Test Organization
 
-```
-test/
-├── e2e/
-│   ├── e2e_test.go            # Main E2E test file
-│   └── e2e_suite_test.go      # E2E test suite setup
-└── utils/
-    └── utils.go              # E2E test utilities
+```mermaid
+graph TD
+    Test[test/]
+    Test --> E2EDir[e2e/]
+    Test --> UtilsDir[utils/]
+
+    E2EDir --> E2ETest[e2e_test.go<br/>Main E2E test file]
+    E2EDir --> E2ESuite[e2e_suite_test.go<br/>Test suite setup]
+
+    UtilsDir --> UtilsGo[utils.go<br/>E2E test utilities]
+
+    style Test fill:#f8bbd0
+    style E2EDir fill:#ce93d8
+    style UtilsDir fill:#ce93d8
+    style E2ETest fill:#ba68c8
+    style E2ESuite fill:#ba68c8
+    style UtilsGo fill:#ba68c8
 ```
 
-### Test Scenarios
+### E2E Test Scenarios
 
 1. **Complete Lifecycle Test**
 
@@ -558,7 +619,7 @@ make test && make test-e2e
 
 ## 📊 **Test Coverage**
 
-### Coverage Reports
+### Generating Coverage Reports
 
 ```bash
 # Generate coverage report
@@ -811,13 +872,13 @@ func TestGenerateArgoApplication(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             result, err := GenerateArgoApplication(tt.heliosApp)
-            
+
             if tt.expectErr {
                 assert.Error(t, err)
                 assert.Nil(t, result)
                 return
             }
-            
+
             assert.NoError(t, err)
             assert.NotNil(t, result)
         })
@@ -833,13 +894,13 @@ Always test error scenarios:
 func TestReconciliationError(t *testing.T) {
     baseErr := fmt.Errorf("base error")
     err := common.NewReconciliationError("Pipeline", "test-pipeline", "create", baseErr)
-    
+
     // Test error message formatting
     assert.Contains(t, err.Error(), "failed to create Pipeline 'test-pipeline'")
-    
+
     // Test error unwrapping
     assert.ErrorIs(t, err, baseErr)
-    
+
     // Test type assertion
     var recErr *common.ReconciliationError
     assert.ErrorAs(t, err, &recErr)
@@ -855,10 +916,10 @@ Test concurrent access for thread safety:
 func TestChecker_ConcurrentAccess(t *testing.T) {
     client := fake.NewClientBuilder().Build()
     checker := health.NewChecker(client, true)
-    
+
     var wg sync.WaitGroup
     concurrentCalls := 10
-    
+
     for i := 0; i < concurrentCalls; i++ {
         wg.Add(1)
         go func() {
@@ -867,7 +928,7 @@ func TestChecker_ConcurrentAccess(t *testing.T) {
             assert.NoError(t, err)
         }()
     }
-    
+
     wg.Wait()
 }
 ```
@@ -888,12 +949,12 @@ func TestHeliosAppReconciler(t *testing.T) {
             },
         }).
         Build()
-    
+
     reconciler := &HeliosAppReconciler{
         Client: client,
         Scheme: scheme.Scheme,
     }
-    
+
     // Test reconciliation
     req := reconcile.Request{
         NamespacedName: types.NamespacedName{
@@ -901,7 +962,7 @@ func TestHeliosAppReconciler(t *testing.T) {
             Namespace: "default",
         },
     }
-    
+
     result, err := reconciler.Reconcile(context.Background(), req)
     assert.NoError(t, err)
     assert.NotNil(t, result)
@@ -924,9 +985,9 @@ func TestHeliosApp_Default(t *testing.T) {
             GitopsRepo: "https://github.com/test/gitops.git",
         },
     }
-    
+
     app.Default()
-    
+
     // Verify defaults are set
     assert.Equal(t, "main", app.Spec.GitBranch)
     assert.Equal(t, "main", app.Spec.GitopsBranch)
@@ -961,11 +1022,11 @@ func TestHeliosApp_ValidateCreate(t *testing.T) {
             errMsg:    "gitRepo is required",
         },
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             _, err := tt.app.ValidateCreate()
-            
+
             if tt.expectErr {
                 assert.Error(t, err)
                 assert.Contains(t, err.Error(), tt.errMsg)
@@ -1001,6 +1062,7 @@ func TestHeliosApp_ValidateCreate(t *testing.T) {
 **Problem**: Controller tests fail with "no such file or directory" for etcd/kube-apiserver
 
 **Solution**:
+
 ```bash
 # Install setup-envtest tool
 go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
@@ -1032,7 +1094,7 @@ var _ = BeforeSuite(func() {
             filepath.Join("..", "..", "test", "crds"), // External CRDs
         },
     }
-    
+
     cfg, err := testEnv.Start()
     Expect(err).NotTo(HaveOccurred())
 })
@@ -1111,7 +1173,7 @@ The controller uses predicates to filter which resources trigger reconciliation:
 // Example: Testing ArgoCD Application predicate
 func TestIsHeliosArgoApp(t *testing.T) {
     reconciler := &HeliosAppReconciler{...}
-    
+
     // Test valid Helios-managed ArgoCD app
     app := &unstructured.Unstructured{
         Object: map[string]interface{}{
@@ -1122,7 +1184,7 @@ func TestIsHeliosArgoApp(t *testing.T) {
             },
         },
     }
-    
+
     assert.True(t, reconciler.isHeliosArgoApp(app))
 }
 ```
@@ -1151,7 +1213,7 @@ make docker-build IMG=example.com/helios-operator:v0.0.1
 kind load docker-image example.com/helios-operator:v0.0.1 --name kind
 ```
 
-### Running E2E Tests
+### Running Kind-based E2E Tests
 
 ```bash
 # Run full E2E test suite
@@ -1167,11 +1229,13 @@ KIND_CLUSTER=kind make test-e2e
 ### E2E Test Workflow
 
 1. **Setup Phase**:
+
    - Build operator Docker image
    - Load image into Kind cluster
    - Install CertManager (if not present)
 
 2. **Test Phase**:
+
    - Deploy operator using `make deploy`
    - Create test HeliosApp resources
    - Verify Pipeline creation
@@ -1183,15 +1247,25 @@ KIND_CLUSTER=kind make test-e2e
    - Undeploy operator
    - Uninstall CertManager (if installed during test)
 
-### E2E Test Structure
+### E2E Test Directory Structure
 
-```text
-test/
-├── e2e/
-│   ├── e2e_suite_test.go       # Test suite setup/teardown
-│   └── e2e_test.go              # Actual E2E test scenarios
-└── utils/
-    └── utils.go                 # Helper functions (Run, LoadImage, etc.)
+```mermaid
+graph LR
+    subgraph "test/"
+        direction TB
+        subgraph "e2e/"
+            E1[e2e_suite_test.go<br/>Test suite setup/teardown]
+            E2[e2e_test.go<br/>Actual E2E test scenarios]
+        end
+
+        subgraph "utils/"
+            U1[utils.go<br/>Helper functions<br/>Run, LoadImage, etc.]
+        end
+    end
+
+    style E1 fill:#90caf9
+    style E2 fill:#90caf9
+    style U1 fill:#a5d6a7
 ```
 
 ### Prerequisites for E2E Tests

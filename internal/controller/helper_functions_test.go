@@ -130,7 +130,7 @@ func TestIsHeliosPipelineRun(t *testing.T) {
 						"namespace": "default",
 						"labels": map[string]interface{}{
 							"triggers.tekton.dev/trigger": "github-trigger",
-							common.LabelManagedBy:          "helios-operator",
+							common.LabelManagedBy:         "helios-operator",
 						},
 					},
 				},
@@ -273,39 +273,39 @@ func TestIsHeliosDeployment(t *testing.T) {
 // TestDeploymentHealthStatus tests different deployment health scenarios
 func TestDeploymentHealthStatus(t *testing.T) {
 	tests := []struct {
-		name             string
-		replicas         int32
-		readyReplicas    int32
+		name              string
+		replicas          int32
+		readyReplicas     int32
 		availableReplicas int32
-		expectedHealth   string
+		expectedHealth    string
 	}{
 		{
-			name:             "healthy deployment - all replicas ready",
-			replicas:         3,
-			readyReplicas:    3,
+			name:              "healthy deployment - all replicas ready",
+			replicas:          3,
+			readyReplicas:     3,
 			availableReplicas: 3,
-			expectedHealth:   "Healthy",
+			expectedHealth:    "Healthy",
 		},
 		{
-			name:             "progressing deployment - some replicas ready",
-			replicas:         3,
-			readyReplicas:    2,
+			name:              "progressing deployment - some replicas ready",
+			replicas:          3,
+			readyReplicas:     2,
 			availableReplicas: 2,
-			expectedHealth:   "Progressing",
+			expectedHealth:    "Progressing",
 		},
 		{
-			name:             "degraded deployment - no replicas ready",
-			replicas:         3,
-			readyReplicas:    0,
+			name:              "degraded deployment - no replicas ready",
+			replicas:          3,
+			readyReplicas:     0,
 			availableReplicas: 0,
-			expectedHealth:   "Degraded",
+			expectedHealth:    "Degraded",
 		},
 		{
-			name:             "zero replicas - should be healthy",
-			replicas:         0,
-			readyReplicas:    0,
+			name:              "zero replicas - should be healthy",
+			replicas:          0,
+			readyReplicas:     0,
 			availableReplicas: 0,
-			expectedHealth:   "Healthy",
+			expectedHealth:    "Healthy",
 		},
 	}
 
@@ -414,8 +414,8 @@ func TestPodConditions(t *testing.T) {
 // TestBuildStatusInterpretation tests PipelineRun status interpretation
 func TestBuildStatusInterpretation(t *testing.T) {
 	tests := []struct {
-		name          string
-		conditions    interface{}
+		name           string
+		conditions     interface{}
 		expectedStatus string
 	}{
 		{
@@ -452,8 +452,8 @@ func TestBuildStatusInterpretation(t *testing.T) {
 			expectedStatus: "Running",
 		},
 		{
-			name:          "no conditions",
-			conditions:    []interface{}{},
+			name:           "no conditions",
+			conditions:     []interface{}{},
 			expectedStatus: "Unknown",
 		},
 	}
@@ -541,7 +541,7 @@ func TestArgoCDSyncStatusInterpretation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			isSynced := tt.syncStatus == "Synced"
 			isHealthy := tt.healthStatus == "Healthy"
-			
+
 			assert.Equal(t, tt.isSynced, isSynced)
 			assert.Equal(t, tt.isHealthy, isHealthy)
 		})
@@ -551,39 +551,39 @@ func TestArgoCDSyncStatusInterpretation(t *testing.T) {
 // TestConditionStatusTransitions tests condition status state machine
 func TestConditionStatusTransitions(t *testing.T) {
 	tests := []struct {
-		name           string
-		currentStatus  metav1.ConditionStatus
-		newStatus      metav1.ConditionStatus
+		name             string
+		currentStatus    metav1.ConditionStatus
+		newStatus        metav1.ConditionStatus
 		shouldTransition bool
 	}{
 		{
-			name:           "True to True - no transition",
-			currentStatus:  metav1.ConditionTrue,
-			newStatus:      metav1.ConditionTrue,
+			name:             "True to True - no transition",
+			currentStatus:    metav1.ConditionTrue,
+			newStatus:        metav1.ConditionTrue,
 			shouldTransition: false,
 		},
 		{
-			name:           "True to False - transition",
-			currentStatus:  metav1.ConditionTrue,
-			newStatus:      metav1.ConditionFalse,
+			name:             "True to False - transition",
+			currentStatus:    metav1.ConditionTrue,
+			newStatus:        metav1.ConditionFalse,
 			shouldTransition: true,
 		},
 		{
-			name:           "False to True - transition",
-			currentStatus:  metav1.ConditionFalse,
-			newStatus:      metav1.ConditionTrue,
+			name:             "False to True - transition",
+			currentStatus:    metav1.ConditionFalse,
+			newStatus:        metav1.ConditionTrue,
 			shouldTransition: true,
 		},
 		{
-			name:           "Unknown to True - transition",
-			currentStatus:  metav1.ConditionUnknown,
-			newStatus:      metav1.ConditionTrue,
+			name:             "Unknown to True - transition",
+			currentStatus:    metav1.ConditionUnknown,
+			newStatus:        metav1.ConditionTrue,
 			shouldTransition: true,
 		},
 		{
-			name:           "Unknown to Unknown - no transition",
-			currentStatus:  metav1.ConditionUnknown,
-			newStatus:      metav1.ConditionUnknown,
+			name:             "Unknown to Unknown - no transition",
+			currentStatus:    metav1.ConditionUnknown,
+			newStatus:        metav1.ConditionUnknown,
 			shouldTransition: false,
 		},
 	}

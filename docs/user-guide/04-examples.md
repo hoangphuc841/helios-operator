@@ -2,6 +2,13 @@
 
 This guide provides comprehensive real-world examples for using Helios Operator, from basic scenarios to advanced configurations.
 
+## 🚀 **Quick Start Examples**
+
+For ready-to-use example files, check the [`/examples`](../../examples/) directory in the repository:
+
+- **[`simple-heliosapp.yaml`](../../examples/simple-heliosapp.yaml)** - Basic configuration for development and testing
+- **[`production-heliosapp.yaml`](../../examples/production-heliosapp.yaml)** - Production-ready configuration with HA and custom PVC
+
 ## Table of Contents
 
 1. [Basic Examples](#basic-examples)
@@ -14,6 +21,8 @@ This guide provides comprehensive real-world examples for using Helios Operator,
 ## Basic Examples
 
 ### Example 1: Simple Web Application
+
+> 💡 **Quick Start**: Use [`examples/simple-heliosapp.yaml`](../../examples/simple-heliosapp.yaml) from the repository.
 
 The most basic HeliosApp configuration for a simple web application.
 
@@ -357,6 +366,8 @@ spec:
 ```
 
 ### Example 8: High-Availability Production Setup
+
+> 💡 **Quick Start**: Use [`examples/production-heliosapp.yaml`](../../examples/production-heliosapp.yaml) as a starting point.
 
 Production-grade configuration with high availability and monitoring.
 
@@ -705,6 +716,26 @@ spec:
   gitopsRepo: https://github.com/example/saas-gitops
   gitopsPath: tenants/tenant-b
 ```
+
+---
+
+## 📁 **Using Example Files**
+
+All basic examples are available as ready-to-use YAML files in the [`/examples`](../../examples/) directory:
+
+```bash
+# Clone the repository
+git clone https://github.com/hoangphuc841/helios-operator.git
+cd helios-operator/examples
+
+# Apply the simple example
+kubectl apply -f simple-heliosapp.yaml
+
+# Apply the production example
+kubectl apply -f production-heliosapp.yaml
+```
+
+See the [examples/README.md](../../examples/README.md) for prerequisites and customization instructions.
 
 ---
 

@@ -24,14 +24,14 @@ import (
 
 func TestGenerateEventListener(t *testing.T) {
 	tests := []struct {
-		name          string
-		elName        string
-		namespace     string
-		triggerName   string
-		bindingName   string
-		templateName  string
-		githubSecret  string
-		expectErr     bool
+		name         string
+		elName       string
+		namespace    string
+		triggerName  string
+		bindingName  string
+		templateName string
+		githubSecret string
+		expectErr    bool
 	}{
 		{
 			name:         "basic event listener",

@@ -70,15 +70,25 @@ spec:
 
 **Example GitOps repository structure**:
 
-```
-my-gitops-repo/
-├── my-app/              # <- gitopsPath
-│   ├── deployment.yaml
-│   ├── service.yaml
-│   └── configmap.yaml
-└── another-app/
-    ├── deployment.yaml
-    └── service.yaml
+```mermaid
+graph TD
+    Root[my-gitops-repo/]
+    Root --> MyApp[my-app/<br/>← gitopsPath]
+    Root --> AnotherApp[another-app/]
+
+    MyApp --> Deployment[deployment.yaml]
+    MyApp --> Service[service.yaml]
+    MyApp --> ConfigMap[configmap.yaml]
+
+    AnotherApp --> Deployment2[deployment.yaml]
+    AnotherApp --> Service2[service.yaml]
+
+    style MyApp fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style Deployment fill:#c8e6c9
+    style Service fill:#c8e6c9
+    style ConfigMap fill:#c8e6c9
+    style Deployment2 fill:#fff9c4
+    style Service2 fill:#fff9c4
 ```
 
 #### `gitopsBranch` (Optional)
@@ -408,18 +418,32 @@ metadata:
 
 ### 3. GitOps Repository Structure
 
-```
-gitops-repo/
-├── environments/
-│   ├── staging/
-│   │   ├── user-service/
-│   │   └── payment-service/
-│   └── production/
-│       ├── user-service/
-│       └── payment-service/
-└── shared/
-    ├── monitoring/
-    └── networking/
+```mermaid
+graph TD
+    Root[gitops-repo/]
+    Root --> Env[environments/]
+    Root --> Shared[shared/]
+
+    Env --> Staging[staging/]
+    Env --> Production[production/]
+
+    Staging --> UserServiceStag[user-service/]
+    Staging --> PaymentServiceStag[payment-service/]
+
+    Production --> UserServiceProd[user-service/]
+    Production --> PaymentServiceProd[payment-service/]
+
+    Shared --> Monitoring[monitoring/]
+    Shared --> Networking[networking/]
+
+    style Env fill:#e1f5fe
+    style Staging fill:#b3e5fc,stroke:#0277bd
+    style Production fill:#ffccbc,stroke:#d84315
+    style Shared fill:#f0f4c3
+    style UserServiceStag fill:#c8e6c9
+    style PaymentServiceStag fill:#c8e6c9
+    style UserServiceProd fill:#ffab91
+    style PaymentServiceProd fill:#ffab91
 ```
 
 ### 4. Security

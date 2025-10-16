@@ -138,6 +138,44 @@ var (
 		},
 		[]string{"resource_type"}, // resource_type: pipeline, eventlistener, trigger, application
 	)
+
+	// ResourceCreationDuration tracks time to create/update individual resources
+	ResourceCreationDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "heliosapp_resource_creation_duration_seconds",
+			Help:    "Time spent creating or updating individual resources",
+			Buckets: prometheus.ExponentialBuckets(0.001, 2, 12), // 1ms to ~4s
+		},
+		[]string{"resource_type", "operation"}, // resource_type: pipeline, eventlistener, trigger, application; operation: create, update
+	)
+
+	// ResourceDeletionDuration tracks time to delete resources during cleanup
+	ResourceDeletionDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "heliosapp_resource_deletion_duration_seconds",
+			Help:    "Time spent deleting resources during cleanup",
+			Buckets: prometheus.ExponentialBuckets(0.001, 2, 12), // 1ms to ~4s
+		},
+		[]string{"resource_type"}, // resource_type: pipeline, eventlistener, trigger, application
+	)
+
+	// FinalizerOperations tracks finalizer add/remove operations
+	FinalizerOperations = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "heliosapp_finalizer_operations_total",
+			Help: "Total number of finalizer operations",
+		},
+		[]string{"operation"}, // operation: add, remove
+	)
+
+	// WebhookEvents tracks webhook events received
+	WebhookEvents = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "heliosapp_webhook_events_total",
+			Help: "Total number of webhook events received",
+		},
+		[]string{"event_type"}, // event_type: push, pull_request, tag
+	)
 )
 
 // init registers all metrics with the controller-runtime metrics registry
@@ -157,6 +195,10 @@ func init() {
 		APICallDuration,
 		APICallsTotal,
 		ResourcesManaged,
+		ResourceCreationDuration,
+		ResourceDeletionDuration,
+		FinalizerOperations,
+		WebhookEvents,
 	)
 }
 
@@ -238,4 +280,24 @@ func RecordAPICall(operation, resourceType string, err error, duration float64) 
 
 	APICallDuration.WithLabelValues(operation, resourceType, result).Observe(duration)
 	APICallsTotal.WithLabelValues(operation, resourceType, result).Inc()
+}
+
+// RecordResourceCreation is a convenience function to record resource creation/update metrics
+func RecordResourceCreation(resourceType, operation string, duration float64) {
+	ResourceCreationDuration.WithLabelValues(resourceType, operation).Observe(duration)
+}
+
+// RecordResourceDeletion is a convenience function to record resource deletion metrics
+func RecordResourceDeletion(resourceType string, duration float64) {
+	ResourceDeletionDuration.WithLabelValues(resourceType).Observe(duration)
+}
+
+// RecordFinalizerOperation is a convenience function to record finalizer operations
+func RecordFinalizerOperation(operation string) {
+	FinalizerOperations.WithLabelValues(operation).Inc()
+}
+
+// RecordWebhookEvent is a convenience function to record webhook events
+func RecordWebhookEvent(eventType string) {
+	WebhookEvents.WithLabelValues(eventType).Inc()
 }

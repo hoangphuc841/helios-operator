@@ -6,10 +6,10 @@ This guide will help you set up a complete development environment for contribut
 
 ### Required Tools
 
-- **Go 1.21+** - [Download](https://golang.org/dl/)
+- **Go 1.25+** - [Download](https://golang.org/dl/)
 - **Docker** - [Download](https://docs.docker.com/get-docker/)
 - **kubectl** - [Download](https://kubernetes.io/docs/tasks/tools/)
-- **Helm 3.0+** - [Download](https://helm.sh/docs/intro/install/)
+- **Helm 3.19+** - [Download](https://helm.sh/docs/intro/install/)
 - **Minikube** - [Download](https://minikube.sigs.k8s.io/docs/start/)
 - **Git** - [Download](https://git-scm.com/downloads)
 
@@ -405,7 +405,7 @@ Create `.vscode/settings.json`:
 ### GoLand/IntelliJ
 
 1. Enable Go modules support
-2. Set Go SDK to 1.21+
+2. Set Go SDK to 1.25+
 3. Configure Run/Debug configurations for tests
 4. Enable Kubernetes plugin for YAML support
 

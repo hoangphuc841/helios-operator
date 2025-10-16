@@ -44,10 +44,11 @@ If you're managing or contributing to the Helios platform:
 
 ### 📖 **Reference** - Technical Details
 
-| Document                                                 | Description                      | Use Case              |
-| -------------------------------------------------------- | -------------------------------- | --------------------- |
-| [⚙️ Helm Chart Values](reference/helm-chart-values.md)   | Complete configuration reference | Production deployment |
-| [📊 Prometheus Metrics](reference/prometheus-metrics.md) | Available metrics and monitoring | Observability setup   |
+| Document                                                        | Description                      | Use Case              |
+| --------------------------------------------------------------- | -------------------------------- | --------------------- |
+| [⚙️ Helm Chart Values](reference/helm-chart-values.md)          | Complete configuration reference | Production deployment |
+| [📊 Prometheus Metrics](reference/prometheus-metrics.md)        | Available metrics and monitoring | Observability setup   |
+| [🔒 Pod Security Standards](security/pod-security-standards.md) | Security implementation details  | Security compliance   |
 
 ## 🎯 **Quick Navigation by Use Case**
 
@@ -74,6 +75,10 @@ If you're managing or contributing to the Helios platform:
 ### 📊 **I need to set up monitoring**
 
 → [Prometheus Metrics](reference/prometheus-metrics.md)
+
+### 🔒 **I need to understand security requirements**
+
+→ [Pod Security Standards](security/pod-security-standards.md)
 
 ## 🌟 **Key Concepts**
 

@@ -86,12 +86,15 @@ var _ = BeforeSuite(func() {
 	err = heliosappv1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
-	// Note: ArgoCD scheme will be added later when compatibility issues are resolved
+	// Add Tekton and ArgoCD schemes for testing
 	err = tektonv1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	err = triggersv1beta1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
+
+	// Note: ArgoCD scheme will be added when compatibility issues are resolved
+	// For now, we'll mock ArgoCD resources in tests
 
 	// +kubebuilder:scaffold:scheme
 

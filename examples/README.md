@@ -1,8 +1,10 @@
 # Helios Operator Examples
 
-This directory contains example configurations for the Helios Operator, demonstrating different use cases and deployment scenarios.
+This directory contains ready-to-use example configurations for the Helios Operator, demonstrating different use cases and deployment scenarios.
 
-## Examples
+> 📚 **Looking for more examples?** Check out the comprehensive [Examples Guide](../docs/user-guide/04-examples.md) for advanced scenarios and complete real-world configurations.
+
+## 📋 Available Examples
 
 ### Simple Application (`simple-heliosapp.yaml`)
 
@@ -98,5 +100,14 @@ If you encounter issues:
 2. Verify Tekton resources: `kubectl get pipelines,pipelineruns`
 3. Check ArgoCD Application: `kubectl get applications -n argocd`
 4. Review operator logs: `kubectl logs -n helios-operator-system deployment/helios-operator-controller-manager`
+
+For detailed troubleshooting, see the [Troubleshooting Guide](../docs/user-guide/03-troubleshooting.md).
+
+## 📚 Additional Resources
+
+- **[Examples Documentation](../docs/user-guide/04-examples.md)** - Advanced examples and complete scenarios
+- **[HeliosApp Specification](../docs/user-guide/02-helios-app-spec.md)** - Complete API reference
+- **[Getting Started Guide](../docs/user-guide/01-getting-started.md)** - Setup and installation
+- **[Monitoring Guide](../docs/user-guide/05-monitoring.md)** - Observability and metrics
 
 For more information, see the [troubleshooting guide](../../docs/user-guide/03-troubleshooting.md).

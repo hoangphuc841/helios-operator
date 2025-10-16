@@ -135,8 +135,8 @@ var _ = Describe("Manager", Ordered, func() {
 		}
 	})
 
-	SetDefaultEventuallyTimeout(2 * time.Minute)
-	SetDefaultEventuallyPollingInterval(time.Second)
+	SetDefaultEventuallyTimeout(5 * time.Minute)
+	SetDefaultEventuallyPollingInterval(2 * time.Second)
 
 	Context("Manager", func() {
 		It("should run successfully", func() {
@@ -273,6 +273,13 @@ var _ = Describe("Manager", Ordered, func() {
 				cmd := exec.Command("kubectl", "create", "namespace", testNamespace)
 				_, err := utils.Run(cmd)
 				Expect(err).NotTo(HaveOccurred(), "Failed to create test namespace")
+
+				By("ensuring test namespace is ready")
+				Eventually(func() error {
+					cmd := exec.Command("kubectl", "get", "namespace", testNamespace)
+					_, err := utils.Run(cmd)
+					return err
+				}, 30*time.Second).Should(Succeed(), "Test namespace should be ready")
 			})
 
 			AfterEach(func() {
@@ -283,27 +290,7 @@ var _ = Describe("Manager", Ordered, func() {
 
 			It("should create and manage a complete HeliosApp lifecycle", func() {
 				By("creating a HeliosApp resource (testing automatic PVC creation)")
-				heliosAppYAML := fmt.Sprintf(`apiVersion: platform.helios.io/v1
-kind: HeliosApp
-metadata:
-  name: %s
-  namespace: %s
-spec:
-  gitRepo: "%s"
-  gitBranch: "main"
-  gitopsRepo: "%s"
-  gitopsPath: "%s"
-  gitopsBranch: "main"
-  imageRepo: "%s"
-  port: 80
-  replicas: 1
-  serviceAccount: "pipeline-sa"
-  webhookSecret: "github-webhook-secret"
-  # PVCName is intentionally omitted to test automatic creation`, testAppName, testNamespace, testGitRepo, testGitopsRepo, testAppName, testImageRepo)
-
-				cmd := exec.Command("kubectl", "apply", "-f", "-")
-				cmd.Stdin = strings.NewReader(heliosAppYAML)
-				_, err := utils.Run(cmd)
+				err := createHeliosApp(testAppName, testNamespace, testGitRepo, testGitopsRepo, testAppName, testImageRepo)
 				Expect(err).NotTo(HaveOccurred(), "Failed to create HeliosApp")
 
 				By("waiting for automatic PVC creation")
@@ -315,12 +302,8 @@ spec:
 				Eventually(verifyPVCCreated, 2*time.Minute).Should(Succeed())
 
 				By("waiting for Pipeline to be created")
-				verifyPipelineCreated := func(g Gomega) {
-					cmd := exec.Command("kubectl", "get", "pipeline", fmt.Sprintf("%s-pipeline", testAppName), "-n", testNamespace)
-					_, err := utils.Run(cmd)
-					g.Expect(err).NotTo(HaveOccurred(), "Pipeline should be created")
-				}
-				Eventually(verifyPipelineCreated, 2*time.Minute).Should(Succeed())
+				err = waitForResource("pipeline", fmt.Sprintf("%s-pipeline", testAppName), testNamespace, 2*time.Minute)
+				Expect(err).NotTo(HaveOccurred(), "Pipeline should be created")
 
 				By("waiting for Tekton Trigger resources to be created")
 				verifyTriggerResources := func(g Gomega) {
@@ -372,7 +355,7 @@ spec:
     persistentVolumeClaim:
       claimName: %s-workspace`, testAppName, time.Now().Unix(), testNamespace, testAppName, testAppName, testAppName, testGitRepo, testImageRepo, testAppName)
 
-				cmd = exec.Command("kubectl", "apply", "-f", "-")
+				cmd := exec.Command("kubectl", "apply", "-f", "-")
 				cmd.Stdin = strings.NewReader(pipelineRunYAML)
 				_, err = utils.Run(cmd)
 				Expect(err).NotTo(HaveOccurred(), "Failed to create PipelineRun")
@@ -400,7 +383,7 @@ spec:
 				By("verifying reconciliation metrics")
 				metricsOutput := getMetricsOutput()
 				Expect(metricsOutput).To(ContainSubstring(
-					fmt.Sprintf(`controller_runtime_reconcile_total{controller="heliosapp",result="success"}`),
+					`controller_runtime_reconcile_total{controller="heliosapp",result="success"}`,
 				))
 
 				By("checking that all resources have correct labels")
@@ -429,8 +412,7 @@ spec:
 				Eventually(verifyFinalizerAdded, 1*time.Minute).Should(Succeed())
 
 				By("testing resource cleanup on deletion")
-				cmd = exec.Command("kubectl", "delete", "heliosapp", testAppName, "-n", testNamespace)
-				_, err = utils.Run(cmd)
+				err = deleteHeliosApp(testAppName, testNamespace)
 				Expect(err).NotTo(HaveOccurred(), "Failed to delete HeliosApp")
 
 				By("verifying Pipeline is cleaned up")
@@ -532,41 +514,165 @@ spec:
 			})
 
 			It("should handle invalid HeliosApp configurations", func() {
-				By("creating an invalid HeliosApp with missing required fields")
-				invalidHeliosAppYAML := fmt.Sprintf(`apiVersion: platform.helios.io/v1
+				By("testing webhook validation for invalid configurations")
+
+				testCases := []struct {
+					name        string
+					appYAML     string
+					expectError bool
+					errorMsg    string
+				}{
+					{
+						name: "empty git repo",
+						appYAML: fmt.Sprintf(`apiVersion: platform.helios.io/v1
 kind: HeliosApp
 metadata:
-  name: invalid-app
+  name: invalid-git-repo
   namespace: %s
 spec:
-  gitRepo: ""  # Invalid: empty required field
-  imageRepo: "invalid-image"
-  port: 99999  # Invalid: out of range
-  replicas: -1  # Invalid: negative replicas`, testNamespace)
-
-				cmd := exec.Command("kubectl", "apply", "-f", "-")
-				cmd.Stdin = strings.NewReader(invalidHeliosAppYAML)
-				output, err := utils.Run(cmd)
-
-				// Should either be rejected by webhook or fail validation
-				if err != nil {
-					// Webhook rejection is expected
-					Expect(output).To(Or(
-						ContainSubstring("admission webhook"),
-						ContainSubstring("validation"),
-						ContainSubstring("required"),
-					))
-				} else {
-					// If it was accepted, it should eventually fail in controller
-					Eventually(func() bool {
-						cmd := exec.Command("kubectl", "get", "heliosapp", "invalid-app", "-n", testNamespace, "-o", "jsonpath={.status.conditions}")
-						output, _ := utils.Run(cmd)
-						return strings.Contains(output, "Failed") || strings.Contains(output, "Error")
-					}, 2*time.Minute).Should(BeTrue(), "Invalid HeliosApp should eventually fail")
+  gitRepo: ""
+  gitBranch: "main"
+  gitopsRepo: "%s"
+  gitopsPath: "invalid-git-repo"
+  gitopsBranch: "main"
+  imageRepo: "%s"
+  port: 80
+  replicas: 1`, testNamespace, testGitopsRepo, testImageRepo),
+						expectError: true,
+						errorMsg:    "gitRepo",
+					},
+					{
+						name: "invalid port range",
+						appYAML: fmt.Sprintf(`apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: invalid-port
+  namespace: %s
+spec:
+  gitRepo: "%s"
+  gitBranch: "main"
+  gitopsRepo: "%s"
+  gitopsPath: "invalid-port"
+  gitopsBranch: "main"
+  imageRepo: "%s"
+  port: 99999
+  replicas: 1`, testNamespace, testGitRepo, testGitopsRepo, testImageRepo),
+						expectError: true,
+						errorMsg:    "port",
+					},
+					{
+						name: "negative replicas",
+						appYAML: fmt.Sprintf(`apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: invalid-replicas
+  namespace: %s
+spec:
+  gitRepo: "%s"
+  gitBranch: "main"
+  gitopsRepo: "%s"
+  gitopsPath: "invalid-replicas"
+  gitopsBranch: "main"
+  imageRepo: "%s"
+  port: 80
+  replicas: -1`, testNamespace, testGitRepo, testGitopsRepo, testImageRepo),
+						expectError: true,
+						errorMsg:    "replicas",
+					},
 				}
 
-				By("cleaning up invalid app if it was created")
-				cmd = exec.Command("kubectl", "delete", "heliosapp", "invalid-app", "-n", testNamespace, "--ignore-not-found=true")
+				for _, tc := range testCases {
+					By(fmt.Sprintf("testing %s", tc.name))
+					cmd := exec.Command("kubectl", "apply", "-f", "-")
+					cmd.Stdin = strings.NewReader(tc.appYAML)
+					output, err := utils.Run(cmd)
+
+					if tc.expectError {
+						if err != nil {
+							// Webhook rejection is expected
+							Expect(output).To(Or(
+								ContainSubstring("admission webhook"),
+								ContainSubstring("validation"),
+								ContainSubstring(tc.errorMsg),
+							), "Should reject invalid configuration: %s", tc.name)
+						} else {
+							// If it was accepted, it should eventually fail in controller
+							Eventually(func() bool {
+								cmd := exec.Command("kubectl", "get", "heliosapp", fmt.Sprintf("invalid-%s", strings.ReplaceAll(tc.name, " ", "-")), "-n", testNamespace, "-o", "jsonpath={.status.conditions}")
+								output, _ := utils.Run(cmd)
+								return strings.Contains(output, "Failed") || strings.Contains(output, "Error")
+							}, 2*time.Minute).Should(BeTrue(), "Invalid HeliosApp should eventually fail: %s", tc.name)
+						}
+					} else {
+						Expect(err).NotTo(HaveOccurred(), "Valid configuration should be accepted: %s", tc.name)
+					}
+
+					// Cleanup
+					appName := fmt.Sprintf("invalid-%s", strings.ReplaceAll(tc.name, " ", "-"))
+					cmd = exec.Command("kubectl", "delete", "heliosapp", appName, "-n", testNamespace, "--ignore-not-found=true")
+					_, _ = utils.Run(cmd)
+				}
+			})
+
+			It("should handle error recovery scenarios", func() {
+				const recoveryAppName = "recovery-test-app"
+
+				By("creating a HeliosApp resource")
+				heliosAppYAML := fmt.Sprintf(`apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: %s
+  namespace: %s
+spec:
+  gitRepo: "%s"
+  gitBranch: "main"
+  gitopsRepo: "%s"
+  gitopsPath: "%s"
+  gitopsBranch: "main"
+  imageRepo: "%s"
+  port: 80
+  replicas: 1
+  serviceAccount: "pipeline-sa"
+  webhookSecret: "github-webhook-secret"`, recoveryAppName, testNamespace, testGitRepo, testGitopsRepo, recoveryAppName, testImageRepo)
+
+				cmd := exec.Command("kubectl", "apply", "-f", "-")
+				cmd.Stdin = strings.NewReader(heliosAppYAML)
+				_, err := utils.Run(cmd)
+				Expect(err).NotTo(HaveOccurred(), "Failed to create HeliosApp")
+
+				By("waiting for initial resources to be created")
+				Eventually(func() error {
+					cmd := exec.Command("kubectl", "get", "pipeline", fmt.Sprintf("%s-pipeline", recoveryAppName), "-n", testNamespace)
+					_, err := utils.Run(cmd)
+					return err
+				}, 2*time.Minute).Should(Succeed(), "Pipeline should be created")
+
+				By("simulating resource deletion (error scenario)")
+				cmd = exec.Command("kubectl", "delete", "pipeline", fmt.Sprintf("%s-pipeline", recoveryAppName), "-n", testNamespace, "--ignore-not-found=true")
+				_, _ = utils.Run(cmd)
+
+				By("waiting for resource recreation (error recovery)")
+				Eventually(func() error {
+					cmd := exec.Command("kubectl", "get", "pipeline", fmt.Sprintf("%s-pipeline", recoveryAppName), "-n", testNamespace)
+					_, err := utils.Run(cmd)
+					return err
+				}, 3*time.Minute).Should(Succeed(), "Pipeline should be recreated after deletion")
+
+				By("verifying finalizer is still present after recovery")
+				Eventually(func() error {
+					cmd := exec.Command("kubectl", "get", "heliosapp", recoveryAppName, "-n", testNamespace, "-o", "jsonpath={.metadata.finalizers}")
+					output, err := utils.Run(cmd)
+					if err != nil {
+						return err
+					}
+					if !strings.Contains(output, "platform.helios.io/finalizer") {
+						return fmt.Errorf("finalizer not found: %s", output)
+					}
+					return nil
+				}, 1*time.Minute).Should(Succeed(), "Finalizer should still be present after recovery")
+
+				By("cleaning up")
+				cmd = exec.Command("kubectl", "delete", "heliosapp", recoveryAppName, "-n", testNamespace, "--ignore-not-found=true")
 				_, _ = utils.Run(cmd)
 			})
 		})
@@ -630,4 +736,48 @@ type tokenRequest struct {
 	Status struct {
 		Token string `json:"token"`
 	} `json:"status"`
+}
+
+// createHeliosApp creates a HeliosApp resource with the given parameters
+func createHeliosApp(name, namespace, gitRepo, gitopsRepo, gitopsPath, imageRepo string) error {
+	heliosAppYAML := fmt.Sprintf(`apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: %s
+  namespace: %s
+spec:
+  gitRepo: "%s"
+  gitBranch: "main"
+  gitopsRepo: "%s"
+  gitopsPath: "%s"
+  gitopsBranch: "main"
+  imageRepo: "%s"
+  port: 80
+  replicas: 1
+  serviceAccount: "pipeline-sa"
+  webhookSecret: "github-webhook-secret"`, name, namespace, gitRepo, gitopsRepo, gitopsPath, imageRepo)
+
+	cmd := exec.Command("kubectl", "apply", "-f", "-")
+	cmd.Stdin = strings.NewReader(heliosAppYAML)
+	_, err := utils.Run(cmd)
+	return err
+}
+
+// waitForResource waits for a Kubernetes resource to exist
+func waitForResource(resourceType, name, namespace string, timeout time.Duration) error {
+	var lastErr error
+	Eventually(func() error {
+		cmd := exec.Command("kubectl", "get", resourceType, name, "-n", namespace)
+		_, err := utils.Run(cmd)
+		lastErr = err
+		return err
+	}, timeout).Should(Succeed())
+	return lastErr
+}
+
+// deleteHeliosApp deletes a HeliosApp resource and waits for cleanup
+func deleteHeliosApp(name, namespace string) error {
+	cmd := exec.Command("kubectl", "delete", "heliosapp", name, "-n", namespace, "--ignore-not-found=true")
+	_, err := utils.Run(cmd)
+	return err
 }

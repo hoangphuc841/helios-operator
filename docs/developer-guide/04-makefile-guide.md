@@ -49,6 +49,12 @@ The Helios Makefile follows these principles:
 | `make test-e2e`      | Run end-to-end tests for GitOps workflow |
 | `make test-coverage` | Run tests with coverage                  |
 
+### Security Commands
+
+| Command                  | Description                                |
+| ------------------------ | ------------------------------------------ |
+| `make validate-security` | Validate Pod Security Standards compliance |
+
 ### Container Commands
 
 | Command             | Description                            |
@@ -222,7 +228,7 @@ rm -rf bin/ dist/ coverage.out coverage.html
 1. **Tool Installation Fails**
 
    ```bash
-   # Check Go version (requires 1.21+)
+   # Check Go version (requires 1.25+)
    go version
 
    # Clean and retry

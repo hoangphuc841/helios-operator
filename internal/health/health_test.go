@@ -35,7 +35,7 @@ import (
 func TestNewChecker(t *testing.T) {
 	scheme := runtime.NewScheme()
 	_ = corev1.AddToScheme(scheme)
-	
+
 	fakeClient := fake.NewClientBuilder().
 		WithScheme(scheme).
 		Build()
@@ -50,7 +50,7 @@ func TestNewChecker(t *testing.T) {
 func TestChecker_LivenessCheck(t *testing.T) {
 	scheme := runtime.NewScheme()
 	_ = corev1.AddToScheme(scheme)
-	
+
 	fakeClient := fake.NewClientBuilder().
 		WithScheme(scheme).
 		Build()
@@ -72,7 +72,7 @@ func TestChecker_LivenessCheck(t *testing.T) {
 func TestChecker_ReadinessCheck_Success(t *testing.T) {
 	scheme := runtime.NewScheme()
 	_ = corev1.AddToScheme(scheme)
-	
+
 	// Create a fake client with some namespaces
 	namespaces := []client.Object{
 		&corev1.Namespace{
@@ -105,7 +105,7 @@ func TestChecker_ReadinessCheck_Success(t *testing.T) {
 func TestChecker_ReadinessCheck_Timeout(t *testing.T) {
 	scheme := runtime.NewScheme()
 	_ = corev1.AddToScheme(scheme)
-	
+
 	// Create a fake client that will work normally
 	// (We can't easily simulate timeout with fake client, so we test normal operation)
 	fakeClient := fake.NewClientBuilder().
@@ -117,7 +117,7 @@ func TestChecker_ReadinessCheck_Timeout(t *testing.T) {
 	// Create a request with a very short timeout to test context handling
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	
+
 	req, err := http.NewRequestWithContext(ctx, "GET", "/readyz", nil)
 	require.NoError(t, err)
 
@@ -129,7 +129,7 @@ func TestChecker_ReadinessCheck_Timeout(t *testing.T) {
 func TestChecker_CheckAPIServerConnection_Success(t *testing.T) {
 	scheme := runtime.NewScheme()
 	_ = corev1.AddToScheme(scheme)
-	
+
 	namespaces := []client.Object{
 		&corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
@@ -153,7 +153,7 @@ func TestChecker_CheckAPIServerConnection_Success(t *testing.T) {
 func TestChecker_GetLastCheckTime(t *testing.T) {
 	scheme := runtime.NewScheme()
 	_ = corev1.AddToScheme(scheme)
-	
+
 	fakeClient := fake.NewClientBuilder().
 		WithScheme(scheme).
 		Build()
@@ -243,7 +243,7 @@ func TestLeaderElectionCheck_ToggleLeadership(t *testing.T) {
 func TestChecker_ConcurrentAccess(t *testing.T) {
 	scheme := runtime.NewScheme()
 	_ = corev1.AddToScheme(scheme)
-	
+
 	fakeClient := fake.NewClientBuilder().
 		WithScheme(scheme).
 		Build()
@@ -282,12 +282,12 @@ func (e *errorClient) List(ctx context.Context, list client.ObjectList, opts ...
 func TestChecker_ReadinessCheck_APIError(t *testing.T) {
 	scheme := runtime.NewScheme()
 	_ = corev1.AddToScheme(scheme)
-	
+
 	// Use error client
 	baseClient := fake.NewClientBuilder().
 		WithScheme(scheme).
 		Build()
-	
+
 	errorCli := &errorClient{Client: baseClient}
 	checker := NewChecker(errorCli)
 
@@ -303,11 +303,11 @@ func TestChecker_ReadinessCheck_APIError(t *testing.T) {
 func TestChecker_CheckAPIServerConnection_Error(t *testing.T) {
 	scheme := runtime.NewScheme()
 	_ = corev1.AddToScheme(scheme)
-	
+
 	baseClient := fake.NewClientBuilder().
 		WithScheme(scheme).
 		Build()
-	
+
 	errorCli := &errorClient{Client: baseClient}
 	checker := NewChecker(errorCli)
 

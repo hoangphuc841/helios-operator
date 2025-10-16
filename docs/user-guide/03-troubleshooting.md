@@ -31,13 +31,13 @@ kubectl get heliosapp <app-name> -n <namespace> -o yaml
 
 ### 1. Operator Not Creating Resources
 
-#### Symptoms
+**Symptoms:**
 
 - HeliosApp shows no status conditions
 - No Tekton resources created
 - No ArgoCD Application created
 
-#### Diagnosis
+**Diagnosis:**
 
 ```bash
 # Check operator logs for errors
@@ -50,7 +50,7 @@ kubectl describe clusterrole helios-operator-manager-role
 kubectl get crd heliosapps.platform.helios.io
 ```
 
-#### Solutions
+**Solutions:**
 
 ```bash
 # Reinstall CRDs
@@ -66,12 +66,12 @@ kubectl rollout restart deployment/helios-operator -n system
 
 ### 2. Tekton Pipeline Not Created
 
-#### Symptoms
+**Symptoms:**
 
 - HeliosApp status shows "PipelineReady: False"
 - No Pipeline resource found
 
-#### Diagnosis
+**Diagnosis:**
 
 ```bash
 # Check for Pipeline resources
@@ -84,7 +84,7 @@ kubectl logs -n system deployment/helios-operator | grep -i pipeline
 kubectl get pods -n tekton-pipelines
 ```
 
-#### Solutions
+**Solutions:**
 
 ```bash
 # Reinstall Tekton if missing
@@ -99,12 +99,12 @@ kubectl annotate heliosapp <app-name> -n <namespace> trigger="$(date +%s)"
 
 ### 3. ArgoCD Application Not Created
 
-#### Symptoms
+**Symptoms:**
 
 - No ArgoCD Application in `argocd` namespace
 - HeliosApp status shows "ApplicationSynced: Unknown"
 
-#### Diagnosis
+**Diagnosis:**
 
 ```bash
 # Check ArgoCD Applications
@@ -117,7 +117,7 @@ kubectl get pods -n argocd
 kubectl logs -n system deployment/helios-operator | grep -i argocd
 ```
 
-#### Solutions
+**Solutions:**
 
 ```bash
 # Reinstall ArgoCD if missing
@@ -133,13 +133,13 @@ kubectl describe application <app-name>-argocd -n argocd
 
 ### 4. Build Failures
 
-#### Symptoms
+**Symptoms:**
 
 - PipelineRun fails
 - Build logs show errors
 - Image not pushed to registry
 
-#### Diagnosis
+**Diagnosis:**
 
 ```bash
 # Check PipelineRun status
@@ -152,7 +152,7 @@ kubectl logs -n <namespace> -l tekton.dev/pipelineRun=<pipelinerun-name>
 kubectl describe serviceaccount <service-account> -n <namespace>
 ```
 
-#### Solutions
+**Solutions:**
 
 ```bash
 # Verify container registry credentials
@@ -167,13 +167,13 @@ kubectl logs -n <namespace> -l tekton.dev/task=git-clone
 
 ### 5. ArgoCD Sync Issues
 
-#### Symptoms
+**Symptoms:**
 
 - ArgoCD Application shows "OutOfSync"
 - Deployment not updated
 - Sync errors in ArgoCD UI
 
-#### Diagnosis
+**Diagnosis:**
 
 ```bash
 # Check ArgoCD Application status
@@ -186,7 +186,7 @@ kubectl logs -n argocd deployment/argocd-application-controller
 kubectl get application <app-name>-argocd -n argocd -o yaml
 ```
 
-#### Solutions
+**Solutions:**
 
 ```bash
 # Force sync in ArgoCD
@@ -202,13 +202,13 @@ ls <gitops-path>
 
 ### 6. Webhook Not Triggering Builds
 
-#### Symptoms
+**Symptoms:**
 
 - Git push doesn't trigger build
 - EventListener not receiving events
 - No PipelineRun created on push
 
-#### Diagnosis
+**Diagnosis:**
 
 ```bash
 # Check EventListener status
@@ -221,7 +221,7 @@ kubectl get svc -n <namespace> | grep eventlistener
 kubectl logs -n <namespace> -l app.kubernetes.io/name=eventlistener
 ```
 
-#### Solutions
+**Solutions:**
 
 ```bash
 # Verify webhook URL

@@ -27,6 +27,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -62,6 +63,14 @@ func init() {
 
 // validateHeliosApp validates the HeliosApp spec
 func (r *HeliosApp) validateHeliosApp() (admission.Warnings, error) {
+	logger := logf.Log.WithName("webhook").WithValues(
+		"operation", "validate",
+		"heliosapp", r.Name,
+		"namespace", r.Namespace,
+	)
+
+	logger.V(1).Info("Starting HeliosApp validation")
+
 	var allErrors []string
 	var warnings admission.Warnings
 
@@ -86,9 +95,11 @@ func (r *HeliosApp) validateHeliosApp() (admission.Warnings, error) {
 	}
 
 	if len(allErrors) > 0 {
+		logger.Info("HeliosApp validation failed", "errors", len(allErrors))
 		return warnings, errors.New(strings.Join(allErrors, "; "))
 	}
 
+	logger.V(1).Info("HeliosApp validation successful")
 	return warnings, nil
 }
 
@@ -419,6 +430,14 @@ func isAlphanumeric(char rune) bool {
 
 // validateHeliosAppUpdate validates updates to HeliosApp
 func (r *HeliosApp) validateHeliosAppUpdate(old *HeliosApp) (admission.Warnings, error) {
+	logger := logf.Log.WithName("webhook").WithValues(
+		"operation", "validateUpdate",
+		"heliosapp", r.Name,
+		"namespace", r.Namespace,
+	)
+
+	logger.V(1).Info("Starting HeliosApp update validation")
+
 	var allErrors []string
 	var warnings admission.Warnings
 
@@ -458,15 +477,26 @@ func (r *HeliosApp) validateHeliosAppUpdate(old *HeliosApp) (admission.Warnings,
 	}
 
 	if len(allErrors) > 0 {
+		logger.Info("HeliosApp update validation failed", "errors", len(allErrors))
 		return warnings, errors.New(strings.Join(allErrors, "; "))
 	}
 
+	logger.V(1).Info("HeliosApp update validation successful", "warnings", len(warnings))
 	return warnings, nil
 }
 
 // validateHeliosAppDelete validates deletion of HeliosApp
 func (r *HeliosApp) validateHeliosAppDelete() (admission.Warnings, error) {
+	logger := logf.Log.WithName("webhook").WithValues(
+		"operation", "validateDelete",
+		"heliosapp", r.Name,
+		"namespace", r.Namespace,
+	)
+
+	logger.V(1).Info("Starting HeliosApp deletion validation")
+
 	// Add any deletion-specific validation here
+	logger.V(1).Info("HeliosApp deletion validation successful")
 	return nil, nil
 }
 

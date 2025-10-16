@@ -4,8 +4,8 @@ This Helm chart deploys the Helios Operator, a Kubernetes operator for automated
 
 ## Prerequisites
 
-- Kubernetes 1.19+
-- Helm 3.0+
+- Kubernetes 1.34+
+- Helm 3.19+
 - Tekton Pipelines (installed in `tekton-pipelines` namespace)
 - ArgoCD (installed in `argocd` namespace)
 

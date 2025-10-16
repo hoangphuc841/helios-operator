@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Go Version](https://img.shields.io/badge/go-1.25.3-blue.svg)](go.mod)
-[![Kubernetes](https://img.shields.io/badge/kubernetes-1.19+-green.svg)](go.mod)
+[![Kubernetes](https://img.shields.io/badge/kubernetes-1.34.1-green.svg)](go.mod)
 [![Build Status](https://github.com/hoangphuc841/helios-operator/workflows/CI/badge.svg)](https://github.com/hoangphuc841/helios-operator/actions)
 [![Coverage](https://codecov.io/gh/hoangphuc841/helios-operator/branch/main/graph/badge.svg)](https://codecov.io/gh/hoangphuc841/helios-operator)
 [![Release](https://img.shields.io/github/v/release/hoangphuc841/helios-operator)](https://github.com/hoangphuc841/helios-operator/releases)

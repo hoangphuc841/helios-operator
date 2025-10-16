@@ -87,6 +87,15 @@ help: ## 📖 Display help for Helios IDP Operator
 	@echo "Testing:"
 	@awk 'BEGIN {FS = ":.*?##"} /^[a-zA-Z0-9_-]+:.*?##.*- Test/ { printf "  \033[36m%-25s\033[0m  \033[37m%s\033[0m\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo ""
+	@echo "Security:"
+	@awk 'BEGIN {FS = ":.*?##"} /^[a-zA-Z0-9_-]+:.*?##.*- Security/ { printf "  \033[36m%-25s\033[0m  \033[37m%s\033[0m\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@echo ""
+	@echo "Build:"
+	@awk 'BEGIN {FS = ":.*?##"} /^[a-zA-Z0-9_-]+:.*?##.*- Build/ { printf "  \033[36m%-25s\033[0m  \033[37m%s\033[0m\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@echo ""
+	@echo "Documentation:"
+	@awk 'BEGIN {FS = ":.*?##"} /^[a-zA-Z0-9_-]+:.*?##.*- Documentation/ { printf "  \033[36m%-25s\033[0m  \033[37m%s\033[0m\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@echo ""
 	@echo "Container:"
 	@awk 'BEGIN {FS = ":.*?##"} /^[a-zA-Z0-9_-]+:.*?##.*- Container/ { printf "  \033[36m%-25s\033[0m  \033[37m%s\033[0m\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo ""
@@ -97,10 +106,11 @@ help: ## 📖 Display help for Helios IDP Operator
 	@awk 'BEGIN {FS = ":.*?##"} /^[a-zA-Z0-9_-]+:.*?##.*- Tools/ { printf "  \033[36m%-25s\033[0m  \033[37m%s\033[0m\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "Quick Start:"
-	@printf "  \033[36mmake dev-setup\033[0m     # Setup development environment\n"
-	@printf "  \033[36mmake deploy-local\033[0m  # Deploy to local cluster\n"
-	@printf "  \033[36mmake test-e2e\033[0m      # Run end-to-end tests\n"
-	@printf "  \033[36mmake helm-package\033[0m  # Package Helm chart\n"
+	@printf "  \033[36mmake dev-setup\033[0m         # Setup development environment\n"
+	@printf "  \033[36mmake deploy-local\033[0m      # Deploy to local cluster\n"
+	@printf "  \033[36mmake test-e2e\033[0m          # Run end-to-end tests\n"
+	@printf "  \033[36mmake validate-security\033[0m # Validate security compliance\n"
+	@printf "  \033[36mmake helm-package\033[0m      # Package Helm chart\n"
 	@echo ""
 
 # =============================================================================
@@ -178,6 +188,45 @@ test-coverage: ## Run tests with coverage - Test
 	@go test ./... -race -coverprofile=coverage.out -covermode=atomic
 	@go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report: coverage.html"
+
+.PHONY: validate-security
+validate-security: ## Validate Pod Security Standards compliance - Security
+	@echo "🔒 Validating Pod Security Standards compliance..."
+	@./scripts/validate-security.sh
+
+.PHONY: verify
+verify: fmt vet lint test ## Run all verification checks - Development
+	@echo "All verification checks passed!"
+
+# =============================================================================
+# 📦 Build Targets
+# =============================================================================
+
+.PHONY: build-all
+build-all: ## Build for all platforms - Build
+	@echo "Building for all platforms..."
+	@for os in linux darwin windows; do \
+		for arch in amd64 arm64; do \
+			echo "Building for $$os/$$arch..."; \
+			GOOS=$$os GOARCH=$$arch CGO_ENABLED=0 go build -o bin/$(PROJECT_NAME)-$$os-$$arch ./cmd/main.go; \
+		done \
+	done
+	@echo "Multi-platform build complete!"
+
+# =============================================================================
+# 📚 Documentation Targets
+# =============================================================================
+
+.PHONY: docs
+docs: api-docs ## Generate all documentation - Documentation
+	@echo "Documentation generation complete!"
+
+.PHONY: api-docs
+api-docs: controller-gen ## Generate API reference documentation - Documentation
+	@echo "Generating API documentation..."
+	@mkdir -p docs/reference
+	@$(CONTROLLER_GEN) crd:crdVersions=v1 paths=./api/... output:crd:dir=./docs/reference/
+	@echo "API documentation generated in docs/reference/"
 
 # =============================================================================
 # 🐳 Container Targets
