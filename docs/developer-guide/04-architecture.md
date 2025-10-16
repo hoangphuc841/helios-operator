@@ -1,54 +1,108 @@
-# Helios Operator Architecture
+# 🏗️ Helios Operator Architecture
 
 This document provides a comprehensive overview of the Helios Operator architecture, components, and design decisions.
 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Architecture Diagram](#architecture-diagram)
+2. [High-Level Architecture](#high-level-architecture)
 3. [Core Components](#core-components)
 4. [Reconciliation Flow](#reconciliation-flow)
 5. [Metrics and Observability](#metrics-and-observability)
 6. [Configuration](#configuration)
 7. [Security](#security)
+8. [Testing Strategy](#testing-strategy)
 
 ## Overview
 
 Helios Operator is a Kubernetes operator that provides a simplified interface for deploying applications using GitOps. It orchestrates Tekton Pipelines for CI/CD and ArgoCD Applications for continuous deployment, abstracting away the complexity of managing these tools directly.
 
-## Architecture Diagram
+**Key Features:**
+- Declarative application deployment via HeliosApp CRD
+- Automated CI/CD pipeline creation with Tekton
+- GitOps-based deployment with ArgoCD
+- Comprehensive metrics and observability
+- Webhook-based Git integration
+- Extensive validation and error handling
 
+## High-Level Architecture
+
+### System Overview
+
+```mermaid
+graph TB
+    subgraph "Developer Workflow"
+        Dev[Developer] -->|Git Push| GitRepo[Git Repository]
+    end
+
+    subgraph "Helios Operator"
+        CRD[HeliosApp CRD] --> Controller[Controller/Reconciler]
+        Controller --> PipelineGen[Pipeline Generator]
+        Controller --> TriggerGen[Trigger Generator]
+        Controller --> ArgoCDGen[ArgoCD Generator]
+        Controller --> StatusMgr[Status Manager]
+        Controller --> Metrics[Metrics Collector]
+    end
+
+    subgraph "Tekton Pipelines"
+        EventListener[EventListener] --> TriggerBinding[TriggerBinding]
+        TriggerBinding --> TriggerTemplate[TriggerTemplate]
+        TriggerTemplate --> PipelineRun[PipelineRun]
+        PipelineRun --> BuildPush[Build & Push Image]
+    end
+
+    subgraph "ArgoCD GitOps"
+        ArgoCDApp[ArgoCD Application] --> GitSync[Git Sync]
+        GitSync --> K8sDeploy[Kubernetes Deployment]
+    end
+
+    subgraph "Monitoring"
+        Metrics --> Prometheus[Prometheus]
+        Prometheus --> Grafana[Grafana Dashboards]
+    end
+
+    GitRepo -->|Webhook| EventListener
+    PipelineGen --> Pipeline[Tekton Pipeline]
+    TriggerGen --> EventListener
+    ArgoCDGen --> ArgoCDApp
+    BuildPush -->|Update Manifest| GitOpsRepo[GitOps Repository]
+    GitOpsRepo --> GitSync
+    StatusMgr -->|Update Status| CRD
+
+    style Controller fill:#e1f5ff
+    style Metrics fill:#fff4e1
+    style BuildPush fill:#e8f5e9
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Helios Operator                         │
-│                                                                 │
-│  ┌───────────────┐     ┌──────────────┐     ┌──────────────┐  │
-│  │   Controller  │────▶│   Metrics    │────▶│  Prometheus  │  │
-│  │  (Reconciler) │     │  Collector   │     │              │  │
-│  └───────┬───────┘     └──────────────┘     └──────────────┘  │
-│          │                                                      │
-│          ├──────────────────┬──────────────────┬──────────────┐│
-│          │                  │                  │              ││
-│  ┌───────▼──────┐  ┌────────▼───────┐  ┌──────▼──────┐       ││
-│  │  Pipeline    │  │   Triggers     │  │   ArgoCD    │       ││
-│  │  Reconciler  │  │   Reconciler   │  │  Reconciler │       ││
-│  └──────────────┘  └────────────────┘  └─────────────┘       ││
-│                                                               ││
-└───────────────────────────────────────────────────────────────┘│
-        │                      │                      │
-        ▼                      ▼                      ▼
-┌──────────────┐      ┌───────────────┐      ┌──────────────┐
-│    Tekton    │      │    Tekton     │      │    ArgoCD    │
-│   Pipeline   │      │   Triggers    │      │  Application │
-│              │      │ (EventListener)│      │              │
-└──────┬───────┘      └───────┬───────┘      └──────┬───────┘
-       │                      │                      │
-       │                      │                      │
-       ▼                      ▼                      ▼
-┌──────────────┐      ┌───────────────┐      ┌──────────────┐
-│  Container   │      │   Webhook     │      │  Kubernetes  │
-│    Image     │      │   Receiver    │      │  Deployment  │
-└──────────────┘      └───────────────┘      └──────────────┘
+
+### Component Interaction
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant K8s as Kubernetes API
+    participant Ctrl as Helios Controller
+    participant Tekton
+    participant ArgoCD
+    participant Git as Git Repository
+
+    User->>K8s: Create HeliosApp
+    K8s->>Ctrl: Reconcile Event
+    
+    Ctrl->>K8s: Create Tekton Pipeline
+    Ctrl->>K8s: Create EventListener
+    Ctrl->>K8s: Create TriggerBinding
+    Ctrl->>K8s: Create TriggerTemplate
+    Ctrl->>K8s: Create ArgoCD Application
+    Ctrl->>K8s: Update Status (Ready)
+    
+    Git->>Tekton: Webhook (Push Event)
+    Tekton->>Tekton: Run PipelineRun
+    Tekton->>Git: Push Updated Manifest
+    
+    ArgoCD->>Git: Sync GitOps Repo
+    ArgoCD->>K8s: Deploy Application
+    
+    Ctrl->>K8s: Update Status (Deployed)
 ```
 
 ## Core Components
@@ -162,38 +216,142 @@ Centralized configuration management with environment variable support.
 
 ## Reconciliation Flow
 
-### Detailed Flow
+### High-Level Reconciliation Process
 
+```mermaid
+graph TD
+    A[Reconcile Triggered] --> B{Resource Exists?}
+    B -->|No| C[Handle Deletion]
+    B -->|Yes| D[Fetch Phase]
+    
+    D --> E[Pipeline Phase]
+    E --> F{Pipeline Created?}
+    F -->|Error| G[Record Error & Retry]
+    F -->|Success| H[Triggers Phase]
+    
+    H --> I{Triggers Created?}
+    I -->|Error| G
+    I -->|Success| J[ArgoCD Phase]
+    
+    J --> K{ArgoCD App Created?}
+    K -->|Error| G
+    K -->|Success| L[Status Phase]
+    
+    L --> M[Update Status Conditions]
+    M --> N[Record Metrics]
+    N --> O[Complete Reconciliation]
+    
+    C --> P[Remove Finalizers]
+    P --> Q[Cleanup Resources]
+    Q --> O
+    
+    G --> R{Retry Limit?}
+    R -->|Exceeded| S[Set Error Status]
+    R -->|Not Exceeded| T[Requeue with Backoff]
+    S --> O
+    T --> O
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ 1. Trigger Event                                            │
-│    - HeliosApp Create/Update/Delete                         │
-│    - Watched Resource Change (ArgoCD App, PipelineRun, etc) │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 2. Reconcile() Entry Point                                  │
-│    - Start metrics timer                                    │
-│    - Initialize structured logger                           │
-│    - Track reconciliation count                             │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 3. Fetch Phase (Phase Timer: "fetch")                      │
-│    - Get HeliosApp from cluster                            │
-│    - Return if not found (deleted)                          │
-│    - Record fetch errors                                    │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 4. Pipeline Phase (Phase Timer: "pipeline")                │
-│    - Generate Pipeline resource                             │
-│    - CreateOrUpdate Pipeline                                │
-│    - Record pipeline errors                                 │
-└─────────────────────┬───────────────────────────────────────┘
+
+### Detailed Reconciliation Phases
+
+```mermaid
+sequenceDiagram
+    participant R as Reconciler
+    participant K as Kubernetes API
+    participant M as Metrics
+    participant T as Tekton
+    participant A as ArgoCD
+
+    Note over R: Start Reconciliation
+    R->>M: Start Overall Timer
+    
+    R->>K: Fetch HeliosApp
+    K-->>R: HeliosApp Resource
+    R->>M: Record Fetch Duration
+    
+    R->>K: Generate Pipeline
+    R->>T: CreateOrUpdate Pipeline
+    T-->>R: Pipeline Created/Updated
+    R->>M: Record Pipeline Duration
+    
+    R->>K: Generate EventListener
+    R->>T: CreateOrUpdate EventListener
+    T-->>R: EventListener Ready
+    
+    R->>K: Generate TriggerBinding
+    R->>T: CreateOrUpdate TriggerBinding
+    T-->>R: TriggerBinding Ready
+    
+    R->>K: Generate TriggerTemplate
+    R->>T: CreateOrUpdate TriggerTemplate
+    T-->>R: TriggerTemplate Ready
+    R->>M: Record Triggers Duration
+    
+    R->>K: Generate ArgoCD Application
+    R->>A: CreateOrUpdate Application
+    A-->>R: Application Created
+    R->>M: Record ArgoCD Duration
+    
+    R->>K: Update HeliosApp Status
+    R->>K: Set Conditions (Ready, Synced, BuildSucceeded)
+    K-->>R: Status Updated
+    R->>M: Record Status Duration
+    
+    R->>M: Record Overall Duration
+    R->>M: Increment Success Counter
+    Note over R: Reconciliation Complete
+```
+
+### Phase Breakdown
+
+1. **Fetch Phase** (`fetch`)
+   - Retrieve HeliosApp resource from Kubernetes API
+   - Return if resource not found (deletion case)
+   - Log fetch errors with context
+
+2. **Pipeline Phase** (`pipeline`)
+   - Generate Tekton Pipeline from template
+   - Apply owner references
+   - CreateOrUpdate Pipeline resource
+   - Handle pipeline creation errors
+
+3. **Triggers Phase** (`triggers`)
+   - Generate EventListener for webhook reception
+   - Generate TriggerBinding for parameter extraction
+   - Generate TriggerTemplate for PipelineRun instantiation
+   - CreateOrUpdate all trigger resources
+   - Handle trigger creation errors
+
+4. **ArgoCD Phase** (`argocd`)
+   - Generate ArgoCD Application manifest
+   - Configure GitOps repository sync
+   - Apply sync policy and health checks
+   - CreateOrUpdate Application resource
+   - Handle ArgoCD errors
+
+5. **Status Phase** (`status`)
+   - Query ArgoCD Application sync status
+   - Query latest Tekton PipelineRun status
+   - Calculate deployment health
+   - Update HeliosApp status conditions:
+     - `Ready`: Overall health
+     - `Synced`: ArgoCD sync status
+     - `BuildSucceeded`: Last build status
+   - Update status fields (deployedVersion, lastBuild, etc.)
+
+### Watch Configuration
+
+```mermaid
+graph LR
+    A[HeliosApp Changes] --> C[Reconciler]
+    B[ArgoCD App Changes] --> C
+    D[PipelineRun Changes] --> C
+    
+    C --> E{Predicate Filter}
+    E -->|Generation Changed| F[Full Reconcile]
+    E -->|Status Only| G[Status Update Only]
+    E -->|Irrelevant| H[Skip]
+```
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────┐

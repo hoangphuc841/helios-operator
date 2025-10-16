@@ -18,7 +18,7 @@ If you want to deploy applications using Helios:
 
 If you're managing or contributing to the Helios platform:
 
-1. **[🏗️ Architecture Overview](developer-guide/01-architecture.md)** - System design and components
+1. **[🏗️ Architecture Overview](developer-guide/04-architecture.md)** - System design and components
 2. **[⚙️ Development Setup](developer-guide/02-development-setup.md)** - Local development environment
 3. **[🧪 Testing Guide](developer-guide/03-testing.md)** - Comprehensive testing strategies
 4. **[🛠️ Makefile Guide](developer-guide/makefile-guide.md)** - Optimized Makefile for IDP workflows
@@ -37,7 +37,7 @@ If you're managing or contributing to the Helios platform:
 
 | Document                                                        | Description                              | Time to Read |
 | --------------------------------------------------------------- | ---------------------------------------- | ------------ |
-| [🏗️ Architecture Overview](developer-guide/01-architecture.md)  | System design, components, and data flow | 20 minutes   |
+| [🏗️ Architecture Overview](developer-guide/04-architecture.md)  | System design, components, and data flow | 20 minutes   |
 | [⚙️ Development Setup](developer-guide/02-development-setup.md) | Local development environment and tools  | 30 minutes   |
 | [🧪 Testing Guide](developer-guide/03-testing.md)               | Unit, integration, and E2E testing       | 15 minutes   |
 
@@ -64,7 +64,7 @@ If you're managing or contributing to the Helios platform:
 
 ### 🏗️ **I want to understand how it works**
 
-→ [Architecture Overview](developer-guide/01-architecture.md)
+→ [Architecture Overview](developer-guide/04-architecture.md)
 
 ### 👨‍💻 **I want to contribute to the project**
 
