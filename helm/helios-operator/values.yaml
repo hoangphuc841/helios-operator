@@ -49,6 +49,12 @@ resources:
     cpu: 100m
     memory: 128Mi
 
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  # maxUnavailable: 1  # Alternative to minAvailable
+
 # Node selector
 nodeSelector: {}
 
@@ -57,12 +63,6 @@ tolerations: []
 
 # Affinity rules
 affinity: {}
-
-# Pod disruption budget
-podDisruptionBudget:
-  enabled: false
-  minAvailable: 1
-  maxUnavailable: 1
 
 # Horizontal Pod Autoscaler
 autoscaling:
@@ -91,16 +91,36 @@ livenessProbe:
   httpGet:
     path: /healthz
     port: 8081
+    scheme: HTTP
   initialDelaySeconds: 15
   periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
 
 # Readiness probe configuration
 readinessProbe:
   httpGet:
     path: /readyz
     port: 8081
+    scheme: HTTP
   initialDelaySeconds: 5
   periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+# Startup probe configuration
+startupProbe:
+  httpGet:
+    path: /healthz
+    port: 8081
+    scheme: HTTP
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+  successThreshold: 1
 
 # Service configuration
 service:
@@ -210,3 +230,75 @@ globalLabels: {}
 
 # Additional annotations to add to all resources
 globalAnnotations: {}
+
+# Network policies
+networkPolicy:
+  enabled: false
+  ingress: []
+  egress: []
+
+# Pod security standards
+podSecurity:
+  enabled: false
+  # Pod Security Standard level: restricted, baseline, privileged
+  level: restricted
+  # Namespace labels for Pod Security Standards
+  namespaceLabels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+
+# Backup and recovery
+backup:
+  enabled: false
+  schedule: "0 2 * * *" # Daily at 2 AM
+  retention: "7d"
+  # Velero backup configuration
+  velero:
+    enabled: false
+    namespace: velero
+
+# Monitoring and alerting
+monitoring:
+  enabled: false
+  # PrometheusRule for alerting
+  prometheusRule:
+    enabled: false
+    rules: []
+  # Grafana dashboard
+  grafana:
+    enabled: false
+    dashboard: {}
+
+# Security scanning
+security:
+  # Enable security context constraints (OpenShift)
+  scc:
+    enabled: false
+  # Pod security policies (deprecated, use podSecurity instead)
+  psp:
+    enabled: false
+
+# High availability configuration
+highAvailability:
+  enabled: false
+  # Multi-zone deployment
+  multiZone: false
+  # Anti-affinity rules
+  antiAffinity: false
+
+# Performance tuning
+performance:
+  # Garbage collection settings
+  gc:
+    enabled: true
+    interval: "1h"
+  # Cache settings
+  cache:
+    enabled: true
+    size: "100Mi"
+  # Rate limiting
+  rateLimit:
+    enabled: false
+    requests: 100
+    window: "1m"

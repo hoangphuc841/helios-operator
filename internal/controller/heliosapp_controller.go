@@ -28,6 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	heliosappv1 "github.com/hoangphuc841/helios-operator/api/v1"
+	"github.com/hoangphuc841/helios-operator/internal/resources"
 )
 
 // HeliosAppReconciler reconciles a HeliosApp object
@@ -87,7 +88,7 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	// Generate pipeline name from app name
-	pipelineName := getPipelineName(name)
+	pipelineName := resources.GetPipelineName(name)
 	serviceAccount := heliosApp.Spec.ServiceAccount
 	githubSecret := heliosApp.Spec.WebhookSecret
 	workspace := map[string]interface{}{
@@ -98,7 +99,7 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	// --- Tekton Pipeline ---
-	pipeline, err := GeneratePipeline(&heliosApp)
+	pipeline, err := resources.GeneratePipeline(&heliosApp)
 	if err != nil {
 		logger.Error(err, "failed to generate Pipeline")
 		return ctrl.Result{}, fmt.Errorf("failed to generate Pipeline: %w", err)
@@ -138,19 +139,19 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	// --- Tekton Triggers resources ---
-	eventListener, err := GenerateEventListener(
+	eventListener, err := resources.GenerateEventListener(
 		name+"-el", namespace, name+"-trigger", name+"-trigger-binding", name+"-trigger-template", githubSecret,
 	)
 	if err != nil {
 		logger.Error(err, "failed to generate EventListener")
 		return ctrl.Result{}, fmt.Errorf("failed to generate EventListener: %w", err)
 	}
-	triggerBinding, err := GenerateTriggerBinding(name+"-trigger-binding", namespace)
+	triggerBinding, err := resources.GenerateTriggerBinding(name+"-trigger-binding", namespace)
 	if err != nil {
 		logger.Error(err, "failed to generate TriggerBinding")
 		return ctrl.Result{}, fmt.Errorf("failed to generate TriggerBinding: %w", err)
 	}
-	triggerTemplate, err := GenerateTriggerTemplate(
+	triggerTemplate, err := resources.GenerateTriggerTemplate(
 		name+"-trigger-template", namespace, name+"-pipelinerun", pipelineName, serviceAccount, workspace,
 	)
 	if err != nil {
@@ -192,7 +193,7 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	// --- ArgoCD Application ---
-	argoApp, err := GenerateArgoApplication(&heliosApp)
+	argoApp, err := resources.GenerateArgoApplication(&heliosApp)
 	if err != nil {
 		logger.Error(err, "failed to generate ArgoCD Application")
 		return ctrl.Result{}, fmt.Errorf("failed to generate ArgoCD Application: %w", err)
