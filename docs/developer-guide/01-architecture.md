@@ -341,6 +341,8 @@ sequenceDiagram
 
 ### Watch Configuration
 
+The controller watches multiple resource types and uses predicates to filter events:
+
 ```mermaid
 graph LR
     A[HeliosApp Changes] --> C[Reconciler]
@@ -352,50 +354,13 @@ graph LR
     E -->|Status Only| G[Status Update Only]
     E -->|Irrelevant| H[Skip]
 ```
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 5. Triggers Phase (Phase Timer: "triggers")                │
-│    - Generate EventListener                                 │
-│    - Generate TriggerBinding                                │
-│    - Generate TriggerTemplate                               │
-│    - CreateOrUpdate each resource                           │
-│    - Record trigger errors                                  │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 6. ArgoCD Phase (Phase Timer: "argocd")                    │
-│    - Generate ArgoCD Application                            │
-│    - CreateOrUpdate Application                             │
-│    - Record ArgoCD errors                                   │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 7. Status Phase (Phase Timer: "status")                    │
-│    - Get latest PipelineRun status                          │
-│    - Get Deployment health                                  │
-│    - Get ArgoCD sync/health status                          │
-│    - Update HeliosApp.Status                                │
-│    - Record status update errors                            │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 8. Complete                                                  │
-│    - Stop all phase timers                                  │
-│    - Record overall duration                                │
-│    - Update last reconcile timestamp                        │
-│    - Log completion with duration                           │
-└─────────────────────────────────────────────────────────────┘
-```
 
 ### Watch Triggers
 
 The controller watches multiple resource types for changes:
 
 **Primary Resource:**
+
 - `HeliosApp`: Direct changes trigger reconciliation
 
 **Secondary Resources (with predicates):**

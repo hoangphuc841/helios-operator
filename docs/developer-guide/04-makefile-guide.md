@@ -254,7 +254,7 @@ rm -rf bin/ dist/ coverage.out coverage.html
 
 - [Makefile Best Practices](https://docs.cloudposse.com/best-practices/developer/makefile/)
 - [Kubebuilder Documentation](https://book.kubebuilder.io/)
-- [Helios Architecture Guide](04-architecture.md)
+- [Helios Architecture Guide](01-architecture.md)
 
 ---
 
