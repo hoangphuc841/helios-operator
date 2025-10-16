@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	heliosappv1 "github.com/hoangphuc841/helios-operator/api/v1"
+	"github.com/hoangphuc841/helios-operator/internal/common"
 	"github.com/hoangphuc841/helios-operator/internal/resources"
 )
 
@@ -135,7 +136,7 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	if err := r.updateComprehensiveStatus(ctx, heliosApp, name, namespace, logger); err != nil {
 		logger.Error(err, "failed to update comprehensive status")
 		reconcileResult = "error"
-		return ctrl.Result{}, fmt.Errorf("failed to update status: %w", err)
+		return ctrl.Result{}, common.NewStatusUpdateError("HeliosApp", name, err)
 	}
 
 	reconcileResult = "success"
@@ -700,13 +701,13 @@ func (r *HeliosAppReconciler) reconcilePipeline(ctx context.Context, heliosApp *
 	pipeline, err := resources.GeneratePipeline(heliosApp)
 	if err != nil {
 		logger.Error(err, "failed to generate Pipeline")
-		return fmt.Errorf("failed to generate Pipeline: %w", err)
+		return common.NewResourceGenerationError("Pipeline", heliosApp.Name, err)
 	}
 
 	pipeline.SetNamespace(heliosApp.Namespace)
 	if err := controllerutil.SetControllerReference(heliosApp, pipeline, r.Scheme); err != nil {
 		logger.Error(err, "failed to set owner reference for Pipeline", "name", pipeline.GetName())
-		return fmt.Errorf("failed to set owner reference for Pipeline: %w", err)
+		return common.NewReconciliationError("Pipeline", pipeline.GetName(), "set owner reference", err)
 	}
 
 	return r.createOrUpdateResource(ctx, pipeline, logger)
@@ -719,13 +720,13 @@ func (r *HeliosAppReconciler) reconcileTriggers(ctx context.Context, heliosApp *
 	)
 	if err != nil {
 		logger.Error(err, "failed to generate EventListener")
-		return fmt.Errorf("failed to generate EventListener: %w", err)
+		return common.NewResourceGenerationError("EventListener", name+"-el", err)
 	}
 
 	triggerBinding, err := resources.GenerateTriggerBinding(name+"-trigger-binding", namespace)
 	if err != nil {
 		logger.Error(err, "failed to generate TriggerBinding")
-		return fmt.Errorf("failed to generate TriggerBinding: %w", err)
+		return common.NewResourceGenerationError("TriggerBinding", name+"-trigger-binding", err)
 	}
 
 	triggerTemplate, err := resources.GenerateTriggerTemplate(
@@ -733,14 +734,14 @@ func (r *HeliosAppReconciler) reconcileTriggers(ctx context.Context, heliosApp *
 	)
 	if err != nil {
 		logger.Error(err, "failed to generate TriggerTemplate")
-		return fmt.Errorf("failed to generate TriggerTemplate: %w", err)
+		return common.NewResourceGenerationError("TriggerTemplate", name+"-trigger-template", err)
 	}
 
 	for _, obj := range []*unstructured.Unstructured{eventListener, triggerBinding, triggerTemplate} {
 		obj.SetNamespace(namespace)
 		if err := controllerutil.SetControllerReference(heliosApp, obj, r.Scheme); err != nil {
 			logger.Error(err, "failed to set owner reference", "name", obj.GetName())
-			return fmt.Errorf("failed to set owner reference for %s: %w", obj.GetName(), err)
+			return common.NewReconciliationError(obj.GetKind(), obj.GetName(), "set owner reference", err)
 		}
 
 		if err := r.createOrUpdateResource(ctx, obj, logger); err != nil {
@@ -756,7 +757,7 @@ func (r *HeliosAppReconciler) reconcileArgoCD(ctx context.Context, heliosApp *he
 	argoApp, err := resources.GenerateArgoApplication(heliosApp)
 	if err != nil {
 		logger.Error(err, "failed to generate ArgoCD Application")
-		return fmt.Errorf("failed to generate ArgoCD Application: %w", err)
+		return common.NewResourceGenerationError("ArgoCD Application", name+"-argocd", err)
 	}
 
 	// Set namespace explicitly (ArgoCD Application lives in argocd namespace)
@@ -785,17 +786,22 @@ func (r *HeliosAppReconciler) reconcileArgoCD(ctx context.Context, heliosApp *he
 	if err != nil {
 		if client.IgnoreNotFound(err) == nil {
 			logger.Info("Creating ArgoCD Application", "name", argoApp.GetName(), "gitopsRepo", heliosApp.Spec.GitopsRepo, "gitopsPath", gitopsPath)
-			return r.Create(ctx, argoApp)
+			if err := r.Create(ctx, argoApp); err != nil {
+				return common.NewReconciliationError("ArgoCD Application", argoApp.GetName(), "create", err)
+			}
+			return nil
 		}
 		logger.Error(err, "failed to get ArgoCD Application")
-		return fmt.Errorf("failed to get ArgoCD Application: %w", err)
+		return common.NewReconciliationError("ArgoCD Application", argoApp.GetName(), "get", err)
 	}
 
 	// Update if spec changed
 	if !equalUnstructured(argoApp, existingArgoApp) {
 		logger.Info("Updating ArgoCD Application", "name", argoApp.GetName(), "gitopsRepo", heliosApp.Spec.GitopsRepo, "gitopsPath", gitopsPath)
 		argoApp.SetResourceVersion(existingArgoApp.GetResourceVersion())
-		return r.Update(ctx, argoApp)
+		if err := r.Update(ctx, argoApp); err != nil {
+			return common.NewReconciliationError("ArgoCD Application", argoApp.GetName(), "update", err)
+		}
 	}
 
 	return nil
@@ -810,17 +816,22 @@ func (r *HeliosAppReconciler) createOrUpdateResource(ctx context.Context, obj *u
 	if err != nil {
 		if client.IgnoreNotFound(err) == nil {
 			logger.Info("Creating resource", "kind", obj.GetKind(), "name", obj.GetName())
-			return r.Create(ctx, obj)
+			if err := r.Create(ctx, obj); err != nil {
+				return common.NewReconciliationError(obj.GetKind(), obj.GetName(), "create", err)
+			}
+			return nil
 		}
 		logger.Error(err, "failed to get resource", "name", obj.GetName())
-		return fmt.Errorf("failed to get %s %s: %w", obj.GetKind(), obj.GetName(), err)
+		return common.NewReconciliationError(obj.GetKind(), obj.GetName(), "get", err)
 	}
 
 	// Update if spec changed
 	if !equalUnstructured(obj, existing) {
 		logger.Info("Updating resource", "kind", obj.GetKind(), "name", obj.GetName())
 		obj.SetResourceVersion(existing.GetResourceVersion())
-		return r.Update(ctx, obj)
+		if err := r.Update(ctx, obj); err != nil {
+			return common.NewReconciliationError(obj.GetKind(), obj.GetName(), "update", err)
+		}
 	}
 
 	return nil
