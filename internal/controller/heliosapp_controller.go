@@ -90,16 +90,21 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	logger.V(1).Info("Reconciliation started")
 
 	// Fetch HeliosApp
+	fetchPhase := NewPhaseTimer(req.Namespace, req.Name, "fetch")
 	heliosApp, err := r.fetchHeliosApp(ctx, req.NamespacedName)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			logger.V(1).Info("HeliosApp resource not found, may have been deleted")
+			fetchPhase.ObserveDuration()
 			return ctrl.Result{}, nil
 		}
 		logger.Error(err, "Failed to fetch HeliosApp resource")
 		reconcileResult = "error"
+		ReconciliationErrorsTotal.WithLabelValues(req.Namespace, req.Name, "fetch").Inc()
+		fetchPhase.ObserveDuration()
 		return ctrl.Result{}, err
 	}
+	fetchPhase.ObserveDuration()
 	if heliosApp == nil {
 		// Already handled (not found)
 		return ctrl.Result{}, nil
@@ -133,29 +138,45 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	// Reconcile Tekton Pipeline
+	pipelinePhase := NewPhaseTimer(req.Namespace, req.Name, "pipeline")
 	if err := r.reconcilePipeline(ctx, heliosApp, logger); err != nil {
 		reconcileResult = "error"
+		ReconciliationErrorsTotal.WithLabelValues(req.Namespace, req.Name, "pipeline").Inc()
+		pipelinePhase.ObserveDuration()
 		return ctrl.Result{}, err
 	}
+	pipelinePhase.ObserveDuration()
 
 	// Reconcile Tekton Triggers
+	triggersPhase := NewPhaseTimer(req.Namespace, req.Name, "triggers")
 	if err := r.reconcileTriggers(ctx, heliosApp, name, namespace, pipelineName, serviceAccount, githubSecret, workspace, logger); err != nil {
 		reconcileResult = "error"
+		ReconciliationErrorsTotal.WithLabelValues(req.Namespace, req.Name, "triggers").Inc()
+		triggersPhase.ObserveDuration()
 		return ctrl.Result{}, err
 	}
+	triggersPhase.ObserveDuration()
 
 	// Reconcile ArgoCD Application
+	argoCDPhase := NewPhaseTimer(req.Namespace, req.Name, "argocd")
 	if err := r.reconcileArgoCD(ctx, heliosApp, name, namespace, logger); err != nil {
 		reconcileResult = "error"
+		ReconciliationErrorsTotal.WithLabelValues(req.Namespace, req.Name, "argocd").Inc()
+		argoCDPhase.ObserveDuration()
 		return ctrl.Result{}, err
 	}
+	argoCDPhase.ObserveDuration()
 
 	// Update comprehensive status
+	statusPhase := NewPhaseTimer(req.Namespace, req.Name, "status")
 	if err := r.updateComprehensiveStatus(ctx, heliosApp, name, namespace, logger); err != nil {
 		logger.Error(err, "Failed to update comprehensive status")
 		reconcileResult = "error"
+		ReconciliationErrorsTotal.WithLabelValues(req.Namespace, req.Name, "status").Inc()
+		statusPhase.ObserveDuration()
 		return ctrl.Result{}, common.NewStatusUpdateError("HeliosApp", name, err)
 	}
+	statusPhase.ObserveDuration()
 
 	reconcileResult = "success"
 	// Success log is in defer function

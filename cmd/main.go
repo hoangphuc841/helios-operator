@@ -32,7 +32,6 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
-	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
@@ -46,6 +45,7 @@ import (
 
 	heliosappv1 "github.com/hoangphuc841/helios-operator/api/v1"
 	"github.com/hoangphuc841/helios-operator/internal/controller"
+	"github.com/hoangphuc841/helios-operator/internal/health"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -211,12 +211,24 @@ func main() {
 		}
 	}
 
-	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
+	// Setup health checks
+	healthChecker := health.NewChecker(mgr.GetClient())
+	
+	// Add liveness check
+	if err := mgr.AddHealthzCheck("healthz", healthChecker.LivenessCheck); err != nil {
 		setupLog.Error(err, "unable to set up health check")
 		os.Exit(1)
 	}
-	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
+	
+	// Add readiness check
+	if err := mgr.AddReadyzCheck("readyz", healthChecker.ReadinessCheck); err != nil {
 		setupLog.Error(err, "unable to set up ready check")
+		os.Exit(1)
+	}
+	
+	// Add webhook readiness check if webhooks are enabled
+	if err := mgr.AddReadyzCheck("webhook", health.WebhookReadinessCheck()); err != nil {
+		setupLog.Error(err, "unable to set up webhook readiness check")
 		os.Exit(1)
 	}
 

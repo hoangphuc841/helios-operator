@@ -20,6 +20,16 @@ var (
 		[]string{"namespace", "name", "result"}, // result: success, error, requeue
 	)
 
+	// ReconciliationPhaseDuration tracks duration of each reconciliation phase
+	ReconciliationPhaseDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "heliosapp_reconciliation_phase_duration_seconds",
+			Help:    "Time spent in each reconciliation phase",
+			Buckets: prometheus.ExponentialBuckets(0.001, 2, 15),
+		},
+		[]string{"namespace", "name", "phase"}, // phase: fetch, pipeline, triggers, argocd, status
+	)
+
 	// BuildsTotal tracks total number of builds per status
 	BuildsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -74,6 +84,15 @@ var (
 		[]string{"namespace", "name"},
 	)
 
+	// ReconciliationErrorsTotal tracks reconciliation errors by type
+	ReconciliationErrorsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "heliosapp_reconciliation_errors_total",
+			Help: "Total number of reconciliation errors by error type",
+		},
+		[]string{"namespace", "name", "error_type"}, // error_type: fetch, pipeline, triggers, argocd, status, validation
+	)
+
 	// WatchEventsTotal tracks watch event triggers
 	WatchEventsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -91,20 +110,53 @@ var (
 		},
 		[]string{"namespace", "name"},
 	)
+
+	// APICallDuration tracks duration of Kubernetes API calls
+	APICallDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "heliosapp_api_call_duration_seconds",
+			Help:    "Duration of Kubernetes API calls",
+			Buckets: prometheus.ExponentialBuckets(0.001, 2, 12), // 1ms to ~4s
+		},
+		[]string{"operation", "resource_type", "result"}, // operation: get, create, update, delete; result: success, error
+	)
+
+	// APICallsTotal tracks total API calls
+	APICallsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "heliosapp_api_calls_total",
+			Help: "Total number of Kubernetes API calls",
+		},
+		[]string{"operation", "resource_type", "result"},
+	)
+
+	// ResourcesManaged tracks number of resources managed by the operator
+	ResourcesManaged = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "heliosapp_resources_managed_total",
+			Help: "Total number of resources managed by the operator",
+		},
+		[]string{"resource_type"}, // resource_type: pipeline, eventlistener, trigger, application
+	)
 )
 
 // init registers all metrics with the controller-runtime metrics registry
 func init() {
 	metrics.Registry.MustRegister(
 		ReconciliationDuration,
+		ReconciliationPhaseDuration,
 		BuildsTotal,
 		DeploymentHealthGauge,
 		ReplicasGauge,
 		ArgoCDSyncStatus,
 		ArgoCDHealthStatus,
 		ReconciliationsTotal,
+		ReconciliationErrorsTotal,
 		WatchEventsTotal,
 		LastReconcileTime,
+		APICallDuration,
+		APICallsTotal,
+		ResourcesManaged,
 	)
 }
 
@@ -148,4 +200,42 @@ func HealthStatusToMetric(status string) float64 {
 	default:
 		return -1.0 // Unknown, Missing
 	}
+}
+
+// PhaseTimer helps track duration of reconciliation phases
+type PhaseTimer struct {
+	namespace string
+	name      string
+	phase     string
+	timer     *prometheus.Timer
+}
+
+// NewPhaseTimer creates a new phase timer and starts tracking
+func NewPhaseTimer(namespace, name, phase string) *PhaseTimer {
+	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
+		ReconciliationPhaseDuration.WithLabelValues(namespace, name, phase).Observe(v)
+	}))
+	
+	return &PhaseTimer{
+		namespace: namespace,
+		name:      name,
+		phase:     phase,
+		timer:     timer,
+	}
+}
+
+// ObserveDuration stops the timer and records the duration
+func (pt *PhaseTimer) ObserveDuration() {
+	pt.timer.ObserveDuration()
+}
+
+// RecordAPICall is a convenience function to record API call metrics
+func RecordAPICall(operation, resourceType string, err error, duration float64) {
+	result := "success"
+	if err != nil {
+		result = "error"
+	}
+	
+	APICallDuration.WithLabelValues(operation, resourceType, result).Observe(duration)
+	APICallsTotal.WithLabelValues(operation, resourceType, result).Inc()
 }

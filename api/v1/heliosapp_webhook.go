@@ -22,11 +22,43 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/metrics"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
+
+var (
+	// WebhookValidationsTotal tracks webhook validation attempts
+	webhookValidationsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "heliosapp_webhook_validations_total",
+			Help: "Total number of webhook validation attempts",
+		},
+		[]string{"operation", "result"}, // operation: create, update, delete; result: accept, reject
+	)
+
+	// WebhookValidationDuration tracks webhook validation duration
+	webhookValidationDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "heliosapp_webhook_validation_duration_seconds",
+			Help:    "Duration of webhook validations",
+			Buckets: prometheus.ExponentialBuckets(0.0001, 2, 12), // 0.1ms to ~400ms
+		},
+		[]string{"operation"},
+	)
+)
+
+func init() {
+	// Register webhook metrics
+	metrics.Registry.MustRegister(
+		webhookValidationsTotal,
+		webhookValidationDuration,
+	)
+}
 
 // validateHeliosApp validates the HeliosApp spec
 func (r *HeliosApp) validateHeliosApp() (admission.Warnings, error) {
@@ -469,21 +501,61 @@ func (r *HeliosApp) Default() {
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *HeliosApp) ValidateCreate() (admission.Warnings, error) {
-	return r.validateHeliosApp()
+	startTime := time.Now()
+	warnings, err := r.validateHeliosApp()
+	duration := time.Since(startTime).Seconds()
+	
+	result := "accept"
+	if err != nil {
+		result = "reject"
+	}
+	
+	webhookValidationDuration.WithLabelValues("create").Observe(duration)
+	webhookValidationsTotal.WithLabelValues("create", result).Inc()
+	
+	return warnings, err
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *HeliosApp) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
+	startTime := time.Now()
 	oldHeliosApp, ok := old.(*HeliosApp)
 	if !ok {
+		duration := time.Since(startTime).Seconds()
+		webhookValidationDuration.WithLabelValues("update").Observe(duration)
+		webhookValidationsTotal.WithLabelValues("update", "reject").Inc()
 		return nil, fmt.Errorf("expected old object to be of type HeliosApp")
 	}
-	return r.validateHeliosAppUpdate(oldHeliosApp)
+	
+	warnings, err := r.validateHeliosAppUpdate(oldHeliosApp)
+	duration := time.Since(startTime).Seconds()
+	
+	result := "accept"
+	if err != nil {
+		result = "reject"
+	}
+	
+	webhookValidationDuration.WithLabelValues("update").Observe(duration)
+	webhookValidationsTotal.WithLabelValues("update", result).Inc()
+	
+	return warnings, err
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *HeliosApp) ValidateDelete() (admission.Warnings, error) {
-	return r.validateHeliosAppDelete()
+	startTime := time.Now()
+	warnings, err := r.validateHeliosAppDelete()
+	duration := time.Since(startTime).Seconds()
+	
+	result := "accept"
+	if err != nil {
+		result = "reject"
+	}
+	
+	webhookValidationDuration.WithLabelValues("delete").Observe(duration)
+	webhookValidationsTotal.WithLabelValues("delete", result).Inc()
+	
+	return warnings, err
 }
 
 // SetupWebhookWithManager sets up the webhook with the manager
