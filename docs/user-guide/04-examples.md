@@ -27,17 +27,17 @@ spec:
   # Source repository
   gitRepo: https://github.com/example/simple-webapp
   gitBranch: main
-  
+
   # Container configuration
   imageRepo: docker.io/myorg/simple-webapp
   port: 8080
   replicas: 2
-  
+
   # GitOps configuration
   gitopsRepo: https://github.com/example/gitops
   gitopsPath: apps/simple-webapp
   gitopsBranch: main
-  
+
   # Tekton configuration
   serviceAccount: default
   webhookSecret: github-webhook
@@ -74,7 +74,7 @@ spec:
   serviceAccount: pipeline-sa
   webhookSecret: github-webhook
   gitopsRepo: https://github.com/example/gitops
-  
+
   # Use custom PVC for better performance
   pvcName: webapp-build-cache
 ```
@@ -84,6 +84,7 @@ spec:
 Simple configuration for different environments using different branches.
 
 **Production Environment:**
+
 ```yaml
 apiVersion: platform.helios.io/v1
 kind: HeliosApp
@@ -92,10 +93,10 @@ metadata:
   namespace: production
 spec:
   gitRepo: https://github.com/example/myapp
-  gitBranch: main  # Production from main branch
+  gitBranch: main # Production from main branch
   imageRepo: docker.io/myorg/myapp
   port: 8080
-  replicas: 3  # Higher replicas for production
+  replicas: 3 # Higher replicas for production
   serviceAccount: production-sa
   webhookSecret: github-webhook-prod
   gitopsRepo: https://github.com/example/gitops
@@ -104,6 +105,7 @@ spec:
 ```
 
 **Staging Environment:**
+
 ```yaml
 apiVersion: platform.helios.io/v1
 kind: HeliosApp
@@ -112,10 +114,10 @@ metadata:
   namespace: staging
 spec:
   gitRepo: https://github.com/example/myapp
-  gitBranch: develop  # Staging from develop branch
+  gitBranch: develop # Staging from develop branch
   imageRepo: docker.io/myorg/myapp
   port: 8080
-  replicas: 1  # Fewer replicas for staging
+  replicas: 1 # Fewer replicas for staging
   serviceAccount: staging-sa
   webhookSecret: github-webhook-staging
   gitopsRepo: https://github.com/example/gitops
@@ -426,18 +428,18 @@ metadata:
 spec:
   # Source configuration
   gitRepo: https://github.com/example/ha-app
-  gitBranch: release  # Use release branch for production
-  
+  gitBranch: release # Use release branch for production
+
   # Image configuration
   imageRepo: my-registry.com/prod/ha-app
   port: 8080
-  replicas: 5  # High replica count for HA
-  
+  replicas: 5 # High replica count for HA
+
   # GitOps configuration
   gitopsRepo: https://github.com/example/ha-gitops
   gitopsPath: production/ha-app
   gitopsBranch: production
-  
+
   # Pipeline configuration
   serviceAccount: ha-app-sa
   webhookSecret: ha-webhook-secret
@@ -461,7 +463,7 @@ metadata:
     active: "true"
 spec:
   gitRepo: https://github.com/example/myapp
-  gitBranch: v1.2.3  # Current production version
+  gitBranch: v1.2.3 # Current production version
   imageRepo: docker.io/myorg/myapp
   port: 8080
   replicas: 3
@@ -482,10 +484,10 @@ metadata:
     active: "false"
 spec:
   gitRepo: https://github.com/example/myapp
-  gitBranch: v1.3.0  # New version being tested
+  gitBranch: v1.3.0 # New version being tested
   imageRepo: docker.io/myorg/myapp
   port: 8080
-  replicas: 1  # Fewer replicas for testing
+  replicas: 1 # Fewer replicas for testing
   serviceAccount: production-sa
   webhookSecret: github-webhook
   gitopsRepo: https://github.com/example/gitops
@@ -597,7 +599,7 @@ spec:
   gitRepo: https://github.com/example/payment-service
   imageRepo: docker.io/myorg/payment-service
   port: 8080
-  replicas: 5  # More replicas for critical service
+  replicas: 5 # More replicas for critical service
   serviceAccount: ecommerce-sa
   webhookSecret: github-webhook
   gitopsRepo: https://github.com/example/ecommerce-gitops
@@ -669,7 +671,7 @@ spec:
   gitBranch: main
   imageRepo: docker.io/myorg/saas-app
   port: 8080
-  replicas: 5  # Premium tier gets more resources
+  replicas: 5 # Premium tier gets more resources
   serviceAccount: tenant-a-sa
   webhookSecret: tenant-a-webhook
   gitopsRepo: https://github.com/example/saas-gitops
@@ -697,7 +699,7 @@ spec:
   gitBranch: main
   imageRepo: docker.io/myorg/saas-app
   port: 8080
-  replicas: 2  # Standard tier gets fewer resources
+  replicas: 2 # Standard tier gets fewer resources
   serviceAccount: tenant-b-sa
   webhookSecret: tenant-b-webhook
   gitopsRepo: https://github.com/example/saas-gitops
@@ -709,32 +711,38 @@ spec:
 ## Tips and Best Practices
 
 ### 1. **Naming Conventions**
+
 - Use descriptive names: `<service>-<environment>` (e.g., `api-production`)
 - Include team or project names for multi-team environments
 - Keep names lowercase and use hyphens
 
 ### 2. **Resource Management**
+
 - Set appropriate replica counts based on load
 - Use PVCs with appropriate storage classes for build caches
 - Consider resource quotas for namespaces
 
 ### 3. **Security**
+
 - Always use dedicated ServiceAccounts per namespace
 - Store webhook secrets in Kubernetes Secrets
 - Use RBAC to limit ServiceAccount permissions
 - Rotate webhook secrets regularly
 
 ### 4. **GitOps Organization**
+
 - Organize gitopsPath by environment: `production/app`, `staging/app`
 - Use separate GitOps repos for different environments
 - Keep GitOps manifests simple and declarative
 
 ### 5. **Monitoring**
+
 - Add labels for easier querying and alerting
 - Use annotations for documentation
 - Monitor HeliosApp status conditions
 
 ### 6. **Multi-Environment**
+
 - Use different namespaces for different environments
 - Use different branches (main for prod, develop for staging)
 - Scale replicas appropriately per environment

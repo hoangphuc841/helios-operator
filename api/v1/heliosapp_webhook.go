@@ -146,7 +146,7 @@ func (r *HeliosApp) validateNumericFields() []string {
 	if r.Spec.Port < 1 || r.Spec.Port > 65535 {
 		errors = append(errors, fmt.Sprintf("port must be between 1 and 65535, got %d", r.Spec.Port))
 	}
-	
+
 	// Warn about privileged ports (< 1024) - could be a warning instead
 	if r.Spec.Port > 0 && r.Spec.Port < 1024 {
 		// This is still valid but might need special permissions
@@ -157,7 +157,7 @@ func (r *HeliosApp) validateNumericFields() []string {
 	if r.Spec.Replicas < 0 {
 		errors = append(errors, fmt.Sprintf("replicas must be non-negative, got %d", r.Spec.Replicas))
 	}
-	
+
 	// Validate replicas upper bound (prevent accidental large deployments)
 	const maxReplicas = 100
 	if r.Spec.Replicas > maxReplicas {
@@ -269,7 +269,7 @@ func validateGitURL(gitURL, fieldName string) error {
 			break
 		}
 	}
-	
+
 	if !isValidScheme {
 		return fmt.Errorf("%s must use https://, http://, ssh://, or git:// scheme, got '%s'", fieldName, parsedURL.Scheme)
 	}
@@ -285,7 +285,7 @@ func validateGitURL(gitURL, fieldName string) error {
 	// Bitbucket: https://bitbucket.org/owner/repo.git
 	// Generic SSH: git@github.com:owner/repo.git
 	path := strings.TrimSuffix(parsedURL.Path, ".git")
-	
+
 	// For SSH URLs (git@host:path), the path should not be empty
 	if parsedURL.Scheme == "ssh" && path == "" {
 		return fmt.Errorf("%s SSH URL must include a repository path", fieldName)
@@ -317,11 +317,11 @@ func validateImageRepo(imageRepo string) error {
 	//   - gcr.io/my-project/myapp
 	//   - quay.io/namespace/repo
 	//   - myregistry.com:5000/namespace/repo
-	
+
 	// Remove tag if present for validation
 	imageParts := strings.Split(imageRepo, ":")
 	imageWithoutTag := imageParts[0]
-	
+
 	// Validate tag format if present (should not be empty and not contain invalid chars)
 	if len(imageParts) > 2 {
 		// More than one colon could indicate port in registry URL, which is valid
@@ -329,7 +329,7 @@ func validateImageRepo(imageRepo string) error {
 		// Reconstruct without the last part (tag)
 		imageWithoutTag = strings.Join(imageParts[:len(imageParts)-1], ":")
 	}
-	
+
 	if len(imageParts) > 1 {
 		tag := imageParts[len(imageParts)-1]
 		if tag == "" {
@@ -344,7 +344,7 @@ func validateImageRepo(imageRepo string) error {
 
 	// Split image path by '/'
 	pathParts := strings.Split(imageWithoutTag, "/")
-	
+
 	// Should have at least registry/namespace/repository (3 parts) or namespace/repository (2 parts)
 	if len(pathParts) < 2 {
 		return fmt.Errorf("imageRepo must follow format '[registry/]namespace/repository[:tag]', got '%s'", imageRepo)
@@ -481,6 +481,21 @@ func (r *HeliosApp) Default() {
 		r.Spec.Replicas = 1
 	}
 
+	// Set default Git branch
+	if r.Spec.GitBranch == "" {
+		r.Spec.GitBranch = "main"
+	}
+
+	// Set default GitOps branch
+	if r.Spec.GitopsBranch == "" {
+		r.Spec.GitopsBranch = "main"
+	}
+
+	// Set default GitOps path to app name if not specified
+	if r.Spec.GitopsPath == "" {
+		r.Spec.GitopsPath = r.Name
+	}
+
 	// Namespace is handled by Kubernetes metadata.namespace
 
 	if r.Spec.ServiceAccount == "" {
@@ -504,15 +519,15 @@ func (r *HeliosApp) ValidateCreate() (admission.Warnings, error) {
 	startTime := time.Now()
 	warnings, err := r.validateHeliosApp()
 	duration := time.Since(startTime).Seconds()
-	
+
 	result := "accept"
 	if err != nil {
 		result = "reject"
 	}
-	
+
 	webhookValidationDuration.WithLabelValues("create").Observe(duration)
 	webhookValidationsTotal.WithLabelValues("create", result).Inc()
-	
+
 	return warnings, err
 }
 
@@ -526,18 +541,18 @@ func (r *HeliosApp) ValidateUpdate(old runtime.Object) (admission.Warnings, erro
 		webhookValidationsTotal.WithLabelValues("update", "reject").Inc()
 		return nil, fmt.Errorf("expected old object to be of type HeliosApp")
 	}
-	
+
 	warnings, err := r.validateHeliosAppUpdate(oldHeliosApp)
 	duration := time.Since(startTime).Seconds()
-	
+
 	result := "accept"
 	if err != nil {
 		result = "reject"
 	}
-	
+
 	webhookValidationDuration.WithLabelValues("update").Observe(duration)
 	webhookValidationsTotal.WithLabelValues("update", result).Inc()
-	
+
 	return warnings, err
 }
 
@@ -546,15 +561,15 @@ func (r *HeliosApp) ValidateDelete() (admission.Warnings, error) {
 	startTime := time.Now()
 	warnings, err := r.validateHeliosAppDelete()
 	duration := time.Since(startTime).Seconds()
-	
+
 	result := "accept"
 	if err != nil {
 		result = "reject"
 	}
-	
+
 	webhookValidationDuration.WithLabelValues("delete").Observe(duration)
 	webhookValidationsTotal.WithLabelValues("delete", result).Inc()
-	
+
 	return warnings, err
 }
 

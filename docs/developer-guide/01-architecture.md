@@ -11,13 +11,14 @@ This document provides a comprehensive overview of the Helios Operator architect
 5. [Metrics and Observability](#metrics-and-observability)
 6. [Configuration](#configuration)
 7. [Security](#security)
-8. [Testing Strategy](#testing-strategy)
+8. [Testing](#testing)
 
 ## Overview
 
 Helios Operator is a Kubernetes operator that provides a simplified interface for deploying applications using GitOps. It orchestrates Tekton Pipelines for CI/CD and ArgoCD Applications for continuous deployment, abstracting away the complexity of managing these tools directly.
 
 **Key Features:**
+
 - Declarative application deployment via HeliosApp CRD
 - Automated CI/CD pipeline creation with Tekton
 - GitOps-based deployment with ArgoCD
@@ -114,6 +115,7 @@ sequenceDiagram
 The main reconciliation controller that manages the entire lifecycle of HeliosApp resources.
 
 **Key Responsibilities:**
+
 - Fetch and validate HeliosApp resources
 - Reconcile Tekton Pipelines
 - Reconcile Tekton Triggers (EventListener, TriggerBinding, TriggerTemplate)
@@ -121,6 +123,7 @@ The main reconciliation controller that manages the entire lifecycle of HeliosAp
 - Update comprehensive status with build and deployment information
 
 **Reconciliation Phases:**
+
 1. **Fetch Phase**: Retrieve HeliosApp resource from cluster
 2. **Pipeline Phase**: Create/update Tekton Pipeline
 3. **Triggers Phase**: Create/update webhook triggers
@@ -138,6 +141,7 @@ Modules responsible for generating Kubernetes resources:
 - **`pipeline.go`**: Pipeline task definitions
 
 **Key Functions:**
+
 - Template-based resource generation
 - Parameter substitution
 - Ownership reference management
@@ -149,6 +153,7 @@ Modules responsible for generating Kubernetes resources:
 Admission webhook for validating HeliosApp resources before they're created or updated.
 
 **Validations:**
+
 - Git URL format and scheme validation
 - Container image repository format
 - Port range (1-65535)
@@ -165,24 +170,29 @@ Comprehensive Prometheus metrics for observability.
 **Metric Categories:**
 
 **Reconciliation Metrics:**
+
 - `heliosapp_reconciliation_duration_seconds`: Overall reconciliation duration
 - `heliosapp_reconciliation_phase_duration_seconds`: Per-phase duration
 - `heliosapp_reconciliations_total`: Total reconciliation count
 - `heliosapp_reconciliation_errors_total`: Errors by type and phase
 
 **Build Metrics:**
+
 - `heliosapp_builds_total`: Build count by status
 - `heliosapp_argocd_sync_status`: ArgoCD sync status
 
 **Health Metrics:**
+
 - `heliosapp_deployment_health`: Deployment health status
 - `heliosapp_replicas`: Replica counts (desired vs ready)
 
 **API Metrics:**
+
 - `heliosapp_api_calls_total`: Kubernetes API call count
 - `heliosapp_api_call_duration_seconds`: API call latency
 
 **Webhook Metrics:**
+
 - `heliosapp_webhook_validations_total`: Validation attempts
 - `heliosapp_webhook_validation_duration_seconds`: Validation duration
 
@@ -193,10 +203,12 @@ Comprehensive Prometheus metrics for observability.
 Health check endpoints for Kubernetes probes.
 
 **Endpoints:**
+
 - `/healthz`: Liveness probe (process responsiveness)
 - `/readyz`: Readiness probe (API connectivity, webhook status)
 
 **Checks:**
+
 - Kubernetes API server connectivity
 - Webhook certificate validity
 - Leader election status
@@ -208,6 +220,7 @@ Health check endpoints for Kubernetes probes.
 Centralized configuration management with environment variable support.
 
 **Configuration Options:**
+
 - Reconciliation settings (interval, concurrency)
 - Resource defaults (replicas, port, service account)
 - Retry settings (max retries, backoff)
@@ -364,12 +377,14 @@ The controller watches multiple resource types for changes:
 - `HeliosApp`: Direct changes trigger reconciliation
 
 **Secondary Resources (with predicates):**
+
 - `ArgoCD Application`: Changes to sync/health status
 - `Tekton PipelineRun`: Build completion or failure
 - `Deployment`: Pod readiness changes
 
 **Predicate Filtering:**
 Each watch includes predicates to reduce unnecessary reconciliations:
+
 - ArgoCD: Only apps with managed-by label
 - PipelineRun: Only runs with app label
 - Deployment: Only deployments with app label
@@ -446,12 +461,14 @@ Configuration can also be loaded from a ConfigMap (future enhancement).
 The operator requires specific permissions:
 
 **Core Permissions:**
+
 - HeliosApp resources: Full access
 - Tekton resources: Full access (Pipelines, PipelineRuns, Triggers)
 - ArgoCD resources: Full access (Applications)
 - Deployments: Read access for status
 
 **Webhook Permissions:**
+
 - ValidatingWebhookConfiguration: Update for webhook setup
 
 ### Pod Security
@@ -464,6 +481,7 @@ The operator requires specific permissions:
 ### Admission Control
 
 Webhook validation prevents:
+
 - Invalid Git URLs
 - Malformed image repositories
 - Out-of-range ports or replicas

@@ -32,7 +32,7 @@ The Helios Operator exposes the following Prometheus metrics on port `8080` at t
 
 #### Reconciliation Metrics
 
-```
+```prometheus
 # Reconciliation duration histogram (seconds)
 helios_operator_reconciliation_duration_seconds{namespace,name}
 
@@ -45,7 +45,7 @@ helios_operator_reconciling_resources{namespace}
 
 #### Phase-Specific Metrics
 
-```
+```prometheus
 # Duration of each reconciliation phase (seconds)
 helios_operator_reconciliation_phase_duration_seconds{namespace,name,phase}
 
@@ -59,7 +59,7 @@ helios_operator_reconciliation_phase_duration_seconds{namespace,name,phase}
 
 #### API Call Metrics
 
-```
+```prometheus
 # Kubernetes API call duration (seconds)
 helios_operator_api_call_duration_seconds{operation,resource}
 
@@ -69,7 +69,7 @@ helios_operator_api_calls_total{operation,resource,status}
 
 #### Resource Management Metrics
 
-```
+```prometheus
 # Number of resources managed by the operator
 helios_operator_resources_managed{type}
 
@@ -78,7 +78,7 @@ helios_operator_resources_managed{type}
 
 #### Webhook Metrics
 
-```
+```prometheus
 # Webhook validation counter
 helios_operator_webhook_validations_total{operation,result}
 
@@ -103,10 +103,10 @@ metadata:
   namespace: helios-operator-system
 spec:
   endpoints:
-  - interval: 30s
-    path: /metrics
-    port: metrics
-    scheme: http
+    - interval: 30s
+      path: /metrics
+      port: metrics
+      scheme: http
   selector:
     matchLabels:
       control-plane: controller-manager
@@ -118,7 +118,7 @@ Add to your Prometheus configuration:
 
 ```yaml
 scrape_configs:
-  - job_name: 'helios-operator'
+  - job_name: "helios-operator"
     kubernetes_sd_configs:
       - role: pod
         namespaces:
@@ -138,8 +138,8 @@ scrape_configs:
 #### Average Reconciliation Duration
 
 ```promql
-rate(helios_operator_reconciliation_duration_seconds_sum[5m]) 
-/ 
+rate(helios_operator_reconciliation_duration_seconds_sum[5m])
+/
 rate(helios_operator_reconciliation_duration_seconds_count[5m])
 ```
 
@@ -175,28 +175,33 @@ sum(rate(helios_operator_api_calls_total[5m]))
 Create a Grafana dashboard with the following panels:
 
 #### Panel 1: Reconciliation Rate
+
 ```promql
 rate(helios_operator_reconciliation_duration_seconds_count[5m])
 ```
 
 #### Panel 2: Average Reconciliation Duration
+
 ```promql
-rate(helios_operator_reconciliation_duration_seconds_sum[5m]) 
-/ 
+rate(helios_operator_reconciliation_duration_seconds_sum[5m])
+/
 rate(helios_operator_reconciliation_duration_seconds_count[5m])
 ```
 
 #### Panel 3: Error Rate by Phase
+
 ```promql
 sum by (phase) (rate(helios_operator_reconciliation_errors_total[5m]))
 ```
 
 #### Panel 4: Resources Managed
+
 ```promql
 helios_operator_resources_managed
 ```
 
 #### Panel 5: API Call Latency
+
 ```promql
 histogram_quantile(0.95,
   sum by (le, operation) (

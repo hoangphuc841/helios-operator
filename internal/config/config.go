@@ -26,29 +26,29 @@ import (
 // OperatorConfig holds all operator configuration
 type OperatorConfig struct {
 	// Reconciliation settings
-	ReconcileInterval    time.Duration
+	ReconcileInterval       time.Duration
 	MaxConcurrentReconciles int
-	
+
 	// Resource defaults
-	DefaultReplicas      int32
-	DefaultPort          int32
+	DefaultReplicas       int32
+	DefaultPort           int32
 	DefaultServiceAccount string
-	
+
 	// Retry settings
-	MaxRetries           int
-	RetryBackoff         time.Duration
-	
+	MaxRetries   int
+	RetryBackoff time.Duration
+
 	// Feature flags
 	EnableMetrics        bool
 	EnableWebhooks       bool
 	EnableLeaderElection bool
-	
+
 	// Timeouts
-	ReconcileTimeout     time.Duration
-	APICallTimeout       time.Duration
-	
+	ReconcileTimeout time.Duration
+	APICallTimeout   time.Duration
+
 	// Namespace watching
-	WatchNamespace       string // Empty string means all namespaces
+	WatchNamespace string // Empty string means all namespaces
 }
 
 // Default returns a default operator configuration
@@ -73,7 +73,7 @@ func Default() *OperatorConfig {
 // LoadFromEnv loads configuration from environment variables
 func LoadFromEnv() (*OperatorConfig, error) {
 	cfg := Default()
-	
+
 	// Reconciliation settings
 	if val := os.Getenv("RECONCILE_INTERVAL"); val != "" {
 		duration, err := time.ParseDuration(val)
@@ -82,7 +82,7 @@ func LoadFromEnv() (*OperatorConfig, error) {
 		}
 		cfg.ReconcileInterval = duration
 	}
-	
+
 	if val := os.Getenv("MAX_CONCURRENT_RECONCILES"); val != "" {
 		num, err := strconv.Atoi(val)
 		if err != nil {
@@ -93,7 +93,7 @@ func LoadFromEnv() (*OperatorConfig, error) {
 		}
 		cfg.MaxConcurrentReconciles = num
 	}
-	
+
 	// Resource defaults
 	if val := os.Getenv("DEFAULT_REPLICAS"); val != "" {
 		num, err := strconv.ParseInt(val, 10, 32)
@@ -105,7 +105,7 @@ func LoadFromEnv() (*OperatorConfig, error) {
 		}
 		cfg.DefaultReplicas = int32(num)
 	}
-	
+
 	if val := os.Getenv("DEFAULT_PORT"); val != "" {
 		num, err := strconv.ParseInt(val, 10, 32)
 		if err != nil {
@@ -116,11 +116,11 @@ func LoadFromEnv() (*OperatorConfig, error) {
 		}
 		cfg.DefaultPort = int32(num)
 	}
-	
+
 	if val := os.Getenv("DEFAULT_SERVICE_ACCOUNT"); val != "" {
 		cfg.DefaultServiceAccount = val
 	}
-	
+
 	// Retry settings
 	if val := os.Getenv("MAX_RETRIES"); val != "" {
 		num, err := strconv.Atoi(val)
@@ -132,7 +132,7 @@ func LoadFromEnv() (*OperatorConfig, error) {
 		}
 		cfg.MaxRetries = num
 	}
-	
+
 	if val := os.Getenv("RETRY_BACKOFF"); val != "" {
 		duration, err := time.ParseDuration(val)
 		if err != nil {
@@ -140,7 +140,7 @@ func LoadFromEnv() (*OperatorConfig, error) {
 		}
 		cfg.RetryBackoff = duration
 	}
-	
+
 	// Feature flags
 	if val := os.Getenv("ENABLE_METRICS"); val != "" {
 		enabled, err := strconv.ParseBool(val)
@@ -149,7 +149,7 @@ func LoadFromEnv() (*OperatorConfig, error) {
 		}
 		cfg.EnableMetrics = enabled
 	}
-	
+
 	if val := os.Getenv("ENABLE_WEBHOOKS"); val != "" {
 		enabled, err := strconv.ParseBool(val)
 		if err != nil {
@@ -157,7 +157,7 @@ func LoadFromEnv() (*OperatorConfig, error) {
 		}
 		cfg.EnableWebhooks = enabled
 	}
-	
+
 	if val := os.Getenv("ENABLE_LEADER_ELECTION"); val != "" {
 		enabled, err := strconv.ParseBool(val)
 		if err != nil {
@@ -165,7 +165,7 @@ func LoadFromEnv() (*OperatorConfig, error) {
 		}
 		cfg.EnableLeaderElection = enabled
 	}
-	
+
 	// Timeouts
 	if val := os.Getenv("RECONCILE_TIMEOUT"); val != "" {
 		duration, err := time.ParseDuration(val)
@@ -174,7 +174,7 @@ func LoadFromEnv() (*OperatorConfig, error) {
 		}
 		cfg.ReconcileTimeout = duration
 	}
-	
+
 	if val := os.Getenv("API_CALL_TIMEOUT"); val != "" {
 		duration, err := time.ParseDuration(val)
 		if err != nil {
@@ -182,12 +182,12 @@ func LoadFromEnv() (*OperatorConfig, error) {
 		}
 		cfg.APICallTimeout = duration
 	}
-	
+
 	// Namespace watching
 	if val := os.Getenv("WATCH_NAMESPACE"); val != "" {
 		cfg.WatchNamespace = val
 	}
-	
+
 	return cfg, nil
 }
 
@@ -196,35 +196,35 @@ func (c *OperatorConfig) Validate() error {
 	if c.ReconcileInterval < 1*time.Second {
 		return fmt.Errorf("ReconcileInterval must be >= 1s, got %v", c.ReconcileInterval)
 	}
-	
+
 	if c.MaxConcurrentReconciles < 1 {
 		return fmt.Errorf("MaxConcurrentReconciles must be >= 1, got %d", c.MaxConcurrentReconciles)
 	}
-	
+
 	if c.DefaultReplicas < 0 {
 		return fmt.Errorf("DefaultReplicas must be >= 0, got %d", c.DefaultReplicas)
 	}
-	
+
 	if c.DefaultPort < 1 || c.DefaultPort > 65535 {
 		return fmt.Errorf("DefaultPort must be between 1 and 65535, got %d", c.DefaultPort)
 	}
-	
+
 	if c.MaxRetries < 0 {
 		return fmt.Errorf("MaxRetries must be >= 0, got %d", c.MaxRetries)
 	}
-	
+
 	if c.RetryBackoff < 0 {
 		return fmt.Errorf("RetryBackoff must be >= 0, got %v", c.RetryBackoff)
 	}
-	
+
 	if c.ReconcileTimeout < 1*time.Second {
 		return fmt.Errorf("ReconcileTimeout must be >= 1s, got %v", c.ReconcileTimeout)
 	}
-	
+
 	if c.APICallTimeout < 1*time.Second {
 		return fmt.Errorf("APICallTimeout must be >= 1s, got %v", c.APICallTimeout)
 	}
-	
+
 	return nil
 }
 

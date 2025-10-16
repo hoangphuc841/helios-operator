@@ -17,7 +17,10 @@ limitations under the License.
 package resources
 
 import (
+	"fmt"
+
 	heliosappv1 "github.com/hoangphuc841/helios-operator/api/v1"
+	"github.com/hoangphuc841/helios-operator/internal/common"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -32,6 +35,10 @@ import (
 //
 // Returns an unstructured.Unstructured object representing the Application.
 func GenerateArgoApplication(heliosApp *heliosappv1.HeliosApp) (*unstructured.Unstructured, error) {
+	if heliosApp == nil {
+		return nil, fmt.Errorf("heliosApp cannot be nil")
+	}
+
 	name := heliosApp.Name
 	namespace := heliosApp.Namespace
 
@@ -53,6 +60,11 @@ func GenerateArgoApplication(heliosApp *heliosappv1.HeliosApp) (*unstructured.Un
 		"metadata": map[string]interface{}{
 			"name":      name + "-argocd",
 			"namespace": "argocd", // ArgoCD Applications live in argocd namespace
+			"labels": map[string]interface{}{
+				common.LabelManagedBy: "helios-operator",
+				common.LabelAppName:   name,
+				common.LabelComponent: "argocd",
+			},
 		},
 		"spec": map[string]interface{}{
 			"project": "default",

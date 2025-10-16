@@ -215,7 +215,7 @@ func NewPhaseTimer(namespace, name, phase string) *PhaseTimer {
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
 		ReconciliationPhaseDuration.WithLabelValues(namespace, name, phase).Observe(v)
 	}))
-	
+
 	return &PhaseTimer{
 		namespace: namespace,
 		name:      name,
@@ -235,7 +235,7 @@ func RecordAPICall(operation, resourceType string, err error, duration float64) 
 	if err != nil {
 		result = "error"
 	}
-	
+
 	APICallDuration.WithLabelValues(operation, resourceType, result).Observe(duration)
 	APICallsTotal.WithLabelValues(operation, resourceType, result).Inc()
 }

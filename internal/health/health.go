@@ -33,15 +33,15 @@ var log = logf.Log.WithName("health")
 
 // Checker implements health check logic for the operator
 type Checker struct {
-	client       client.Client
+	client        client.Client
 	lastCheckTime time.Time
-	mu           sync.RWMutex
+	mu            sync.RWMutex
 }
 
 // NewChecker creates a new health checker
 func NewChecker(client client.Client) *Checker {
 	return &Checker{
-		client:       client,
+		client:        client,
 		lastCheckTime: time.Now(),
 	}
 }
@@ -53,7 +53,7 @@ func (c *Checker) LivenessCheck(req *http.Request) error {
 	c.mu.Lock()
 	c.lastCheckTime = time.Now()
 	c.mu.Unlock()
-	
+
 	log.V(2).Info("Liveness check succeeded")
 	return nil
 }

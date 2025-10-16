@@ -52,7 +52,7 @@ GOLANGCI_LINT ?= $(BIN_DIR)/golangci-lint
 KUSTOMIZE_VERSION ?= v5.7.1
 CONTROLLER_TOOLS_VERSION ?= v0.19.0
 GOLANGCI_LINT_VERSION ?= v2.5.0
-ENVTEST_K8S_VERSION ?= 1.31.0
+ENVTEST_K8S_VERSION ?= 1.34.1
 ENVTEST ?= $(BIN_DIR)/setup-envtest
 
 # =============================================================================

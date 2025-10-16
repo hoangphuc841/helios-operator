@@ -16,42 +16,42 @@ The `HeliosApp` custom resource provides a declarative way to manage application
 
 The specification defines the desired state of a HeliosApp.
 
-| Field | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `gitRepo` | string | Yes | - | URL of the Git repository containing application source code. Must use https://, http://, ssh://, or git:// scheme. |
-| `gitBranch` | string | No | "main" | Git branch or tag to build from. |
-| `imageRepo` | string | Yes | - | Container image repository in format `[registry/]namespace/repository[:tag]`. |
-| `port` | int32 | Yes | - | Port the application listens on. Range: 1-65535. |
-| `replicas` | int32 | No | 1 | Desired number of replicas. Range: 0-100. |
-| `serviceAccount` | string | No | "default" | Kubernetes ServiceAccount for pipeline execution. |
-| `webhookSecret` | string | No | "" | Name of the Secret containing GitHub webhook token. |
-| `pvcName` | string | No | "" | Name of PersistentVolumeClaim for pipeline workspace. If empty, auto-generated. |
-| `gitopsRepo` | string | No | Same as gitRepo | Git repository containing Kubernetes manifests. |
-| `gitopsPath` | string | No | "" | Path within gitopsRepo to application manifests. |
-| `gitopsBranch` | string | No | "main" | Branch of gitopsRepo to deploy from. |
+| Field            | Type   | Required | Default         | Description                                                                                                         |
+| ---------------- | ------ | -------- | --------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `gitRepo`        | string | Yes      | -               | URL of the Git repository containing application source code. Must use https://, http://, ssh://, or git:// scheme. |
+| `gitBranch`      | string | No       | "main"          | Git branch or tag to build from.                                                                                    |
+| `imageRepo`      | string | Yes      | -               | Container image repository in format `[registry/]namespace/repository[:tag]`.                                       |
+| `port`           | int32  | Yes      | -               | Port the application listens on. Range: 1-65535.                                                                    |
+| `replicas`       | int32  | No       | 1               | Desired number of replicas. Range: 0-100.                                                                           |
+| `serviceAccount` | string | No       | "default"       | Kubernetes ServiceAccount for pipeline execution.                                                                   |
+| `webhookSecret`  | string | No       | ""              | Name of the Secret containing GitHub webhook token.                                                                 |
+| `pvcName`        | string | No       | ""              | Name of PersistentVolumeClaim for pipeline workspace. If empty, auto-generated.                                     |
+| `gitopsRepo`     | string | No       | Same as gitRepo | Git repository containing Kubernetes manifests.                                                                     |
+| `gitopsPath`     | string | No       | ""              | Path within gitopsRepo to application manifests.                                                                    |
+| `gitopsBranch`   | string | No       | "main"          | Branch of gitopsRepo to deploy from.                                                                                |
 
 ### HeliosAppStatus
 
 The status reflects the current state of the HeliosApp.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `conditions` | []Condition | Standard Kubernetes conditions for resource state. |
-| `lastBuildTime` | metav1.Time | Timestamp of the last build attempt. |
-| `lastBuildStatus` | string | Status of last build: "Succeeded", "Failed", "Running", "Unknown". |
-| `lastDeployTime` | metav1.Time | Timestamp of the last deployment. |
-| `argocdSyncStatus` | string | ArgoCD sync status: "Synced", "OutOfSync", "Unknown". |
-| `argocdHealthStatus` | string | ArgoCD health status: "Healthy", "Progressing", "Degraded", "Unknown". |
-| `observedGeneration` | int64 | Generation of the spec that was last reconciled. |
-| `deploymentReplicas` | DeploymentReplicasStatus | Current replica counts. |
-| `pipelineRunName` | string | Name of the most recent PipelineRun. |
+| Field                | Type                     | Description                                                            |
+| -------------------- | ------------------------ | ---------------------------------------------------------------------- |
+| `conditions`         | []Condition              | Standard Kubernetes conditions for resource state.                     |
+| `lastBuildTime`      | metav1.Time              | Timestamp of the last build attempt.                                   |
+| `lastBuildStatus`    | string                   | Status of last build: "Succeeded", "Failed", "Running", "Unknown".     |
+| `lastDeployTime`     | metav1.Time              | Timestamp of the last deployment.                                      |
+| `argocdSyncStatus`   | string                   | ArgoCD sync status: "Synced", "OutOfSync", "Unknown".                  |
+| `argocdHealthStatus` | string                   | ArgoCD health status: "Healthy", "Progressing", "Degraded", "Unknown". |
+| `observedGeneration` | int64                    | Generation of the spec that was last reconciled.                       |
+| `deploymentReplicas` | DeploymentReplicasStatus | Current replica counts.                                                |
+| `pipelineRunName`    | string                   | Name of the most recent PipelineRun.                                   |
 
 #### DeploymentReplicasStatus
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `desired` | int32 | Desired number of replicas from spec. |
-| `ready` | int32 | Number of replicas that are ready. |
+| Field       | Type  | Description                            |
+| ----------- | ----- | -------------------------------------- |
+| `desired`   | int32 | Desired number of replicas from spec.  |
+| `ready`     | int32 | Number of replicas that are ready.     |
 | `available` | int32 | Number of replicas that are available. |
 
 ## Examples
@@ -82,21 +82,21 @@ spec:
   # Source Configuration
   gitRepo: https://github.com/example/production-app
   gitBranch: release-v1.0
-  
+
   # Build Configuration
   imageRepo: gcr.io/my-project/production-app
   serviceAccount: build-pipeline-sa
   pvcName: production-app-cache
-  
+
   # GitOps Configuration
   gitopsRepo: https://github.com/example/k8s-manifests
   gitopsPath: apps/production-app
   gitopsBranch: main
-  
+
   # Application Configuration
   port: 3000
   replicas: 3
-  
+
   # Webhook Configuration
   webhookSecret: github-webhook-token
 ```
@@ -191,12 +191,12 @@ Setting replicas to 0 pauses the application.
 
 ### Condition Types
 
-| Type | Description |
-|------|-------------|
-| `Ready` | Application is fully reconciled and healthy |
-| `PipelineReady` | Tekton Pipeline is created and ready |
-| `TriggersReady` | Tekton Triggers are configured |
-| `ArgoCDReady` | ArgoCD Application is synced |
+| Type            | Description                                 |
+| --------------- | ------------------------------------------- |
+| `Ready`         | Application is fully reconciled and healthy |
+| `PipelineReady` | Tekton Pipeline is created and ready        |
+| `TriggersReady` | Tekton Triggers are configured              |
+| `ArgoCDReady`   | ArgoCD Application is synced                |
 
 ### Condition Status
 
@@ -209,19 +209,19 @@ Setting replicas to 0 pauses the application.
 ```yaml
 status:
   conditions:
-  - type: Ready
-    status: "True"
-    reason: ReconciliationSucceeded
-    message: All resources created successfully
-    lastTransitionTime: "2025-10-16T10:00:00Z"
-  - type: PipelineReady
-    status: "True"
-    reason: PipelineCreated
-    message: Tekton Pipeline is ready
-  - type: ArgoCDReady
-    status: "True"
-    reason: ApplicationSynced
-    message: ArgoCD Application is synced and healthy
+    - type: Ready
+      status: "True"
+      reason: ReconciliationSucceeded
+      message: All resources created successfully
+      lastTransitionTime: "2025-10-16T10:00:00Z"
+    - type: PipelineReady
+      status: "True"
+      reason: PipelineCreated
+      message: Tekton Pipeline is ready
+    - type: ArgoCDReady
+      status: "True"
+      reason: ApplicationSynced
+      message: ArgoCD Application is synced and healthy
   lastBuildTime: "2025-10-16T09:55:00Z"
   lastBuildStatus: Succeeded
   argocdSyncStatus: Synced
@@ -245,6 +245,7 @@ All resources created by the operator have:
   - `helios.io/app`: HeliosApp name
 
 This ensures:
+
 - Automatic cleanup when HeliosApp is deleted
 - Easy resource discovery
 - Proper garbage collection
@@ -259,12 +260,12 @@ kind: Role
 metadata:
   name: heliosapp-user
 rules:
-- apiGroups: ["platform.helios.io"]
-  resources: ["heliosapps"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-- apiGroups: ["platform.helios.io"]
-  resources: ["heliosapps/status"]
-  verbs: ["get"]
+  - apiGroups: ["platform.helios.io"]
+    resources: ["heliosapps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["platform.helios.io"]
+    resources: ["heliosapps/status"]
+    verbs: ["get"]
 ```
 
 ## Related Resources
@@ -303,6 +304,7 @@ See [Prometheus Metrics](../reference/prometheus-metrics.md) for details.
 **Symptom**: Pipeline resource doesn't exist
 
 **Solutions**:
+
 1. Check operator logs: `kubectl logs -n helios-system deployment/helios-operator`
 2. Verify RBAC permissions
 3. Check HeliosApp status conditions
@@ -312,6 +314,7 @@ See [Prometheus Metrics](../reference/prometheus-metrics.md) for details.
 **Symptom**: `lastBuildStatus: Failed`
 
 **Solutions**:
+
 1. Check PipelineRun logs: `kubectl logs <pipelinerun-name>`
 2. Verify ServiceAccount has image push permissions
 3. Check git repository access
@@ -321,6 +324,7 @@ See [Prometheus Metrics](../reference/prometheus-metrics.md) for details.
 **Symptom**: `argocdSyncStatus: OutOfSync`
 
 **Solutions**:
+
 1. Check ArgoCD Application: `kubectl get application <app-name>-app`
 2. Verify GitOps repository access
 3. Check manifest validity in gitopsRepo
@@ -342,22 +346,22 @@ Use PVC for build cache to improve performance:
 
 ```yaml
 spec:
-  pvcName: my-app-build-cache  # Reuse build artifacts
+  pvcName: my-app-build-cache # Reuse build artifacts
 ```
 
 ### 3. Use Meaningful Names
 
 ```yaml
 metadata:
-  name: production-payment-service  # Clear, descriptive name
-  namespace: production             # Appropriate namespace
+  name: production-payment-service # Clear, descriptive name
+  namespace: production # Appropriate namespace
 ```
 
 ### 4. Enable Webhooks for Automation
 
 ```yaml
 spec:
-  webhookSecret: github-webhook-secret  # Automate builds on push
+  webhookSecret: github-webhook-secret # Automate builds on push
 ```
 
 ### 5. Monitor Status

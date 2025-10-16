@@ -213,19 +213,19 @@ func main() {
 
 	// Setup health checks
 	healthChecker := health.NewChecker(mgr.GetClient())
-	
+
 	// Add liveness check
 	if err := mgr.AddHealthzCheck("healthz", healthChecker.LivenessCheck); err != nil {
 		setupLog.Error(err, "unable to set up health check")
 		os.Exit(1)
 	}
-	
+
 	// Add readiness check
 	if err := mgr.AddReadyzCheck("readyz", healthChecker.ReadinessCheck); err != nil {
 		setupLog.Error(err, "unable to set up ready check")
 		os.Exit(1)
 	}
-	
+
 	// Add webhook readiness check if webhooks are enabled
 	if err := mgr.AddReadyzCheck("webhook", health.WebhookReadinessCheck()); err != nil {
 		setupLog.Error(err, "unable to set up webhook readiness check")
