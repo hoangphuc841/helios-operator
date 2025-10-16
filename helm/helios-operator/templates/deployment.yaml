@@ -50,6 +50,10 @@ spec:
         - --leader-elect-retry-period={{ .Values.leaderElection.retryPeriod }}
         env:
           {{- include "helios-operator.env" . | nindent 10 }}
+        {{- if .Values.startupProbe }}
+        startupProbe:
+          {{- toYaml .Values.startupProbe | nindent 10 }}
+        {{- end }}
         {{- if .Values.livenessProbe }}
         livenessProbe:
           {{- toYaml .Values.livenessProbe | nindent 10 }}
@@ -75,6 +79,10 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
           {{- include "helios-operator.env" . | nindent 10 }}
+        {{- if .Values.startupProbe }}
+        startupProbe:
+          {{- toYaml .Values.startupProbe | nindent 10 }}
+        {{- end }}
         {{- if .Values.livenessProbe }}
         livenessProbe:
           {{- toYaml .Values.livenessProbe | nindent 10 }}

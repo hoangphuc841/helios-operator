@@ -3,117 +3,137 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: manager-role
+  labels:
+    app.kubernetes.io/name: helios-operator
+    app.kubernetes.io/managed-by: kustomize
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - create
-  - patch
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - deployments/status
-  verbs:
-  - get
-- apiGroups:
-  - argoproj.io
-  resources:
-  - applications
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - argoproj.io
-  resources:
-  - applications/status
-  verbs:
-  - get
-- apiGroups:
-  - platform.helios.io
-  resources:
-  - heliosapps
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - platform.helios.io
-  resources:
-  - heliosapps/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - platform.helios.io
-  resources:
-  - heliosapps/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - tekton.dev
-  resources:
-  - pipelineruns
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - tekton.dev
-  resources:
-  - pipelineruns/status
-  verbs:
-  - get
-- apiGroups:
-  - tekton.dev
-  resources:
-  - pipelines
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - triggers.tekton.dev
-  resources:
-  - eventlisteners
-  - triggerbindings
-  - triggertemplates
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
+  # Core Kubernetes resources
+  - apiGroups:
+      - ""
+    resources:
+      - events
+      - pods
+      - services
+      - persistentvolumeclaims
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  # Apps resources (Deployments, etc.)
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - deployments/status
+    verbs:
+      - get
+  # ArgoCD resources
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - applications
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - applications/status
+    verbs:
+      - get
+  # Helios Operator CRDs
+  - apiGroups:
+      - platform.helios.io
+    resources:
+      - heliosapps
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - platform.helios.io
+    resources:
+      - heliosapps/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - platform.helios.io
+    resources:
+      - heliosapps/status
+    verbs:
+      - get
+      - patch
+      - update
+  # Tekton Pipelines resources
+  - apiGroups:
+      - tekton.dev
+    resources:
+      - pipelines
+      - pipelineruns
+      - tasks
+      - taskruns
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - tekton.dev
+    resources:
+      - pipelineruns/status
+    verbs:
+      - get
+  # Tekton Triggers resources
+  - apiGroups:
+      - triggers.tekton.dev
+    resources:
+      - eventlisteners
+      - triggerbindings
+      - triggertemplates
+      - triggers
+      - interceptors
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  # Tekton Triggers cluster-wide resources
+  - apiGroups:
+      - triggers.tekton.dev
+    resources:
+      - clustertriggerbindings
+      - clusterinterceptors
+    verbs:
+      - get
+      - list
+      - watch

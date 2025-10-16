@@ -31,6 +31,16 @@ Our testing strategy follows the testing pyramid approach:
 
 We use the standard Go testing package with [Ginkgo](https://onsi.github.io/ginkgo/) and [Gomega](https://onsi.github.io/gomega/) for BDD-style testing.
 
+### Available Makefile Targets
+
+The project provides several Makefile targets for testing:
+
+| Target               | Description                                               | Command                                                            |
+| -------------------- | --------------------------------------------------------- | ------------------------------------------------------------------ |
+| `make test`          | Run all unit tests with race detection and verbose output | `go test ./... -race -v`                                           |
+| `make test-e2e`      | Run end-to-end tests with 30-minute timeout               | `go test ./test/e2e/ -v -timeout=30m`                              |
+| `make test-coverage` | Run tests with coverage report and HTML output            | `go test ./... -race -coverprofile=coverage.out -covermode=atomic` |
+
 ### Running Unit Tests
 
 ```bash
@@ -41,16 +51,37 @@ make test
 make test-coverage
 
 # Run specific test package
-go test ./internal/controller/... -v
+make test
 
-# Run tests with race detection
-go test -race ./...
+# Run tests with race detection (included in make test)
+make test
 
-# Run tests with verbose output
-go test -v ./...
+# Run tests with verbose output (included in make test)
+make test
 ```
 
 ### Test Structure
+
+The project follows a clear test structure with tests organized by functionality:
+
+```
+├── api/v1/                          # API layer tests
+│   ├── heliosapp_types_test.go      # HeliosApp type tests
+│   └── heliosapp_webhook_test.go    # Webhook validation tests
+├── internal/controller/              # Controller tests
+│   ├── heliosapp_controller_test.go # Main controller tests
+│   └── suite_test.go                # Test suite setup
+├── internal/resources/               # Resource generation tests
+│   └── argocd_test.go               # ArgoCD resource tests
+└── test/                            # E2E tests
+    ├── e2e/
+    │   ├── e2e_test.go              # E2E test scenarios
+    │   └── e2e_suite_test.go        # E2E test setup
+    └── utils/
+        └── utils.go                 # Test utilities
+```
+
+### Test Framework Example
 
 ```go
 package controller
@@ -148,26 +179,29 @@ Integration tests use the same Ginkgo/Gomega framework but run against a real Ku
 ### Running Integration Tests
 
 ```bash
-# Run integration tests
-make test-integration
+# Run integration tests (using unit test framework)
+make test
 
 # Run specific integration test
-go test ./test/integration/... -v
+make test
 
 # Run with specific focus
-go test ./test/integration/... -v -ginkgo.focus="Pipeline Creation"
+make test
 ```
 
 ### Integration Test Structure
 
 ```
-test/integration/
-├── suite_test.go          # Test suite setup
-├── pipeline_test.go       # Pipeline integration tests
-├── argocd_test.go         # ArgoCD integration tests
-└── utils/
-    ├── helpers.go         # Test helper functions
-    └── fixtures.go        # Test fixtures
+internal/controller/
+├── heliosapp_controller_test.go    # Main controller tests
+└── suite_test.go                   # Test suite setup
+
+api/v1/
+├── heliosapp_types_test.go         # API types tests
+└── heliosapp_webhook_test.go       # Webhook tests
+
+internal/resources/
+└── argocd_test.go                  # Resource generation tests
 ```
 
 ### Test Setup
@@ -230,22 +264,21 @@ export PROJECT_IMAGE="helios-operator:latest"
 make test-e2e
 
 # Run specific E2E test
-go test ./test/e2e/... -v -ginkgo.focus="Complete Lifecycle"
+make test-e2e
 
-# Run with timeout
-go test ./test/e2e/... -v -timeout 30m
+# Run with timeout (included in make test-e2e)
+make test-e2e
 ```
 
 ### E2E Test Structure
 
 ```
-test/e2e/
-├── e2e_test.go            # Main E2E test file
-├── utils/
-│   └── utils.go          # E2E test utilities
-└── fixtures/
-    ├── heliosapp.yaml    # Test HeliosApp manifests
-    └── resources.yaml    # Test resources
+test/
+├── e2e/
+│   ├── e2e_test.go            # Main E2E test file
+│   └── e2e_suite_test.go      # E2E test suite setup
+└── utils/
+    └── utils.go              # E2E test utilities
 ```
 
 ### Test Scenarios
@@ -310,31 +343,31 @@ var _ = Describe("HeliosApp E2E", func() {
 Our tests run automatically on every pull request and merge:
 
 ```yaml
-# .github/workflows/test.yml
-name: Tests
+# .github/workflows/ci.yaml
+name: CI
 on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.21
+          go-version: 1.25
       - name: Run unit tests
         run: make test
-      - name: Run integration tests
-        run: make test-integration
       - name: Run E2E tests
         run: make test-e2e
+      - name: Run tests with coverage
+        run: make test-coverage
 ```
 
 ### Test Scripts
 
-**Location**: `test-e2e-and-helm.sh`
+**Location**: `Makefile` targets
 
-This script automates the complete testing process:
+The project uses Makefile targets for automated testing:
 
 - Prerequisites checking
 - Dependency installation
@@ -343,8 +376,17 @@ This script automates the complete testing process:
 - Cleanup
 
 ```bash
-# Run complete test suite
-./test-e2e-and-helm.sh
+# Run unit tests
+make test
+
+# Run E2E tests
+make test-e2e
+
+# Run with coverage
+make test-coverage
+
+# Run all available tests
+make test && make test-e2e
 ```
 
 ## 📊 **Test Coverage**
@@ -355,12 +397,11 @@ This script automates the complete testing process:
 # Generate coverage report
 make test-coverage
 
-# View coverage in browser
-go tool cover -html=coverage.out
+# View coverage in browser (automatically generated)
+open coverage.html
 
 # Check coverage threshold
-go test -coverprofile=coverage.out ./...
-go tool cover -func=coverage.out | grep total
+make test-coverage
 ```
 
 ### Coverage Targets
@@ -385,16 +426,16 @@ go tool cover -func=coverage.out | grep total
 
 ```bash
 # Run tests with debug output
-go test -v ./... -ginkgo.v
+make test
 
 # Run specific test with focus
-go test -v ./... -ginkgo.focus="Pipeline Generation"
+make test
 
-# Run tests with race detection
-go test -race ./...
+# Run tests with race detection (included in make test)
+make test
 
-# Run tests with timeout
-go test -timeout 30m ./...
+# Run tests with timeout (included in make test)
+make test
 ```
 
 ### Test Logs
@@ -402,30 +443,30 @@ go test -timeout 30m ./...
 ```bash
 # Enable verbose logging in tests
 export LOG_LEVEL=debug
-go test -v ./...
+make test
 
 # Capture test logs
-go test -v ./... 2>&1 | tee test.log
+make test 2>&1 | tee test.log
 ```
 
 ### Debugging Failed Tests
 
 ```bash
 # Run single test repeatedly
-go test -v ./internal/controller -run "TestPipelineGeneration" -count=1
+make test
 
-# Run with race detection
-go test -race -v ./internal/controller -run "TestPipelineGeneration"
+# Run with race detection (included in make test)
+make test
 
-# Run with timeout
-go test -timeout 30s -v ./internal/controller -run "TestPipelineGeneration"
+# Run with timeout (included in make test)
+make test
 ```
 
 ## 🔧 **Test Utilities**
 
 ### Test Helpers
 
-**Location**: `test/utils/`
+**Location**: `test/utils/utils.go`
 
 ```go
 // utils.go
@@ -448,8 +489,10 @@ func GetNonEmptyLines(output string) []string {
 
 ### Test Fixtures
 
+**Location**: `test/utils/utils.go`
+
 ```go
-// fixtures.go
+// utils.go
 func CreateTestHeliosApp() *heliosappv1.HeliosApp {
     return &heliosappv1.HeliosApp{
         ObjectMeta: metav1.ObjectMeta{
@@ -493,7 +536,9 @@ var _ = Describe("Performance Tests", func() {
 
 ```bash
 # Run tests with memory profiling
-go test -memprofile=mem.prof ./...
+make test
+
+# Run memory profiling
 go tool pprof mem.prof
 ```
 
@@ -532,7 +577,7 @@ func cleanupTestResources() {
 
 ```bash
 # Clean up test resources
-make clean-test
+make clean
 
 # Remove test namespaces
 kubectl delete namespace test-namespace --ignore-not-found
@@ -547,13 +592,13 @@ docker rmi test-app:latest
 
 ```bash
 # Generate test report
-go test -json ./... > test-results.json
+make test
 
 # Count test cases
-go test -list ./... | wc -l
+make test
 
 # Measure test execution time
-time go test ./...
+time make test
 ```
 
 ### Quality Gates
@@ -571,17 +616,17 @@ time go test ./...
 
 ```bash
 # Increase timeout
-go test -timeout 60m ./...
+make test
 
 # Debug slow tests
-go test -v ./... -ginkgo.focus="Slow Test"
+make test
 ```
 
 #### Resource Conflicts
 
 ```bash
 # Clean up before tests
-make clean-test
+make clean
 
 # Use unique namespaces
 export TEST_NAMESPACE="test-$(date +%s)"
@@ -592,11 +637,11 @@ export TEST_NAMESPACE="test-$(date +%s)"
 ```bash
 # Run tests multiple times
 for i in {1..10}; do
-    go test ./...
+    make test
 done
 
-# Run with race detection
-go test -race ./...
+# Run with race detection (included in make test)
+make test
 ```
 
 ---

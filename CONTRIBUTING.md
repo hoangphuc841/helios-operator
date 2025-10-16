@@ -57,7 +57,7 @@ What actually happened
 
 **Environment:**
 
-- Go version: 1.25.1
+- Go version: 1.25.3
 - Kubernetes version: v1.34.1
 - OS: Ubuntu 22.04
 - Helios Operator version: v0.1.0
@@ -103,9 +103,9 @@ Documentation improvements are always welcome:
 
 ### ⚙️ Prerequisites
 
-- Go 1.25.1+
-- Docker 28.5.0+
-- kubectl v1.34.1+
+- Go 1.25+
+- Docker 28.5+
+- kubectl v1.34+
 - Kubernetes cluster (kind, minikube, or cloud provider)
 
 ### 📦 Clone and Build

@@ -34,7 +34,7 @@ var (
 	// These variables are useful if CertManager is already installed, avoiding
 	// re-installation and conflicts.
 	skipCertManagerInstall = os.Getenv("CERT_MANAGER_INSTALL_SKIP") == "true"
-	// isCertManagerAlreadyInstalled will be set true when CertManager CRDs be found on the cluster
+	// isCertManagerAlreadyInstalled will be set true when CertManager CRDs be found on the cluster.
 	isCertManagerAlreadyInstalled = false
 
 	// projectImage is the name of the image which will be build and loaded

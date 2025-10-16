@@ -166,17 +166,37 @@ spec:
 openssl rand -hex 32
 ```
 
-#### `pvcName` (Required)
+#### `pvcName` (Optional)
 
 **Type**: `string`  
+**Default**: `{metadata.name}-workspace` (auto-created)  
 **Description**: PersistentVolumeClaim for Tekton workspace
 
 ```yaml
 spec:
-  pvcName: "my-app-pvc"
+  pvcName: "my-app-pvc" # Optional: specify existing PVC
+  # OR omit to auto-create: my-app-workspace
 ```
 
-**Requirements**:
+**Automatic PVC Creation**:
+
+If `pvcName` is omitted, the operator automatically creates a PVC with:
+
+- Name: `{HeliosApp-name}-workspace`
+- Size: `1Gi`
+- Access mode: `ReadWriteOnce`
+- Managed by the operator (deleted when HeliosApp is deleted)
+
+**Manual PVC Creation**:
+
+If you need custom storage configuration:
+
+```yaml
+spec:
+  pvcName: "my-custom-pvc" # Must exist in the same namespace
+```
+
+**Requirements** (when using existing PVC):
 
 - Must exist in the same namespace as HeliosApp
 - Should have sufficient storage for your build process
@@ -212,31 +232,42 @@ spec:
   # Pipeline configuration
   serviceAccount: "e-commerce-pipeline-sa"
   webhookSecret: "e-commerce-webhook-secret-xyz"
-  pvcName: "e-commerce-build-workspace"
+  # pvcName: omitted - operator will auto-create e-commerce-api-workspace
 ```
 
 ## 📊 **Status Fields**
 
-The operator automatically updates these status fields:
+The operator automatically updates these status fields with comprehensive information:
 
 ### `status.conditions`
 
-Array of condition objects indicating the current state:
+Array of standardized condition objects indicating the current state:
 
 ```yaml
 status:
   conditions:
-    - type: "ApplicationSynced"
+    - type: "Ready"
+      status: "True"
+      reason: "Reconciled"
+      message: "HeliosApp is fully reconciled and healthy"
+      lastTransitionTime: "2023-10-15T10:30:00Z"
+    - type: "Synced"
       status: "True"
       reason: "Synced"
-      message: "ArgoCD Application is synced"
+      message: "ArgoCD Application is synced with GitOps repository"
       lastTransitionTime: "2023-10-15T10:30:00Z"
-    - type: "PipelineReady"
+    - type: "BuildSucceeded"
       status: "True"
-      reason: "Created"
-      message: "Tekton Pipeline created successfully"
+      reason: "PipelineRunSucceeded"
+      message: "Last build pipeline completed successfully"
       lastTransitionTime: "2023-10-15T10:29:00Z"
 ```
+
+**Condition Types**:
+
+- `Ready`: Overall application health status
+- `Synced`: ArgoCD synchronization status
+- `BuildSucceeded`: Build pipeline execution status
 
 ### `status.deployedVersion`
 
@@ -244,16 +275,39 @@ Current deployed version (updated when ArgoCD syncs):
 
 ```yaml
 status:
-  deployedVersion: "abc123def456"
+  deployedVersion: "sha256:abc123def456..."
 ```
 
-### `status.lastBuildStatus`
+### `status.lastAppliedRevision`
 
-Status of the last build:
+Git commit SHA that was last successfully synced:
 
 ```yaml
 status:
-  lastBuildStatus: "Succeeded"
+  lastAppliedRevision: "abc123def456..."
+```
+
+### `status.lastBuild`
+
+Detailed information about the most recent build:
+
+```yaml
+status:
+  lastBuild:
+    state: "Succeeded"
+    pipelineRunName: "my-app-pipelinerun-xyz123"
+    startedAt: "2023-10-15T10:25:00Z"
+    finishedAt: "2023-10-15T10:29:00Z"
+    resultingVersion: "sha256:abc123def456..."
+```
+
+### `status.webhookURL`
+
+Public URL for the Tekton EventListener:
+
+```yaml
+status:
+  webhookURL: "https://el-my-app-listener.default.svc.cluster.local:8080"
 ```
 
 ## 🔧 **Advanced Configuration**
@@ -321,7 +375,10 @@ The operator validates your HeliosApp before creating resources:
 - `imageRepo` - Must be a valid container image name
 - `serviceAccount` - Must reference an existing ServiceAccount
 - `webhookSecret` - Must not be empty
-- `pvcName` - Must reference an existing PVC
+
+### Optional Fields
+
+- `pvcName` - If specified, must reference an existing PVC. If omitted, PVC will be auto-created
 
 ### Field Validation
 
@@ -395,7 +452,20 @@ git ls-remote https://github.com/your-org/your-repo.git
 kubectl create serviceaccount pipeline-sa -n my-namespace
 ```
 
-#### PVC Not Found
+#### PVC Issues
+
+**Automatic PVC Creation (Recommended)**:
+
+Simply omit the `pvcName` field and the operator will create it automatically:
+
+```yaml
+spec:
+  # pvcName: omitted - operator will create my-app-workspace automatically
+```
+
+**Manual PVC Creation**:
+
+If you need custom storage configuration:
 
 ```bash
 # Create the required PVC
@@ -410,7 +480,7 @@ spec:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 2Gi  # Custom size
 EOF
 ```
 

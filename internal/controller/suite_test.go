@@ -33,6 +33,12 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	// Tekton imports
+	tektonv1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
+	triggersv1beta1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
+
+	// Note: ArgoCD imports will be added later when compatibility issues are resolved
+
 	heliosappv1 "github.com/hoangphuc841/helios-operator/api/v1"
 	// +kubebuilder:scaffold:imports
 )
@@ -78,6 +84,13 @@ var _ = BeforeSuite(func() {
 	Expect(cfg).NotTo(BeNil())
 
 	err = heliosappv1.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
+	// Note: ArgoCD scheme will be added later when compatibility issues are resolved
+	err = tektonv1.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = triggersv1beta1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	// +kubebuilder:scaffold:scheme

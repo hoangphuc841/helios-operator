@@ -22,6 +22,9 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	tektonv1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -88,14 +91,235 @@ var _ = Describe("HeliosApp Controller", func() {
 				NamespacedName: typeNamespacedName,
 			})
 			Expect(err).NotTo(HaveOccurred())
-			// TODO(user): Add more specific assertions depending on your controller's reconciliation logic.
-			// Example: If you expect a certain status condition after reconciliation, verify it here.
+
+			By("Verifying that typed resources are created")
+			// Check that Tekton Pipeline is created
+			pipeline := &tektonv1.Pipeline{}
+			err = k8sClient.Get(ctx, types.NamespacedName{
+				Name:      resourceName + "-pipeline",
+				Namespace: "default",
+			}, pipeline)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(pipeline.Name).To(Equal(resourceName + "-pipeline"))
+
+			By("Verifying status conditions are updated")
+			updatedHeliosApp := &heliosappv1.HeliosApp{}
+			err = k8sClient.Get(ctx, typeNamespacedName, updatedHeliosApp)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Check that finalizer is added
+			Expect(updatedHeliosApp.Finalizers).To(ContainElement("platform.helios.io/finalizer"))
+
+			// Check that Ready condition is set
+			Expect(updatedHeliosApp.Status.Conditions).NotTo(BeEmpty())
+			var readyCondition *metav1.Condition
+			for _, condition := range updatedHeliosApp.Status.Conditions {
+				if condition.Type == heliosappv1.ConditionReady {
+					readyCondition = &condition
+					break
+				}
+			}
+			Expect(readyCondition).NotTo(BeNil())
+			Expect(readyCondition.Status).To(Equal(metav1.ConditionTrue))
 		})
 	})
 
 	// ====================================
 	// Unit Tests for New Logic
 	// ====================================
+
+	Context("Finalizer Logic", func() {
+		var (
+			reconciler *HeliosAppReconciler
+			heliosApp  *heliosappv1.HeliosApp
+		)
+
+		BeforeEach(func() {
+			reconciler = &HeliosAppReconciler{
+				Client: k8sClient,
+				Scheme: k8sClient.Scheme(),
+			}
+
+			heliosApp = &heliosappv1.HeliosApp{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-app-finalizer",
+					Namespace: "default",
+				},
+				Spec: heliosappv1.HeliosAppSpec{
+					GitRepo:        "https://github.com/example/test-app",
+					GitopsRepo:     "https://github.com/example/gitops",
+					ImageRepo:      "nginx:latest",
+					Port:           8080,
+					Replicas:       1,
+					ServiceAccount: "pipeline-sa",
+					WebhookSecret:  "webhook-secret",
+				},
+			}
+		})
+
+		AfterEach(func() {
+			_ = k8sClient.Delete(ctx, heliosApp)
+		})
+
+		It("should add finalizer on first reconciliation", func() {
+			By("Creating HeliosApp without finalizer")
+			err := k8sClient.Create(ctx, heliosApp)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Reconciling the resource")
+			_, err = reconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      heliosApp.Name,
+					Namespace: heliosApp.Namespace,
+				},
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Verifying finalizer is added")
+			updatedApp := &heliosappv1.HeliosApp{}
+			err = k8sClient.Get(ctx, types.NamespacedName{
+				Name:      heliosApp.Name,
+				Namespace: heliosApp.Namespace,
+			}, updatedApp)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(updatedApp.Finalizers).To(ContainElement("platform.helios.io/finalizer"))
+		})
+
+		It("should handle deletion with finalizer", func() {
+			By("Creating HeliosApp with finalizer")
+			heliosApp.Finalizers = []string{"platform.helios.io/finalizer"}
+			err := k8sClient.Create(ctx, heliosApp)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Create a mock ArgoCD Application for cleanup
+			argoApp := &unstructured.Unstructured{}
+			argoApp.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "argoproj.io",
+				Version: "v1alpha1",
+				Kind:    "Application",
+			})
+			argoApp.SetName(heliosApp.Name + "-argocd")
+			argoApp.SetNamespace("argocd")
+			err = k8sClient.Create(ctx, argoApp)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Marking HeliosApp for deletion")
+			now := metav1.Now()
+			heliosApp.DeletionTimestamp = &now
+			err = k8sClient.Update(ctx, heliosApp)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Reconciling the deleted resource")
+			_, err = reconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      heliosApp.Name,
+					Namespace: heliosApp.Namespace,
+				},
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Verifying finalizer is removed")
+			updatedApp := &heliosappv1.HeliosApp{}
+			err = k8sClient.Get(ctx, types.NamespacedName{
+				Name:      heliosApp.Name,
+				Namespace: heliosApp.Namespace,
+			}, updatedApp)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(updatedApp.Finalizers).NotTo(ContainElement("platform.helios.io/finalizer"))
+
+			// Cleanup ArgoCD App
+			_ = k8sClient.Delete(ctx, argoApp)
+		})
+	})
+
+	Context("Automatic PVC Creation", func() {
+		var (
+			reconciler *HeliosAppReconciler
+			heliosApp  *heliosappv1.HeliosApp
+		)
+
+		BeforeEach(func() {
+			reconciler = &HeliosAppReconciler{
+				Client: k8sClient,
+				Scheme: k8sClient.Scheme(),
+			}
+
+			heliosApp = &heliosappv1.HeliosApp{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-app-pvc",
+					Namespace: "default",
+				},
+				Spec: heliosappv1.HeliosAppSpec{
+					GitRepo:        "https://github.com/example/test-app",
+					GitopsRepo:     "https://github.com/example/gitops",
+					ImageRepo:      "nginx:latest",
+					Port:           8080,
+					Replicas:       1,
+					ServiceAccount: "pipeline-sa",
+					WebhookSecret:  "webhook-secret",
+					// PVCName is intentionally omitted to test automatic creation
+				},
+			}
+		})
+
+		AfterEach(func() {
+			_ = k8sClient.Delete(ctx, heliosApp)
+		})
+
+		It("should create PVC automatically when not specified", func() {
+			By("Creating HeliosApp without PVC name")
+			err := k8sClient.Create(ctx, heliosApp)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Reconciling the resource")
+			_, err = reconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      heliosApp.Name,
+					Namespace: heliosApp.Namespace,
+				},
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Verifying PVC is created automatically")
+			pvc := &corev1.PersistentVolumeClaim{}
+			err = k8sClient.Get(ctx, types.NamespacedName{
+				Name:      heliosApp.Name + "-workspace",
+				Namespace: heliosApp.Namespace,
+			}, pvc)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(pvc.Name).To(Equal(heliosApp.Name + "-workspace"))
+			Expect(pvc.Labels["helios.io/managed-by"]).To(Equal("helios-operator"))
+			Expect(pvc.Labels["helios.io/app-name"]).To(Equal(heliosApp.Name))
+
+			// Cleanup PVC
+			k8sClient.Delete(ctx, pvc)
+		})
+
+		It("should not create PVC when explicitly specified", func() {
+			By("Creating HeliosApp with explicit PVC name")
+			heliosApp.Spec.PVCName = "custom-pvc"
+			err := k8sClient.Create(ctx, heliosApp)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Reconciling the resource")
+			_, err = reconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      heliosApp.Name,
+					Namespace: heliosApp.Namespace,
+				},
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Verifying custom PVC is not created by operator")
+			pvc := &corev1.PersistentVolumeClaim{}
+			err = k8sClient.Get(ctx, types.NamespacedName{
+				Name:      "custom-pvc",
+				Namespace: heliosApp.Namespace,
+			}, pvc)
+			Expect(err).To(HaveOccurred())
+			Expect(errors.IsNotFound(err)).To(BeTrue())
+		})
+	})
 
 	Context("getPipelineRunStatus function", func() {
 		var (
@@ -139,41 +363,34 @@ var _ = Describe("HeliosApp Controller", func() {
 
 		It("should extract status from succeeded PipelineRun", func() {
 			By("Creating a succeeded PipelineRun")
-			pipelineRun := &unstructured.Unstructured{}
-			pipelineRun.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "tekton.dev",
-				Version: "v1",
-				Kind:    "PipelineRun",
-			})
-			pipelineRun.SetName("test-app-build-123")
-			pipelineRun.SetNamespace("default")
-			pipelineRun.SetLabels(map[string]string{
-				"helios.io/app-name":   "test-app",
-				"helios.io/managed-by": "helios-operator",
-			})
-			pipelineRun.SetCreationTimestamp(metav1.NewTime(time.Now().Add(-5 * time.Minute)))
-
-			// Set PipelineRun status
-			conditions := []interface{}{
-				map[string]interface{}{
-					"type":   "Succeeded",
-					"status": "True",
-					"reason": "Succeeded",
+			pipelineRun := &tektonv1.PipelineRun{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-app-build-123",
+					Namespace: "default",
+					Labels: map[string]string{
+						"helios.io/app-name":   "test-app",
+						"helios.io/managed-by": "helios-operator",
+					},
+					CreationTimestamp: metav1.NewTime(time.Now().Add(-5 * time.Minute)),
+				},
+				Spec: tektonv1.PipelineRunSpec{
+					PipelineRef: &tektonv1.PipelineRef{
+						Name: "test-pipeline",
+					},
+				},
+				Status: tektonv1.PipelineRunStatus{
+					PipelineRunStatusFields: tektonv1.PipelineRunStatusFields{
+						Results: []tektonv1.PipelineRunResult{
+							{
+								Name:  "IMAGE_URL",
+								Value: tektonv1.ParamValue{Type: tektonv1.ParamTypeString, StringVal: "nginx:v1.0.0"},
+							},
+						},
+					},
 				},
 			}
-			results := []interface{}{
-				map[string]interface{}{
-					"name":  "IMAGE_URL",
-					"value": "nginx:v1.0.0",
-				},
-			}
 
-			err := unstructured.SetNestedSlice(pipelineRun.Object, conditions, "status", "conditions")
-			Expect(err).NotTo(HaveOccurred())
-			err = unstructured.SetNestedSlice(pipelineRun.Object, results, "status", "results")
-			Expect(err).NotTo(HaveOccurred())
-
-			err = k8sClient.Create(ctx, pipelineRun)
+			err := k8sClient.Create(ctx, pipelineRun)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Calling getPipelineRunStatus")
@@ -191,33 +408,27 @@ var _ = Describe("HeliosApp Controller", func() {
 
 		It("should extract status from failed PipelineRun", func() {
 			By("Creating a failed PipelineRun")
-			pipelineRun := &unstructured.Unstructured{}
-			pipelineRun.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "tekton.dev",
-				Version: "v1",
-				Kind:    "PipelineRun",
-			})
-			pipelineRun.SetName("test-app-build-456")
-			pipelineRun.SetNamespace("default")
-			pipelineRun.SetLabels(map[string]string{
-				"helios.io/app-name":   "test-app",
-				"helios.io/managed-by": "helios-operator",
-			})
-			pipelineRun.SetCreationTimestamp(metav1.NewTime(time.Now().Add(-3 * time.Minute)))
-
-			// Set PipelineRun status to failed
-			conditions := []interface{}{
-				map[string]interface{}{
-					"type":   "Succeeded",
-					"status": "False",
-					"reason": "Failed",
+			pipelineRun := &tektonv1.PipelineRun{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-app-build-456",
+					Namespace: "default",
+					Labels: map[string]string{
+						"helios.io/app-name":   "test-app",
+						"helios.io/managed-by": "helios-operator",
+					},
+					CreationTimestamp: metav1.NewTime(time.Now().Add(-3 * time.Minute)),
+				},
+				Spec: tektonv1.PipelineRunSpec{
+					PipelineRef: &tektonv1.PipelineRef{
+						Name: "test-pipeline",
+					},
+				},
+				Status: tektonv1.PipelineRunStatus{
+					PipelineRunStatusFields: tektonv1.PipelineRunStatusFields{},
 				},
 			}
 
-			err := unstructured.SetNestedSlice(pipelineRun.Object, conditions, "status", "conditions")
-			Expect(err).NotTo(HaveOccurred())
-
-			err = k8sClient.Create(ctx, pipelineRun)
+			err := k8sClient.Create(ctx, pipelineRun)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Calling getPipelineRunStatus")
@@ -276,43 +487,55 @@ var _ = Describe("HeliosApp Controller", func() {
 
 		It("should return Healthy status when all replicas are ready", func() {
 			By("Creating a healthy Deployment")
-			deployment := &unstructured.Unstructured{}
-			deployment.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "apps",
-				Version: "v1",
-				Kind:    "Deployment",
-			})
-			deployment.SetName("test-app")
-			deployment.SetNamespace("default")
-			deployment.SetLabels(map[string]string{
-				"app": "test-app",
-			})
-
-			// Set spec.replicas
-			err := unstructured.SetNestedField(deployment.Object, int64(3), "spec", "replicas")
-			Expect(err).NotTo(HaveOccurred())
-
-			// Set status
-			err = unstructured.SetNestedField(deployment.Object, int64(3), "status", "readyReplicas")
-			Expect(err).NotTo(HaveOccurred())
-			err = unstructured.SetNestedField(deployment.Object, int64(3), "status", "availableReplicas")
-			Expect(err).NotTo(HaveOccurred())
-
-			// Set conditions
-			conditions := []interface{}{
-				map[string]interface{}{
-					"type":   "Available",
-					"status": "True",
+			deployment := &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-app",
+					Namespace: "default",
+					Labels: map[string]string{
+						"app": "test-app",
+					},
 				},
-				map[string]interface{}{
-					"type":   "Progressing",
-					"status": "True",
+				Spec: appsv1.DeploymentSpec{
+					Replicas: int32Ptr(3),
+					Selector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"app": "test-app",
+						},
+					},
+					Template: corev1.PodTemplateSpec{
+						ObjectMeta: metav1.ObjectMeta{
+							Labels: map[string]string{
+								"app": "test-app",
+							},
+						},
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name:  "test-container",
+									Image: "nginx:latest",
+								},
+							},
+						},
+					},
+				},
+				Status: appsv1.DeploymentStatus{
+					Replicas:          3,
+					ReadyReplicas:     3,
+					AvailableReplicas: 3,
+					Conditions: []appsv1.DeploymentCondition{
+						{
+							Type:   appsv1.DeploymentAvailable,
+							Status: corev1.ConditionTrue,
+						},
+						{
+							Type:   appsv1.DeploymentProgressing,
+							Status: corev1.ConditionTrue,
+						},
+					},
 				},
 			}
-			err = unstructured.SetNestedSlice(deployment.Object, conditions, "status", "conditions")
-			Expect(err).NotTo(HaveOccurred())
 
-			err = k8sClient.Create(ctx, deployment)
+			err := k8sClient.Create(ctx, deployment)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Calling getDeploymentHealth")
@@ -573,7 +796,7 @@ var _ = Describe("HeliosApp Controller", func() {
 
 				requests := reconciler.pipelineRunToHeliosApp(ctx, pipelineRun)
 
-				Expect(requests).To(HaveLen(0))
+				Expect(requests).To(BeEmpty())
 			})
 		})
 
@@ -618,7 +841,7 @@ var _ = Describe("HeliosApp Controller", func() {
 				Expect(requests[0].Namespace).To(Equal("default"))
 
 				// Cleanup
-				k8sClient.Delete(ctx, heliosApp)
+				_ = k8sClient.Delete(ctx, heliosApp)
 			})
 
 			It("should return empty list when no matching HeliosApp found", func() {
@@ -636,8 +859,11 @@ var _ = Describe("HeliosApp Controller", func() {
 
 				requests := reconciler.deploymentToHeliosApp(ctx, deployment)
 
-				Expect(requests).To(HaveLen(0))
+				Expect(requests).To(BeEmpty())
 			})
 		})
 	})
 })
+
+// Helper function for creating int32 pointers
+func int32Ptr(i int32) *int32 { return &i }

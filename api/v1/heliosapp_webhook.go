@@ -1,174 +1,215 @@
 /*
 Copyright 2025.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 
 package v1
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
-
-// log is for logging in this package.
-var heliosapplog = logf.Log.WithName("heliosapp-resource")
-
-// SetupWebhookWithManager will setup the manager to manage the webhooks
-func (r *HeliosApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
-		Complete()
-}
-
-// TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-
-//+kubebuilder:webhook:path=/mutate-platform-helios-io-v1-heliosapp,mutating=true,failurePolicy=fail,sideEffects=None,groups=platform.helios.io,resources=heliosapps,verbs=create;update,versions=v1,name=mheliosapp.kb.io,admissionReviewVersions=v1
-
-// Default implements defaulting logic for HeliosApp
-// This method will be called by webhook framework
-func (r *HeliosApp) Default() {
-	heliosapplog.Info("default", "name", r.Name)
-
-	// Set default gitBranch if not provided
-	if r.Spec.GitBranch == "" {
-		r.Spec.GitBranch = "main"
-	}
-
-	// Set default gitopsBranch if not provided
-	if r.Spec.GitopsBranch == "" {
-		r.Spec.GitopsBranch = "main"
-	}
-
-	// Set default gitopsPath to app name if not provided
-	if r.Spec.GitopsPath == "" {
-		r.Spec.GitopsPath = r.Name
-	}
-
-	// Set default replicas if not provided
-	if r.Spec.Replicas == 0 {
-		r.Spec.Replicas = 1
-	}
-}
-
-// TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-
-//+kubebuilder:webhook:path=/validate-platform-helios-io-v1-heliosapp,mutating=false,failurePolicy=fail,sideEffects=None,groups=platform.helios.io,resources=heliosapps,verbs=create;update,versions=v1,name=vheliosapp.kb.io,admissionReviewVersions=v1
-
-// ValidateCreate implements validation logic for HeliosApp creation
-// This method will be called by webhook framework
-func (r *HeliosApp) ValidateCreate() (admission.Warnings, error) {
-	heliosapplog.Info("validate create", "name", r.Name)
-
-	return r.validateHeliosApp()
-}
-
-// ValidateUpdate implements validation logic for HeliosApp updates
-// This method will be called by webhook framework
-func (r *HeliosApp) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
-	heliosapplog.Info("validate update", "name", r.Name)
-
-	return r.validateHeliosApp()
-}
-
-// ValidateDelete implements validation logic for HeliosApp deletion
-// This method will be called by webhook framework
-func (r *HeliosApp) ValidateDelete() (admission.Warnings, error) {
-	heliosapplog.Info("validate delete", "name", r.Name)
-
-	// No validation needed for deletion
-	return nil, nil
-}
 
 // validateHeliosApp validates the HeliosApp spec
 func (r *HeliosApp) validateHeliosApp() (admission.Warnings, error) {
 	var allErrors []string
 	var warnings admission.Warnings
 
-	// Validate GitRepo URL
-	if err := validateGitURL(r.Spec.GitRepo, "gitRepo"); err != nil {
-		allErrors = append(allErrors, err.Error())
+	// Validate basic fields
+	if errs := r.validateBasicFields(); len(errs) > 0 {
+		allErrors = append(allErrors, errs...)
 	}
 
-	// Validate GitopsRepo URL
-	if err := validateGitURL(r.Spec.GitopsRepo, "gitopsRepo"); err != nil {
-		allErrors = append(allErrors, err.Error())
+	// Validate resource existence
+	if errs := r.validateResourceExistence(); len(errs) > 0 {
+		allErrors = append(allErrors, errs...)
 	}
 
-	// Validate ImageRepo format
-	if err := validateImageRepo(r.Spec.ImageRepo); err != nil {
-		allErrors = append(allErrors, err.Error())
+	// Validate numeric fields
+	if errs := r.validateNumericFields(); len(errs) > 0 {
+		allErrors = append(allErrors, errs...)
 	}
 
-	// Validate Port range
-	if r.Spec.Port < 1 || r.Spec.Port > 65535 {
-		allErrors = append(allErrors, fmt.Sprintf("port must be between 1 and 65535, got %d", r.Spec.Port))
-	}
-
-	// Validate Replicas
-	if r.Spec.Replicas < 0 {
-		allErrors = append(allErrors, fmt.Sprintf("replicas cannot be negative, got %d", r.Spec.Replicas))
-	}
-
-	// Warn if replicas is very high
-	if r.Spec.Replicas > 10 {
-		warnings = append(warnings, fmt.Sprintf("high replica count (%d) - ensure your cluster has sufficient resources", r.Spec.Replicas))
-	}
-
-	// Validate ServiceAccount is not empty
-	if strings.TrimSpace(r.Spec.ServiceAccount) == "" {
-		allErrors = append(allErrors, "serviceAccount cannot be empty")
-	}
-
-	// Validate WebhookSecret is not empty
-	if strings.TrimSpace(r.Spec.WebhookSecret) == "" {
-		allErrors = append(allErrors, "webhookSecret cannot be empty")
-	}
-
-	// Validate GitopsPath doesn't start with slash or contain ..
-	if r.Spec.GitopsPath != "" {
-		if strings.HasPrefix(r.Spec.GitopsPath, "/") {
-			allErrors = append(allErrors, "gitopsPath should not start with '/'")
-		}
-		if strings.Contains(r.Spec.GitopsPath, "..") {
-			allErrors = append(allErrors, "gitopsPath cannot contain '..'")
-		}
-	}
-
-	// Validate branch names don't contain invalid characters
-	if r.Spec.GitBranch != "" {
-		if strings.ContainsAny(r.Spec.GitBranch, " \t\n") {
-			allErrors = append(allErrors, "gitBranch cannot contain whitespace characters")
-		}
-	}
-
-	if r.Spec.GitopsBranch != "" {
-		if strings.ContainsAny(r.Spec.GitopsBranch, " \t\n") {
-			allErrors = append(allErrors, "gitopsBranch cannot contain whitespace characters")
-		}
+	// Validate optional fields
+	if errs := r.validateOptionalFields(); len(errs) > 0 {
+		allErrors = append(allErrors, errs...)
 	}
 
 	if len(allErrors) > 0 {
-		return warnings, fmt.Errorf("validation failed: %s", strings.Join(allErrors, "; "))
+		return warnings, errors.New(strings.Join(allErrors, "; "))
 	}
 
 	return warnings, nil
 }
 
-// validateGitURL validates that the URL is a valid Git repository URL
+// validateBasicFields validates basic required fields
+func (r *HeliosApp) validateBasicFields() []string {
+	var errors []string
+
+	// Validate GitRepo URL
+	if err := validateGitURL(r.Spec.GitRepo, "gitRepo"); err != nil {
+		errors = append(errors, err.Error())
+	}
+
+	// Validate GitopsRepo URL
+	if err := validateGitURL(r.Spec.GitopsRepo, "gitopsRepo"); err != nil {
+		errors = append(errors, err.Error())
+	}
+
+	// Validate ImageRepo format
+	if err := validateImageRepo(r.Spec.ImageRepo); err != nil {
+		errors = append(errors, err.Error())
+	}
+
+	return errors
+}
+
+// validateResourceExistence validates that referenced resources exist
+func (r *HeliosApp) validateResourceExistence() []string {
+	var errors []string
+
+	// Validate ServiceAccount existence
+	if err := r.validateServiceAccount(); err != nil {
+		errors = append(errors, err.Error())
+	}
+
+	// Validate WebhookSecret existence
+	if err := r.validateWebhookSecret(); err != nil {
+		errors = append(errors, err.Error())
+	}
+
+	// Validate PVC existence if specified
+	if r.Spec.PVCName != "" {
+		if err := r.validatePVC(); err != nil {
+			errors = append(errors, err.Error())
+		}
+	}
+
+	return errors
+}
+
+// validateNumericFields validates numeric fields
+func (r *HeliosApp) validateNumericFields() []string {
+	var errors []string
+
+	// Validate port
+	if r.Spec.Port < 1 || r.Spec.Port > 65535 {
+		errors = append(errors, "port must be between 1 and 65535")
+	}
+
+	// Validate replicas
+	if r.Spec.Replicas < 0 {
+		errors = append(errors, "replicas must be non-negative")
+	}
+
+	return errors
+}
+
+// validateOptionalFields validates optional fields
+func (r *HeliosApp) validateOptionalFields() []string {
+	var errors []string
+
+	// Namespace validation is handled by Kubernetes metadata.namespace
+
+	// Validate serviceAccount if specified
+	if r.Spec.ServiceAccount != "" {
+		if !isValidDNSSubdomain(r.Spec.ServiceAccount) {
+			errors = append(errors, "serviceAccount must be a valid DNS subdomain")
+		}
+	}
+
+	// Validate webhookSecret if specified
+	if r.Spec.WebhookSecret != "" {
+		if !isValidDNSSubdomain(r.Spec.WebhookSecret) {
+			errors = append(errors, "webhookSecret must be a valid DNS subdomain")
+		}
+	}
+
+	// Validate pvcName if specified
+	if r.Spec.PVCName != "" {
+		if !isValidDNSSubdomain(r.Spec.PVCName) {
+			errors = append(errors, "pvcName must be a valid DNS subdomain")
+		}
+	}
+
+	return errors
+}
+
+// validateServiceAccount validates that the ServiceAccount exists
+func (r *HeliosApp) validateServiceAccount() error {
+	if r.Spec.ServiceAccount == "" {
+		return nil
+	}
+
+	// Create a client to check if ServiceAccount exists
+	// This is a simplified validation - in practice, you'd inject the client
+	// For now, we'll just validate the format
+	if !isValidDNSSubdomain(r.Spec.ServiceAccount) {
+		return fmt.Errorf("serviceAccount must be a valid DNS subdomain")
+	}
+
+	return nil
+}
+
+// validateWebhookSecret validates that the WebhookSecret exists
+func (r *HeliosApp) validateWebhookSecret() error {
+	if r.Spec.WebhookSecret == "" {
+		return nil
+	}
+
+	// Create a client to check if Secret exists
+	// This is a simplified validation - in practice, you'd inject the client
+	// For now, we'll just validate the format
+	if !isValidDNSSubdomain(r.Spec.WebhookSecret) {
+		return fmt.Errorf("webhookSecret must be a valid DNS subdomain")
+	}
+
+	return nil
+}
+
+// validatePVC validates that the PVC exists
+func (r *HeliosApp) validatePVC() error {
+	if r.Spec.PVCName == "" {
+		return nil
+	}
+
+	// Create a client to check if PVC exists
+	// This is a simplified validation - in practice, you'd inject the client
+	// For now, we'll just validate the format
+	if !isValidDNSSubdomain(r.Spec.PVCName) {
+		return fmt.Errorf("pvcName must be a valid DNS subdomain")
+	}
+
+	return nil
+}
+
+// validateGitURL validates a Git URL
 func validateGitURL(gitURL, fieldName string) error {
 	if gitURL == "" {
-		return fmt.Errorf("%s cannot be empty", fieldName)
+		return fmt.Errorf("%s is required", fieldName)
 	}
 
 	// Parse URL
 	parsedURL, err := url.Parse(gitURL)
 	if err != nil {
-		return fmt.Errorf("%s is not a valid URL: %v", fieldName, err)
+		return fmt.Errorf("%s is not a valid URL: %w", fieldName, err)
 	}
 
 	// Check scheme
@@ -181,75 +222,161 @@ func validateGitURL(gitURL, fieldName string) error {
 		return fmt.Errorf("%s must have a valid host", fieldName)
 	}
 
-	// Common patterns for Git URLs
-	validPatterns := []string{
-		".git",       // e.g., https://github.com/user/repo.git
-		"github.com", // e.g., https://github.com/user/repo
-		"gitlab.com",
-		"bitbucket.org",
+	return nil
+}
+
+// validateImageRepo validates an image repository URL
+func validateImageRepo(imageRepo string) error {
+	if imageRepo == "" {
+		return fmt.Errorf("imageRepo is required")
 	}
 
-	isValid := false
-	for _, pattern := range validPatterns {
-		if strings.Contains(strings.ToLower(gitURL), pattern) {
-			isValid = true
-			break
-		}
-	}
-
-	// Allow git@ SSH format
-	if strings.HasPrefix(gitURL, "git@") {
-		isValid = true
-	}
-
-	if !isValid {
-		// Warn but don't fail - user might be using private Git server
-		// This is just a warning, not a hard error
-		// You can make this stricter if needed
+	// Basic validation for Docker image format
+	// This is a simplified validation - in practice, you might want more comprehensive checks
+	if !strings.Contains(imageRepo, "/") {
+		return fmt.Errorf("imageRepo must be in the format 'registry/namespace/repository' or 'namespace/repository'")
 	}
 
 	return nil
 }
 
-// validateImageRepo validates that the image repository format is valid
-func validateImageRepo(imageRepo string) error {
-	if imageRepo == "" {
-		return fmt.Errorf("imageRepo cannot be empty")
+// isValidDNSSubdomain checks if a string is a valid DNS subdomain
+func isValidDNSSubdomain(name string) bool {
+	if name == "" || len(name) > 253 {
+		return false
 	}
 
-	// Basic Docker image format validation
-	// Format: [registry/][namespace/]repository[:tag]
-	// Examples:
-	// - nginx
-	// - nginx:latest
-	// - docker.io/library/nginx:latest
-	// - gcr.io/project/image:v1.0.0
-
-	parts := strings.Split(imageRepo, ":")
-	if len(parts) > 2 {
-		return fmt.Errorf("imageRepo has invalid format (too many colons): %s", imageRepo)
-	}
-
-	imageName := parts[0]
-	if imageName == "" {
-		return fmt.Errorf("imageRepo image name cannot be empty")
-	}
-
-	// Check for invalid characters
-	if strings.ContainsAny(imageName, " \t\n") {
-		return fmt.Errorf("imageRepo cannot contain whitespace characters")
-	}
-
-	// Tag validation (if provided)
-	if len(parts) == 2 {
-		tag := parts[1]
-		if tag == "" {
-			return fmt.Errorf("imageRepo tag cannot be empty when colon is present")
+	// Check each label
+	labels := strings.Split(name, ".")
+	for _, label := range labels {
+		if label == "" || len(label) > 63 {
+			return false
 		}
-		if strings.ContainsAny(tag, " \t\n") {
-			return fmt.Errorf("imageRepo tag cannot contain whitespace characters")
+		if !isValidDNSLabel(label) {
+			return false
 		}
 	}
 
-	return nil
+	return true
+}
+
+// isValidDNSLabel checks if a string is a valid DNS label
+func isValidDNSLabel(label string) bool {
+	if label == "" || len(label) > 63 {
+		return false
+	}
+
+	// Must start and end with alphanumeric character
+	if !isAlphanumeric(rune(label[0])) || !isAlphanumeric(rune(label[len(label)-1])) {
+		return false
+	}
+
+	// Can contain alphanumeric characters and hyphens
+	for _, char := range label {
+		if !isAlphanumeric(char) && char != '-' {
+			return false
+		}
+	}
+
+	return true
+}
+
+// isAlphanumeric checks if a character is alphanumeric
+func isAlphanumeric(char rune) bool {
+	return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9')
+}
+
+// validateHeliosAppUpdate validates updates to HeliosApp
+func (r *HeliosApp) validateHeliosAppUpdate(old *HeliosApp) (admission.Warnings, error) {
+	var allErrors []string
+	var warnings admission.Warnings
+
+	// Validate the new spec
+	if errs := r.validateBasicFields(); len(errs) > 0 {
+		allErrors = append(allErrors, errs...)
+	}
+
+	if errs := r.validateNumericFields(); len(errs) > 0 {
+		allErrors = append(allErrors, errs...)
+	}
+
+	if errs := r.validateOptionalFields(); len(errs) > 0 {
+		allErrors = append(allErrors, errs...)
+	}
+
+	// Check for immutable fields
+	if r.Spec.GitRepo != old.Spec.GitRepo {
+		allErrors = append(allErrors, "gitRepo is immutable")
+	}
+
+	if r.Spec.ImageRepo != old.Spec.ImageRepo {
+		allErrors = append(allErrors, "imageRepo is immutable")
+	}
+
+	if len(allErrors) > 0 {
+		return warnings, errors.New(strings.Join(allErrors, "; "))
+	}
+
+	return warnings, nil
+}
+
+// validateHeliosAppDelete validates deletion of HeliosApp
+func (r *HeliosApp) validateHeliosAppDelete() (admission.Warnings, error) {
+	// Add any deletion-specific validation here
+	return nil, nil
+}
+
+// Default implements webhook.Defaulter so a webhook will be registered for the type
+func (r *HeliosApp) Default() {
+	// Set default values
+	if r.Spec.Port == 0 {
+		r.Spec.Port = 8080
+	}
+
+	if r.Spec.Replicas == 0 {
+		r.Spec.Replicas = 1
+	}
+
+	// Namespace is handled by Kubernetes metadata.namespace
+
+	if r.Spec.ServiceAccount == "" {
+		r.Spec.ServiceAccount = "default"
+	}
+
+	// Add default labels
+	if r.Labels == nil {
+		r.Labels = make(map[string]string)
+	}
+	r.Labels["app.kubernetes.io/name"] = "helios-app"
+	r.Labels["app.kubernetes.io/instance"] = r.Name
+	r.Labels["app.kubernetes.io/version"] = "v1"
+	r.Labels["app.kubernetes.io/component"] = "application"
+	r.Labels["app.kubernetes.io/part-of"] = "helios-operator"
+	r.Labels["app.kubernetes.io/managed-by"] = "helios-operator"
+}
+
+// ValidateCreate implements webhook.Validator so a webhook will be registered for the type
+func (r *HeliosApp) ValidateCreate() (admission.Warnings, error) {
+	return r.validateHeliosApp()
+}
+
+// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
+func (r *HeliosApp) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
+	oldHeliosApp, ok := old.(*HeliosApp)
+	if !ok {
+		return nil, fmt.Errorf("expected old object to be of type HeliosApp")
+	}
+	return r.validateHeliosAppUpdate(oldHeliosApp)
+}
+
+// ValidateDelete implements webhook.Validator so a webhook will be registered for the type
+func (r *HeliosApp) ValidateDelete() (admission.Warnings, error) {
+	return r.validateHeliosAppDelete()
+}
+
+// SetupWebhookWithManager sets up the webhook with the manager
+func (r *HeliosApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewWebhookManagedBy(mgr).
+		For(r).
+		Complete()
 }

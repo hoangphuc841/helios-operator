@@ -3,8 +3,11 @@
 > **Zero-Configuration GitOps Deployment for Kubernetes Applications**
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Go Version](https://img.shields.io/badge/go-1.21+-blue.svg)](go.mod)
+[![Go Version](https://img.shields.io/badge/go-1.25.3-blue.svg)](go.mod)
 [![Kubernetes](https://img.shields.io/badge/kubernetes-1.19+-green.svg)](go.mod)
+[![Build Status](https://github.com/hoangphuc841/helios-operator/workflows/CI/badge.svg)](https://github.com/hoangphuc841/helios-operator/actions)
+[![Coverage](https://codecov.io/gh/hoangphuc841/helios-operator/branch/main/graph/badge.svg)](https://codecov.io/gh/hoangphuc841/helios-operator)
+[![Release](https://img.shields.io/github/v/release/hoangphuc841/helios-operator)](https://github.com/hoangphuc841/helios-operator/releases)
 
 Helios Operator is a Kubernetes operator that automates the complete application lifecycle from source code to production deployment using **Tekton Pipelines** and **ArgoCD**. Simply define your application once, and Helios handles the rest.
 
@@ -18,15 +21,29 @@ Helios Operator is a Kubernetes operator that automates the complete application
 
 ## 🎬 **Quick Start (5 minutes)**
 
-### 1. Install Helios Operator
+### 1. Install Prerequisites
+
+```bash
+# Install Tekton Pipelines
+kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+
+# Install ArgoCD
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
+
+### 2. Install Helios Operator
 
 ```bash
 # Install via Helm
 helm repo add helios-operator https://hoangphuc841.github.io/helios-operator
 helm install helios-operator helios-operator/helios-operator
+
+# Or install via kubectl
+kubectl apply -f https://raw.githubusercontent.com/hoangphuc841/helios-operator/main/config/default/kustomization.yaml
 ```
 
-### 2. Create Your First Application
+### 3. Create Your First Application
 
 ```yaml
 apiVersion: platform.helios.io/v1

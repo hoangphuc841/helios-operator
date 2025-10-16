@@ -30,7 +30,7 @@ What actually happened.
 - **Operator Version**: [e.g., v1.0.0]
 - **Kubernetes Version**: [e.g., v1.34.1]
 - **Platform**: [e.g., Kind, GKE, EKS, AKS]
-- **Go Version**: [e.g., 1.25.2]
+- **Go Version**: [e.g., 1.25.3]
 
 ## Logs
 

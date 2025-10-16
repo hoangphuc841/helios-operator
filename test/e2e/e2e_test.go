@@ -31,7 +31,7 @@ import (
 	"github.com/hoangphuc841/helios-operator/test/utils"
 )
 
-// namespace where the project is deployed in
+// namespace where the project is deployed in.
 const namespace = "helios-operator-system"
 
 // serviceAccountName created for the project
@@ -273,24 +273,6 @@ var _ = Describe("Manager", Ordered, func() {
 				cmd := exec.Command("kubectl", "create", "namespace", testNamespace)
 				_, err := utils.Run(cmd)
 				Expect(err).NotTo(HaveOccurred(), "Failed to create test namespace")
-
-				By("creating PVC for Tekton workspace")
-				pvcYAML := fmt.Sprintf(`apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: %s-pvc
-  namespace: %s
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi`, testAppName, testNamespace)
-
-				cmd = exec.Command("kubectl", "apply", "-f", "-")
-				cmd.Stdin = strings.NewReader(pvcYAML)
-				_, err = utils.Run(cmd)
-				Expect(err).NotTo(HaveOccurred(), "Failed to create PVC")
 			})
 
 			AfterEach(func() {
@@ -300,7 +282,7 @@ spec:
 			})
 
 			It("should create and manage a complete HeliosApp lifecycle", func() {
-				By("creating a HeliosApp resource")
+				By("creating a HeliosApp resource (testing automatic PVC creation)")
 				heliosAppYAML := fmt.Sprintf(`apiVersion: platform.helios.io/v1
 kind: HeliosApp
 metadata:
@@ -317,12 +299,20 @@ spec:
   replicas: 1
   serviceAccount: "pipeline-sa"
   webhookSecret: "github-webhook-secret"
-  pvcName: "%s-pvc"`, testAppName, testNamespace, testGitRepo, testGitopsRepo, testAppName, testImageRepo, testAppName)
+  # PVCName is intentionally omitted to test automatic creation`, testAppName, testNamespace, testGitRepo, testGitopsRepo, testAppName, testImageRepo)
 
 				cmd := exec.Command("kubectl", "apply", "-f", "-")
 				cmd.Stdin = strings.NewReader(heliosAppYAML)
 				_, err := utils.Run(cmd)
 				Expect(err).NotTo(HaveOccurred(), "Failed to create HeliosApp")
+
+				By("waiting for automatic PVC creation")
+				verifyPVCCreated := func(g Gomega) {
+					cmd := exec.Command("kubectl", "get", "pvc", fmt.Sprintf("%s-workspace", testAppName), "-n", testNamespace)
+					_, err := utils.Run(cmd)
+					g.Expect(err).NotTo(HaveOccurred(), "PVC should be created automatically")
+				}
+				Eventually(verifyPVCCreated, 2*time.Minute).Should(Succeed())
 
 				By("waiting for Pipeline to be created")
 				verifyPipelineCreated := func(g Gomega) {
@@ -380,7 +370,7 @@ spec:
   workspaces:
   - name: source-code
     persistentVolumeClaim:
-      claimName: %s-pvc`, testAppName, time.Now().Unix(), testNamespace, testAppName, testAppName, testAppName, testGitRepo, testImageRepo, testAppName)
+      claimName: %s-workspace`, testAppName, time.Now().Unix(), testNamespace, testAppName, testAppName, testAppName, testGitRepo, testImageRepo, testAppName)
 
 				cmd = exec.Command("kubectl", "apply", "-f", "-")
 				cmd.Stdin = strings.NewReader(pipelineRunYAML)
@@ -429,6 +419,15 @@ spec:
 				}
 				Eventually(verifyResourceLabels, 1*time.Minute).Should(Succeed())
 
+				By("verifying finalizer is added")
+				verifyFinalizerAdded := func(g Gomega) {
+					cmd := exec.Command("kubectl", "get", "heliosapp", testAppName, "-n", testNamespace, "-o", "jsonpath={.metadata.finalizers}")
+					output, err := utils.Run(cmd)
+					g.Expect(err).NotTo(HaveOccurred(), "Should be able to get HeliosApp")
+					g.Expect(output).To(ContainSubstring("platform.helios.io/finalizer"), "Finalizer should be added")
+				}
+				Eventually(verifyFinalizerAdded, 1*time.Minute).Should(Succeed())
+
 				By("testing resource cleanup on deletion")
 				cmd = exec.Command("kubectl", "delete", "heliosapp", testAppName, "-n", testNamespace)
 				_, err = utils.Run(cmd)
@@ -457,6 +456,79 @@ spec:
 					g.Expect(err).To(HaveOccurred(), "ArgoCD Application should be deleted")
 				}
 				Eventually(verifyArgoCDAppDeleted, 2*time.Minute).Should(Succeed())
+
+				By("verifying automatically created PVC is cleaned up")
+				verifyPVCCleanedUp := func(g Gomega) {
+					cmd := exec.Command("kubectl", "get", "pvc", fmt.Sprintf("%s-workspace", testAppName), "-n", testNamespace)
+					_, err := utils.Run(cmd)
+					g.Expect(err).To(HaveOccurred(), "Automatically created PVC should be deleted")
+				}
+				Eventually(verifyPVCCleanedUp, 2*time.Minute).Should(Succeed())
+			})
+
+			It("should handle explicit PVC specification", func() {
+				const explicitPVCAppName = "explicit-pvc-app"
+
+				By("creating a custom PVC first")
+				customPVCYAML := fmt.Sprintf(`apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: custom-workspace-pvc
+  namespace: %s
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi`, testNamespace)
+
+				cmd := exec.Command("kubectl", "apply", "-f", "-")
+				cmd.Stdin = strings.NewReader(customPVCYAML)
+				_, err := utils.Run(cmd)
+				Expect(err).NotTo(HaveOccurred(), "Failed to create custom PVC")
+
+				By("creating a HeliosApp with explicit PVC name")
+				heliosAppYAML := fmt.Sprintf(`apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: %s
+  namespace: %s
+spec:
+  gitRepo: "%s"
+  gitBranch: "main"
+  gitopsRepo: "%s"
+  gitopsPath: "%s"
+  gitopsBranch: "main"
+  imageRepo: "%s"
+  port: 80
+  replicas: 1
+  serviceAccount: "pipeline-sa"
+  webhookSecret: "github-webhook-secret"
+  pvcName: "custom-workspace-pvc"`, explicitPVCAppName, testNamespace, testGitRepo, testGitopsRepo, explicitPVCAppName, testImageRepo)
+
+				cmd = exec.Command("kubectl", "apply", "-f", "-")
+				cmd.Stdin = strings.NewReader(heliosAppYAML)
+				_, err = utils.Run(cmd)
+				Expect(err).NotTo(HaveOccurred(), "Failed to create HeliosApp with explicit PVC")
+
+				By("verifying no automatic PVC is created")
+				verifyNoAutomaticPVC := func(g Gomega) {
+					cmd := exec.Command("kubectl", "get", "pvc", fmt.Sprintf("%s-workspace", explicitPVCAppName), "-n", testNamespace)
+					_, err := utils.Run(cmd)
+					g.Expect(err).To(HaveOccurred(), "No automatic PVC should be created when explicit PVC is specified")
+				}
+				Eventually(verifyNoAutomaticPVC, 1*time.Minute).Should(Succeed())
+
+				By("verifying the custom PVC is still available")
+				cmd = exec.Command("kubectl", "get", "pvc", "custom-workspace-pvc", "-n", testNamespace)
+				_, err = utils.Run(cmd)
+				Expect(err).NotTo(HaveOccurred(), "Custom PVC should still exist")
+
+				By("cleaning up")
+				cmd = exec.Command("kubectl", "delete", "heliosapp", explicitPVCAppName, "-n", testNamespace, "--ignore-not-found=true")
+				_, _ = utils.Run(cmd)
+				cmd = exec.Command("kubectl", "delete", "pvc", "custom-workspace-pvc", "-n", testNamespace, "--ignore-not-found=true")
+				_, _ = utils.Run(cmd)
 			})
 
 			It("should handle invalid HeliosApp configurations", func() {
@@ -512,7 +584,7 @@ func serviceAccountToken() (string, error) {
 
 	// Temporary file to store the token request
 	secretName := fmt.Sprintf("%s-token-request", serviceAccountName)
-	tokenRequestFile := filepath.Join("/tmp", secretName)
+	tokenRequestFile := filepath.Join(os.TempDir(), secretName)
 	err := os.WriteFile(tokenRequestFile, []byte(tokenRequestRawString), os.FileMode(0o644))
 	if err != nil {
 		return "", err

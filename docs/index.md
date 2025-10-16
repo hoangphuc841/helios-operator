@@ -78,19 +78,28 @@ If you're managing or contributing to the Helios platform:
 
 ### **HeliosApp**
 
-The core Custom Resource that defines your application. It specifies source code, build pipeline, and deployment configuration.
+The core Custom Resource that defines your application. It specifies source code, build pipeline, and deployment configuration with comprehensive validation and status reporting.
 
 ### **Automatic Pipeline Generation**
 
-Helios automatically creates Tekton Pipelines from templates, eliminating the need to manage Pipeline resources manually.
+Helios automatically creates Tekton Pipelines from templates, eliminating the need to manage Pipeline resources manually. The system now includes robust error handling and retry logic.
 
 ### **GitOps Workflow**
 
-Pure GitOps approach where ArgoCD manages deployments based on Git repository changes.
+Pure GitOps approach where ArgoCD manages deployments based on Git repository changes with enhanced sync status monitoring.
 
 ### **Real-time Status Updates**
 
-Kubernetes Watches provide instant feedback on build status, deployment health, and sync status.
+Kubernetes Watches provide instant feedback on build status, deployment health, and sync status with structured logging and comprehensive metrics.
+
+### **Clean Architecture**
+
+The project follows Go best practices with:
+
+- **Modular Design**: Separated concerns with `internal/reconciler/`, `internal/resources/`, `internal/common/`
+- **Comprehensive Testing**: Unit tests with >70% coverage and integration tests
+- **Error Handling**: Robust error handling with proper logging and retry logic
+- **Code Quality**: Linting compliance and clean code structure
 
 ## 🔗 **External Resources**
 

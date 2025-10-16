@@ -2,47 +2,69 @@ version: "2"
 
 run:
   allow-parallel-runners: true
+  allow-serial-runners: true
   timeout: 10m
   go: "1.25"
   modules-download-mode: readonly
+  relative-path-mode: gomod
 
 linters:
   default: none
   enable:
-    - errcheck
-    - errorlint
-    - goconst
-    - gocyclo
-    - gosec
+    # Core correctness/perf
     - govet
-    - ineffassign
-    - nakedret
-    - prealloc
-    - unconvert
-    - unparam
-    - unused
-    - misspell
-    - lll
-    - bodyclose
-    - gocritic
-    - godox
-    - ginkgolinter
-    - testpackage
-    - godot
-    - revive
     - staticcheck
+    - ineffassign
+    - unused
+    - unparam
+    - unconvert
+    - errorlint
+    - errcheck
+    - gocritic
+    - gosec
+    - prealloc
+    - nakedret
+    - copyloopvar
+    - cyclop
+    - lll
+    - misspell
+    - bodyclose
+    - revive
+    - godot
+    - godox
     - dupl
     - importas
-    - copyloopvar
+    - testpackage
+    - ginkgolinter
 
-  disable: []
+    # Recommended additions
+    - nolintlint
+    - depguard
+    - noctx
+    - contextcheck
+    - containedctx
+    - wrapcheck
+    - exhaustive
+    - exhaustruct
+    - rowserrcheck
+    - sqlclosecheck
+    - errname
+    - paralleltest
+    - thelper
+    - tparallel
+    - tagliatelle
+    - varnamelen
+    - usestdlibvars
+    - perfsprint
+    - wsl_v5
 
   settings:
-    gocyclo:
-      min-complexity: 15
-    goconst:
-      min-len: 3
-      min-occurrences: 3
+    # Complexity: prefer cyclop (function + package)
+    cyclop:
+      max-complexity: 15
+      package-average: 0.0
+
+    # gocritic: enable broad but curated rulesets
     gocritic:
       enabled-tags:
         - diagnostic
@@ -56,6 +78,8 @@ linters:
         - octalLiteral
         - whyNoLint
         - wrapperFunc
+
+    # govet: treat your logger functions as printf-family
     govet:
       settings:
         printf:
@@ -64,16 +88,29 @@ linters:
             - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
             - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
             - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+
+    # Strings/consts
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+
+    # Long lines
     lll:
       line-length: 140
+
+    # Spelling
     misspell:
       locale: US
+
+    # Security
     gosec:
       severity: medium
       confidence: medium
       excludes:
         - G204
         - G304
+
+    # Revive rules (subset; expand as needed)
     revive:
       rules:
         - name: comment-spacings
@@ -106,17 +143,22 @@ linters:
           severity: error
         - name: redefines-builtin-id
           severity: error
-    staticcheck:
-      checks: ["all"]
+
+    # Duplicate code
     dupl:
       threshold: 100
+
+    # Error handling details
     errcheck:
       check-type-assertions: true
       check-blank: true
+      disable-default-exclusions: false
       exclude-functions:
         - io/ioutil.ReadFile
         - io.Copy(*bytes.Buffer)
         - io.Copy(os.Stdout)
+
+    # K8s aliases
     importas:
       alias:
         - pkg: k8s.io/api/core/v1
@@ -127,8 +169,11 @@ linters:
           alias: runtime
         - pkg: sigs.k8s.io/controller-runtime/pkg/log
           alias: log
+
+    # Test discipline
     testpackage:
       skip-regexp: (export|internal)_test\.go
+
     ginkgolinter:
       suppress-async-assertion: false
       suppress-len-assertion: false
@@ -136,31 +181,17 @@ linters:
       suppress-err-assertion: false
       suppress-compare-assertion: false
       forbid-focus-container: true
-
-severity:
-  default: error
-  rules:
-    - linters:
-        - gomnd
-        - dupl
-      severity: warning
-    - linters:
-        - gosec
-      severity: warning
-    - linters:
-        - gocyclo
-      severity: warning
-    - linters:
-        - lll
-      severity: warning
-    - linters:
-        - revive
-      severity: warning
+      force-expect-to: true
+      validate-async-intervals: true
+      forbid-spec-pollution: true
 
 formatters:
   enable:
     - gofmt
     - goimports
+    - gofumpt
+    - gci
+    - golines
   exclusions:
     generated: lax
     paths:
@@ -169,3 +200,30 @@ formatters:
       - examples$
       - api/v1/zz_generated\.go$
       - config/crd/bases/.*\.yaml$
+
+# Consider phasing in for legacy repos (uncomment to use)
+# issues:
+#   new: true
+#   whole-files: true
+
+severity:
+  default: error
+  rules:
+    - linters:
+        - dupl
+      severity: warning
+    - linters:
+        - gosec
+      severity: warning
+    - linters:
+        - cyclop
+      severity: warning
+    - linters:
+        - lll
+      severity: warning
+    - linters:
+        - revive
+      severity: warning
+    - linters:
+        - mnd
+      severity: warning
