@@ -65,6 +65,12 @@ func (r *HeliosAppReconciler) fetchHeliosApp(ctx context.Context, namespacedName
 func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
+	// Add structured fields to logger for this reconciliation
+	logger = logger.WithValues(
+		"heliosapp", req.Name,
+		"namespace", req.Namespace,
+	)
+
 	// Track reconciliation metrics
 	startTime := time.Now()
 	ReconciliationsTotal.WithLabelValues(req.Namespace, req.Name).Inc()
@@ -74,16 +80,23 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		duration := time.Since(startTime).Seconds()
 		ReconciliationDuration.WithLabelValues(req.Namespace, req.Name, reconcileResult).Observe(duration)
 		LastReconcileTime.WithLabelValues(req.Namespace, req.Name).SetToCurrentTime()
+
+		// Log completion with result
+		if reconcileResult == "success" {
+			logger.Info("Reconciliation completed successfully", "duration_seconds", duration)
+		}
 	}()
+
+	logger.V(1).Info("Reconciliation started")
 
 	// Fetch HeliosApp
 	heliosApp, err := r.fetchHeliosApp(ctx, req.NamespacedName)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			logger.Info("HeliosApp not found. It may have been deleted.")
+			logger.V(1).Info("HeliosApp resource not found, may have been deleted")
 			return ctrl.Result{}, nil
 		}
-		logger.Error(err, "unable to fetch HeliosApp")
+		logger.Error(err, "Failed to fetch HeliosApp resource")
 		reconcileResult = "error"
 		return ctrl.Result{}, err
 	}
@@ -92,7 +105,12 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, nil
 	}
 
-	logger.Info("Starting reconciliation", "name", heliosApp.Name, "namespace", heliosApp.Namespace, "generation", heliosApp.Generation)
+	// Add generation to logger for tracking spec changes
+	logger = logger.WithValues("generation", heliosApp.Generation)
+	logger.Info("Processing HeliosApp",
+		"gitRepo", heliosApp.Spec.GitRepo,
+		"imageRepo", heliosApp.Spec.ImageRepo,
+	)
 
 	name := heliosApp.Name
 	namespace := heliosApp.Namespace
@@ -134,13 +152,13 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	// Update comprehensive status
 	if err := r.updateComprehensiveStatus(ctx, heliosApp, name, namespace, logger); err != nil {
-		logger.Error(err, "failed to update comprehensive status")
+		logger.Error(err, "Failed to update comprehensive status")
 		reconcileResult = "error"
 		return ctrl.Result{}, common.NewStatusUpdateError("HeliosApp", name, err)
 	}
 
 	reconcileResult = "success"
-	logger.Info("Reconciliation completed successfully", "name", name, "namespace", namespace)
+	// Success log is in defer function
 	return ctrl.Result{}, nil
 }
 
@@ -698,34 +716,50 @@ func (r *HeliosAppReconciler) deploymentToHeliosApp(ctx context.Context, obj cli
 
 // reconcilePipeline creates or updates the Tekton Pipeline
 func (r *HeliosAppReconciler) reconcilePipeline(ctx context.Context, heliosApp *heliosappv1.HeliosApp, logger logr.Logger) error {
+	logger = logger.WithValues("phase", "pipeline")
+	logger.V(1).Info("Reconciling Tekton Pipeline")
+
 	pipeline, err := resources.GeneratePipeline(heliosApp)
 	if err != nil {
-		logger.Error(err, "failed to generate Pipeline")
+		logger.Error(err, "Failed to generate Pipeline resource")
 		return common.NewResourceGenerationError("Pipeline", heliosApp.Name, err)
 	}
 
 	pipeline.SetNamespace(heliosApp.Namespace)
 	if err := controllerutil.SetControllerReference(heliosApp, pipeline, r.Scheme); err != nil {
-		logger.Error(err, "failed to set owner reference for Pipeline", "name", pipeline.GetName())
+		logger.Error(err, "Failed to set controller reference for Pipeline",
+			"pipelineName", pipeline.GetName())
 		return common.NewReconciliationError("Pipeline", pipeline.GetName(), "set owner reference", err)
 	}
 
-	return r.createOrUpdateResource(ctx, pipeline, logger)
+	if err := r.createOrUpdateResource(ctx, pipeline, logger); err != nil {
+		return err
+	}
+
+	logger.V(1).Info("Pipeline reconciled successfully", "pipelineName", pipeline.GetName())
+	return nil
 }
 
 // reconcileTriggers creates or updates Tekton Trigger resources
 func (r *HeliosAppReconciler) reconcileTriggers(ctx context.Context, heliosApp *heliosappv1.HeliosApp, name, namespace, pipelineName, serviceAccount, githubSecret string, workspace map[string]interface{}, logger logr.Logger) error {
+	logger = logger.WithValues("phase", "triggers")
+	logger.V(1).Info("Reconciling Tekton Triggers",
+		"eventListener", name+"-el",
+		"triggerBinding", name+"-trigger-binding",
+		"triggerTemplate", name+"-trigger-template",
+	)
+
 	eventListener, err := resources.GenerateEventListener(
 		name+"-el", namespace, name+"-trigger", name+"-trigger-binding", name+"-trigger-template", githubSecret,
 	)
 	if err != nil {
-		logger.Error(err, "failed to generate EventListener")
+		logger.Error(err, "Failed to generate EventListener resource")
 		return common.NewResourceGenerationError("EventListener", name+"-el", err)
 	}
 
 	triggerBinding, err := resources.GenerateTriggerBinding(name+"-trigger-binding", namespace)
 	if err != nil {
-		logger.Error(err, "failed to generate TriggerBinding")
+		logger.Error(err, "Failed to generate TriggerBinding resource")
 		return common.NewResourceGenerationError("TriggerBinding", name+"-trigger-binding", err)
 	}
 
@@ -733,14 +767,16 @@ func (r *HeliosAppReconciler) reconcileTriggers(ctx context.Context, heliosApp *
 		name+"-trigger-template", namespace, name+"-pipelinerun", pipelineName, serviceAccount, workspace,
 	)
 	if err != nil {
-		logger.Error(err, "failed to generate TriggerTemplate")
+		logger.Error(err, "Failed to generate TriggerTemplate resource")
 		return common.NewResourceGenerationError("TriggerTemplate", name+"-trigger-template", err)
 	}
 
 	for _, obj := range []*unstructured.Unstructured{eventListener, triggerBinding, triggerTemplate} {
 		obj.SetNamespace(namespace)
 		if err := controllerutil.SetControllerReference(heliosApp, obj, r.Scheme); err != nil {
-			logger.Error(err, "failed to set owner reference", "name", obj.GetName())
+			logger.Error(err, "Failed to set controller reference",
+				"kind", obj.GetKind(),
+				"resourceName", obj.GetName())
 			return common.NewReconciliationError(obj.GetKind(), obj.GetName(), "set owner reference", err)
 		}
 
@@ -749,14 +785,17 @@ func (r *HeliosAppReconciler) reconcileTriggers(ctx context.Context, heliosApp *
 		}
 	}
 
+	logger.V(1).Info("Triggers reconciled successfully")
 	return nil
 }
 
 // reconcileArgoCD creates or updates the ArgoCD Application
 func (r *HeliosAppReconciler) reconcileArgoCD(ctx context.Context, heliosApp *heliosappv1.HeliosApp, name, namespace string, logger logr.Logger) error {
+	logger = logger.WithValues("phase", "argocd")
+
 	argoApp, err := resources.GenerateArgoApplication(heliosApp)
 	if err != nil {
-		logger.Error(err, "failed to generate ArgoCD Application")
+		logger.Error(err, "Failed to generate ArgoCD Application resource")
 		return common.NewResourceGenerationError("ArgoCD Application", name+"-argocd", err)
 	}
 
@@ -779,31 +818,46 @@ func (r *HeliosAppReconciler) reconcileArgoCD(ctx context.Context, heliosApp *he
 		gitopsPath = name
 	}
 
+	logger.V(1).Info("Reconciling ArgoCD Application",
+		"appName", argoApp.GetName(),
+		"gitopsRepo", heliosApp.Spec.GitopsRepo,
+		"gitopsPath", gitopsPath,
+	)
+
 	// Create or update ArgoCD Application
 	existingArgoApp := &unstructured.Unstructured{}
 	existingArgoApp.SetGroupVersionKind(argoApp.GroupVersionKind())
 	err = r.Get(ctx, client.ObjectKey{Namespace: "argocd", Name: argoApp.GetName()}, existingArgoApp)
 	if err != nil {
 		if client.IgnoreNotFound(err) == nil {
-			logger.Info("Creating ArgoCD Application", "name", argoApp.GetName(), "gitopsRepo", heliosApp.Spec.GitopsRepo, "gitopsPath", gitopsPath)
+			logger.Info("Creating ArgoCD Application",
+				"appName", argoApp.GetName(),
+				"gitopsRepo", heliosApp.Spec.GitopsRepo,
+				"gitopsPath", gitopsPath)
 			if err := r.Create(ctx, argoApp); err != nil {
 				return common.NewReconciliationError("ArgoCD Application", argoApp.GetName(), "create", err)
 			}
 			return nil
 		}
-		logger.Error(err, "failed to get ArgoCD Application")
+		logger.Error(err, "Failed to get ArgoCD Application")
 		return common.NewReconciliationError("ArgoCD Application", argoApp.GetName(), "get", err)
 	}
 
 	// Update if spec changed
 	if !equalUnstructured(argoApp, existingArgoApp) {
-		logger.Info("Updating ArgoCD Application", "name", argoApp.GetName(), "gitopsRepo", heliosApp.Spec.GitopsRepo, "gitopsPath", gitopsPath)
+		logger.Info("Updating ArgoCD Application",
+			"appName", argoApp.GetName(),
+			"gitopsRepo", heliosApp.Spec.GitopsRepo,
+			"gitopsPath", gitopsPath)
 		argoApp.SetResourceVersion(existingArgoApp.GetResourceVersion())
 		if err := r.Update(ctx, argoApp); err != nil {
 			return common.NewReconciliationError("ArgoCD Application", argoApp.GetName(), "update", err)
 		}
+	} else {
+		logger.V(1).Info("ArgoCD Application is up-to-date")
 	}
 
+	logger.V(1).Info("ArgoCD Application reconciled successfully")
 	return nil
 }
 
@@ -812,26 +866,38 @@ func (r *HeliosAppReconciler) createOrUpdateResource(ctx context.Context, obj *u
 	existing := &unstructured.Unstructured{}
 	existing.SetGroupVersionKind(obj.GroupVersionKind())
 
+	resourceLogger := logger.WithValues(
+		"kind", obj.GetKind(),
+		"resourceName", obj.GetName(),
+		"namespace", obj.GetNamespace(),
+	)
+
 	err := r.Get(ctx, client.ObjectKey{Namespace: obj.GetNamespace(), Name: obj.GetName()}, existing)
 	if err != nil {
 		if client.IgnoreNotFound(err) == nil {
-			logger.Info("Creating resource", "kind", obj.GetKind(), "name", obj.GetName())
+			resourceLogger.Info("Creating resource")
 			if err := r.Create(ctx, obj); err != nil {
+				resourceLogger.Error(err, "Failed to create resource")
 				return common.NewReconciliationError(obj.GetKind(), obj.GetName(), "create", err)
 			}
+			resourceLogger.V(1).Info("Resource created successfully")
 			return nil
 		}
-		logger.Error(err, "failed to get resource", "name", obj.GetName())
+		resourceLogger.Error(err, "Failed to check if resource exists")
 		return common.NewReconciliationError(obj.GetKind(), obj.GetName(), "get", err)
 	}
 
 	// Update if spec changed
 	if !equalUnstructured(obj, existing) {
-		logger.Info("Updating resource", "kind", obj.GetKind(), "name", obj.GetName())
+		resourceLogger.Info("Updating resource (spec changed)")
 		obj.SetResourceVersion(existing.GetResourceVersion())
 		if err := r.Update(ctx, obj); err != nil {
+			resourceLogger.Error(err, "Failed to update resource")
 			return common.NewReconciliationError(obj.GetKind(), obj.GetName(), "update", err)
 		}
+		resourceLogger.V(1).Info("Resource updated successfully")
+	} else {
+		resourceLogger.V(1).Info("Resource is up-to-date, no changes needed")
 	}
 
 	return nil
@@ -839,16 +905,22 @@ func (r *HeliosAppReconciler) createOrUpdateResource(ctx context.Context, obj *u
 
 // updateComprehensiveStatus updates the HeliosApp status with build, deployment, and ArgoCD sync information
 func (r *HeliosAppReconciler) updateComprehensiveStatus(ctx context.Context, heliosApp *heliosappv1.HeliosApp, name, namespace string, logger logr.Logger) error {
+	logger = logger.WithValues("phase", "status-update")
+	logger.V(1).Info("Updating comprehensive status")
+
 	// Get PipelineRun status
 	buildStatus, buildVersion, pipelineRunName, lastBuildTime, err := r.getPipelineRunStatus(ctx, heliosApp)
 	if err != nil {
-		logger.V(1).Info("Could not get PipelineRun status", "error", err)
+		logger.V(1).Info("Could not retrieve PipelineRun status", "error", err.Error())
 	} else {
 		heliosApp.Status.BuildStatus = buildStatus
 		heliosApp.Status.BuildVersion = buildVersion
 		heliosApp.Status.CurrentPipelineRun = pipelineRunName
 		heliosApp.Status.LastBuildTime = lastBuildTime
-		logger.Info("PipelineRun status", "build", buildStatus, "version", buildVersion, "pipelineRun", pipelineRunName)
+		logger.Info("Build status updated",
+			"status", buildStatus,
+			"version", buildVersion,
+			"pipelineRun", pipelineRunName)
 
 		// Update metrics
 		BuildsTotal.WithLabelValues(namespace, name, buildStatus).Inc()
@@ -866,7 +938,7 @@ func (r *HeliosAppReconciler) updateComprehensiveStatus(ctx context.Context, hel
 	// Get Deployment health
 	deployHealth, readyReplicas, desiredReplicas, lastHealthyTime, err := r.getDeploymentHealth(ctx, heliosApp)
 	if err != nil {
-		logger.V(1).Info("Could not get Deployment health", "error", err)
+		logger.V(1).Info("Could not retrieve Deployment health", "error", err.Error())
 	} else {
 		heliosApp.Status.DeploymentHealth = deployHealth
 		heliosApp.Status.ReadyReplicas = readyReplicas
@@ -874,7 +946,10 @@ func (r *HeliosAppReconciler) updateComprehensiveStatus(ctx context.Context, hel
 		if lastHealthyTime != nil {
 			heliosApp.Status.LastHealthyTime = lastHealthyTime
 		}
-		logger.Info("Deployment health", "status", deployHealth, "ready", readyReplicas, "desired", desiredReplicas)
+		logger.Info("Deployment health updated",
+			"health", deployHealth,
+			"readyReplicas", readyReplicas,
+			"desiredReplicas", desiredReplicas)
 
 		// Update metrics
 		DeploymentHealthGauge.WithLabelValues(namespace, name).Set(DeploymentHealthToMetric(deployHealth))
@@ -894,9 +969,11 @@ func (r *HeliosAppReconciler) updateComprehensiveStatus(ctx context.Context, hel
 	// Update status with ArgoCD sync information
 	syncStatus, healthStatus, err := r.getArgoAppSyncStatus(ctx, name)
 	if err != nil {
-		logger.V(1).Info("Could not get ArgoCD sync status", "error", err)
+		logger.V(1).Info("Could not retrieve ArgoCD sync status", "error", err.Error())
 	} else {
-		logger.Info("ArgoCD Application status", "sync", syncStatus, "health", healthStatus)
+		logger.Info("ArgoCD sync status updated",
+			"syncStatus", syncStatus,
+			"healthStatus", healthStatus)
 
 		// Update metrics
 		ArgoCDSyncStatus.WithLabelValues(namespace, name).Set(SyncStatusToMetric(syncStatus))
@@ -921,7 +998,14 @@ func (r *HeliosAppReconciler) updateComprehensiveStatus(ctx context.Context, hel
 	}
 
 	// Final status update
-	return r.Status().Update(ctx, heliosApp)
+	logger.V(1).Info("Persisting status updates to API server")
+	if err := r.Status().Update(ctx, heliosApp); err != nil {
+		logger.Error(err, "Failed to persist status updates")
+		return err
+	}
+
+	logger.V(1).Info("Status updates persisted successfully")
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
