@@ -52,6 +52,8 @@ GOLANGCI_LINT ?= $(BIN_DIR)/golangci-lint
 KUSTOMIZE_VERSION ?= v5.7.1
 CONTROLLER_TOOLS_VERSION ?= v0.19.0
 GOLANGCI_LINT_VERSION ?= v2.5.0
+ENVTEST_K8S_VERSION ?= 1.31.0
+ENVTEST ?= $(BIN_DIR)/setup-envtest
 
 # =============================================================================
 # 🎯 Default Target
@@ -157,7 +159,7 @@ lint: golangci-lint ## Run linter - Development
 	@$(GOLANGCI_LINT) run --timeout=5m
 
 .PHONY: test
-test: manifests generate ## Run unit tests - Development
+test: manifests generate setup-envtest-bins ## Run unit tests - Development
 	@echo "Running tests..."
 	@go test ./... -race -v
 
@@ -277,6 +279,17 @@ $(CONTROLLER_GEN): $(BIN_DIR)
 golangci-lint: $(GOLANGCI_LINT) ## Install golangci-lint - Tools
 $(GOLANGCI_LINT): $(BIN_DIR)
 	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/v2/cmd/golangci-lint,$(GOLANGCI_LINT_VERSION))
+
+.PHONY: envtest
+envtest: $(ENVTEST) ## Install setup-envtest - Tools
+$(ENVTEST): $(BIN_DIR)
+	GOBIN=$(BIN_DIR) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+.PHONY: setup-envtest-bins
+setup-envtest-bins: envtest ## Download envtest K8s binaries - Tools
+	@echo "📦 Installing envtest Kubernetes binaries..."
+	@ENVTEST_ASSETS_DIR=$$($(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(shell pwd)/bin/k8s -p path) && \
+	echo "Envtest binaries installed at: $$ENVTEST_ASSETS_DIR"
 
 # =============================================================================
 # 🔧 Utility Functions

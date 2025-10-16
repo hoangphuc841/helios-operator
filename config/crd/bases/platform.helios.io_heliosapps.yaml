@@ -14,39 +14,52 @@ spec:
     singular: heliosapp
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .spec.gitRepo
+      name: Git Repo
+      type: string
+    - jsonPath: .spec.imageRepo
+      name: Image Repo
+      type: string
+    - jsonPath: .spec.port
+      name: Port
+      type: integer
+    - jsonPath: .spec.replicas
+      name: Replicas
+      type: integer
+    - jsonPath: .status.conditions[?(@.type=="Ready")].status
+      name: Status
+      type: string
+    - jsonPath: .status.conditions[?(@.type=="Synced")].status
+      name: Synced
+      type: string
+    - jsonPath: .status.conditions[?(@.type=="BuildSucceeded")].status
+      name: Build
+      type: string
+    - jsonPath: .status.conditions[?(@.type=="Ready")].message
+      name: Message
+      type: string
+    name: v1
     schema:
       openAPIV3Schema:
-        description: |-
-          HeliosApp represents a complete GitOps-enabled application with automated CI/CD.
-
-          HeliosApp automates the entire application lifecycle from source code to production deployment:
-          1. Monitors source code repository for changes via GitHub webhooks
-          2. Triggers Tekton pipelines to build and push container images
-          3. Updates GitOps repository with new image versions
-          4. ArgoCD automatically syncs changes to the cluster
-          5. Provides comprehensive status monitoring and health checks
-
-          The operator creates and manages the following resources:
-          - Tekton Pipeline, EventListener, TriggerBinding, and TriggerTemplate
-          - ArgoCD Application for GitOps synchronization
-          - PersistentVolumeClaim for build workspace (if not specified)
-
-          Example usage:
-            kubectl apply -f - <<EOF
-            apiVersion: platform.helios.io/v1
-            kind: HeliosApp
-            metadata:
-              name: my-app
-              namespace: default
-            spec:
-              gitRepo: https://github.com/example/my-app
-              imageRepo: my-registry.com/my-app
-              port: 8080
-              serviceAccount: my-app-sa
-              webhookSecret: github-webhook-secret
-              gitopsRepo: https://github.com/example/my-app-manifests
-            EOF
+        description: "HeliosApp represents a complete GitOps-enabled application with
+          automated CI/CD.\n\nHeliosApp automates the entire application lifecycle
+          from source code to production deployment:\n1. Monitors source code repository
+          for changes via GitHub webhooks\n2. Triggers Tekton pipelines to build and
+          push container images\n3. Updates GitOps repository with new image versions\n4.
+          ArgoCD automatically syncs changes to the cluster\n5. Provides comprehensive
+          status monitoring and health checks\n\nThe operator creates and manages
+          the following resources:\n- Tekton Pipeline, EventListener, TriggerBinding,
+          and TriggerTemplate\n- ArgoCD Application for GitOps synchronization\n-
+          PersistentVolumeClaim for build workspace (if not specified)\n\nExample
+          usage:\n\n\tkubectl apply -f - <<EOF\n\tapiVersion: platform.helios.io/v1\n\tkind:
+          HeliosApp\n\tmetadata:\n\t  name: my-app\n\t  namespace: default\n\tspec:\n\t
+          \ gitRepo: https://github.com/example/my-app\n\t  imageRepo: my-registry.com/my-app\n\t
+          \ port: 8080\n\t  serviceAccount: my-app-sa\n\t  webhookSecret: github-webhook-secret\n\t
+          \ gitopsRepo: https://github.com/example/my-app-manifests\n\tEOF"
         properties:
           apiVersion:
             description: |-

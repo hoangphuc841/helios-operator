@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -109,14 +110,26 @@ func (r *HeliosApp) validateResourceExistence() []string {
 func (r *HeliosApp) validateNumericFields() []string {
 	var errors []string
 
-	// Validate port
+	// Validate port (standard port range)
 	if r.Spec.Port < 1 || r.Spec.Port > 65535 {
-		errors = append(errors, "port must be between 1 and 65535")
+		errors = append(errors, fmt.Sprintf("port must be between 1 and 65535, got %d", r.Spec.Port))
+	}
+	
+	// Warn about privileged ports (< 1024) - could be a warning instead
+	if r.Spec.Port > 0 && r.Spec.Port < 1024 {
+		// This is still valid but might need special permissions
+		// We'll allow it but could add a warning in the future
 	}
 
-	// Validate replicas
+	// Validate replicas (reasonable upper bound to prevent resource exhaustion)
 	if r.Spec.Replicas < 0 {
-		errors = append(errors, "replicas must be non-negative")
+		errors = append(errors, fmt.Sprintf("replicas must be non-negative, got %d", r.Spec.Replicas))
+	}
+	
+	// Validate replicas upper bound (prevent accidental large deployments)
+	const maxReplicas = 100
+	if r.Spec.Replicas > maxReplicas {
+		errors = append(errors, fmt.Sprintf("replicas cannot exceed %d (got %d) to prevent resource exhaustion", maxReplicas, r.Spec.Replicas))
 	}
 
 	return errors
@@ -131,21 +144,21 @@ func (r *HeliosApp) validateOptionalFields() []string {
 	// Validate serviceAccount if specified
 	if r.Spec.ServiceAccount != "" {
 		if !isValidDNSSubdomain(r.Spec.ServiceAccount) {
-			errors = append(errors, "serviceAccount must be a valid DNS subdomain")
+			errors = append(errors, fmt.Sprintf("serviceAccount '%s' is not a valid DNS subdomain name", r.Spec.ServiceAccount))
 		}
 	}
 
 	// Validate webhookSecret if specified
 	if r.Spec.WebhookSecret != "" {
 		if !isValidDNSSubdomain(r.Spec.WebhookSecret) {
-			errors = append(errors, "webhookSecret must be a valid DNS subdomain")
+			errors = append(errors, fmt.Sprintf("webhookSecret '%s' is not a valid DNS subdomain name", r.Spec.WebhookSecret))
 		}
 	}
 
 	// Validate pvcName if specified
 	if r.Spec.PVCName != "" {
 		if !isValidDNSSubdomain(r.Spec.PVCName) {
-			errors = append(errors, "pvcName must be a valid DNS subdomain")
+			errors = append(errors, fmt.Sprintf("pvcName '%s' is not a valid DNS subdomain name", r.Spec.PVCName))
 		}
 	}
 
@@ -206,6 +219,9 @@ func validateGitURL(gitURL, fieldName string) error {
 		return fmt.Errorf("%s is required", fieldName)
 	}
 
+	// Trim whitespace
+	gitURL = strings.TrimSpace(gitURL)
+
 	// Parse URL
 	parsedURL, err := url.Parse(gitURL)
 	if err != nil {
@@ -213,13 +229,42 @@ func validateGitURL(gitURL, fieldName string) error {
 	}
 
 	// Check scheme
-	if parsedURL.Scheme != "https" && parsedURL.Scheme != "http" && parsedURL.Scheme != "ssh" && parsedURL.Scheme != "git" {
-		return fmt.Errorf("%s must use https://, http://, ssh://, or git:// scheme, got %s", fieldName, parsedURL.Scheme)
+	validSchemes := []string{"https", "http", "ssh", "git"}
+	isValidScheme := false
+	for _, scheme := range validSchemes {
+		if parsedURL.Scheme == scheme {
+			isValidScheme = true
+			break
+		}
+	}
+	
+	if !isValidScheme {
+		return fmt.Errorf("%s must use https://, http://, ssh://, or git:// scheme, got '%s'", fieldName, parsedURL.Scheme)
 	}
 
 	// Check host
 	if parsedURL.Host == "" {
 		return fmt.Errorf("%s must have a valid host", fieldName)
+	}
+
+	// Validate common Git hosting patterns
+	// GitHub: https://github.com/owner/repo.git
+	// GitLab: https://gitlab.com/owner/repo.git
+	// Bitbucket: https://bitbucket.org/owner/repo.git
+	// Generic SSH: git@github.com:owner/repo.git
+	path := strings.TrimSuffix(parsedURL.Path, ".git")
+	
+	// For SSH URLs (git@host:path), the path should not be empty
+	if parsedURL.Scheme == "ssh" && path == "" {
+		return fmt.Errorf("%s SSH URL must include a repository path", fieldName)
+	}
+
+	// For HTTP(S) URLs, path should contain at least owner/repo pattern
+	if (parsedURL.Scheme == "https" || parsedURL.Scheme == "http") && path != "" {
+		pathParts := strings.Split(strings.Trim(path, "/"), "/")
+		if len(pathParts) < 2 {
+			return fmt.Errorf("%s URL should follow the pattern 'host/owner/repository'", fieldName)
+		}
 	}
 
 	return nil
@@ -231,10 +276,64 @@ func validateImageRepo(imageRepo string) error {
 		return fmt.Errorf("imageRepo is required")
 	}
 
-	// Basic validation for Docker image format
-	// This is a simplified validation - in practice, you might want more comprehensive checks
-	if !strings.Contains(imageRepo, "/") {
-		return fmt.Errorf("imageRepo must be in the format 'registry/namespace/repository' or 'namespace/repository'")
+	// Trim whitespace
+	imageRepo = strings.TrimSpace(imageRepo)
+
+	// Image repository should follow format: [registry/]namespace/repository[:tag]
+	// Examples:
+	//   - docker.io/mycompany/myapp
+	//   - gcr.io/my-project/myapp
+	//   - quay.io/namespace/repo
+	//   - myregistry.com:5000/namespace/repo
+	
+	// Remove tag if present for validation
+	imageParts := strings.Split(imageRepo, ":")
+	imageWithoutTag := imageParts[0]
+	
+	// Validate tag format if present (should not be empty and not contain invalid chars)
+	if len(imageParts) > 2 {
+		// More than one colon could indicate port in registry URL, which is valid
+		// e.g., myregistry.com:5000/namespace/repo:tag
+		// Reconstruct without the last part (tag)
+		imageWithoutTag = strings.Join(imageParts[:len(imageParts)-1], ":")
+	}
+	
+	if len(imageParts) > 1 {
+		tag := imageParts[len(imageParts)-1]
+		if tag == "" {
+			return fmt.Errorf("imageRepo tag cannot be empty when ':' is present")
+		}
+		// Tag should only contain alphanumeric, dots, dashes, and underscores
+		tagRegex := regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+		if !tagRegex.MatchString(tag) {
+			return fmt.Errorf("imageRepo tag '%s' contains invalid characters (allowed: a-z, A-Z, 0-9, ., -, _)", tag)
+		}
+	}
+
+	// Split image path by '/'
+	pathParts := strings.Split(imageWithoutTag, "/")
+	
+	// Should have at least registry/namespace/repository (3 parts) or namespace/repository (2 parts)
+	if len(pathParts) < 2 {
+		return fmt.Errorf("imageRepo must follow format '[registry/]namespace/repository[:tag]', got '%s'", imageRepo)
+	}
+
+	// Validate each path component
+	componentRegex := regexp.MustCompile(`^[a-z0-9]+([._-][a-z0-9]+)*$`)
+	for i, part := range pathParts {
+		// The first part might be a registry domain (allow dots and colons for port)
+		if i == 0 && len(pathParts) >= 3 {
+			// Could be a registry like "gcr.io" or "localhost:5000"
+			registryRegex := regexp.MustCompile(`^[a-z0-9]+([._-][a-z0-9]+)*(\.[a-z0-9]+([._-][a-z0-9]+)*)*(:[0-9]+)?$`)
+			if !registryRegex.MatchString(part) {
+				return fmt.Errorf("imageRepo registry '%s' is not valid", part)
+			}
+		} else {
+			// Namespace and repository components
+			if !componentRegex.MatchString(part) {
+				return fmt.Errorf("imageRepo component '%s' contains invalid characters (must be lowercase alphanumeric with '.', '-', or '_' separators)", part)
+			}
+		}
 	}
 
 	return nil
@@ -306,11 +405,24 @@ func (r *HeliosApp) validateHeliosAppUpdate(old *HeliosApp) (admission.Warnings,
 
 	// Check for immutable fields
 	if r.Spec.GitRepo != old.Spec.GitRepo {
-		allErrors = append(allErrors, "gitRepo is immutable")
+		allErrors = append(allErrors, fmt.Sprintf("gitRepo is immutable (cannot change from '%s' to '%s')", old.Spec.GitRepo, r.Spec.GitRepo))
 	}
 
 	if r.Spec.ImageRepo != old.Spec.ImageRepo {
-		allErrors = append(allErrors, "imageRepo is immutable")
+		allErrors = append(allErrors, fmt.Sprintf("imageRepo is immutable (cannot change from '%s' to '%s')", old.Spec.ImageRepo, r.Spec.ImageRepo))
+	}
+
+	// Add warnings for potentially disruptive changes
+	if r.Spec.Port != old.Spec.Port {
+		warnings = append(warnings, fmt.Sprintf("Changing port from %d to %d will trigger a rolling update", old.Spec.Port, r.Spec.Port))
+	}
+
+	if r.Spec.Replicas > old.Spec.Replicas*2 {
+		warnings = append(warnings, fmt.Sprintf("Scaling from %d to %d replicas is a large increase - ensure cluster has sufficient resources", old.Spec.Replicas, r.Spec.Replicas))
+	}
+
+	if r.Spec.Replicas == 0 && old.Spec.Replicas > 0 {
+		warnings = append(warnings, "Setting replicas to 0 will stop all pods - this effectively pauses the application")
 	}
 
 	if len(allErrors) > 0 {
