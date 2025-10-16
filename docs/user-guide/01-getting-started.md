@@ -1,4 +1,4 @@
-# 🚀 Getting Started with Helios
+# 🚀 Getting Started with Helios Operator
 
 This guide will walk you through deploying your first application with Helios Operator in under 15 minutes.
 
@@ -6,11 +6,24 @@ This guide will walk you through deploying your first application with Helios Op
 
 Before you begin, ensure you have:
 
-- ✅ Kubernetes cluster (1.19+) with cluster admin access
-- ✅ Helm 3.0+ installed
-- ✅ `kubectl` configured to access your cluster
-- ✅ A Git repository with your application source code
-- ✅ A container registry (Docker Hub, GitHub Container Registry, etc.)
+### Required
+
+- ✅ **Kubernetes cluster** (v1.19+ recommended) with cluster admin access
+  - Minikube, Kind, k3s, GKE, EKS, AKS all supported
+  - Minimum 2 CPU cores and 4GB RAM recommended
+- ✅ **kubectl** configured to access your cluster
+  - Test with: `kubectl cluster-info`
+- ✅ **Helm 3.0+** installed
+  - Verify with: `helm version`
+- ✅ **Git repository** with your application source code
+- ✅ **Container registry** account (Docker Hub, GitHub Container Registry, etc.)
+  - You'll need push access credentials
+
+### Optional but Recommended
+
+- 📦 **Docker** for building images locally
+- 🔑 **GitHub account** for webhook integration
+- 📊 **Prometheus & Grafana** for monitoring (can be installed separately)
 
 ## 🏗️ **Step 1: Install Dependencies**
 
