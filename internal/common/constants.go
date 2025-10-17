@@ -14,59 +14,134 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package common provides shared constants, utilities, and helper functions.
+// used across the Helios operator codebase.
 package common
 
+import "time"
+
+// Operator constants.
 const (
-	// Labels.
+	// OperatorName is the name of the operator.
+	OperatorName = "helios-operator"
+
+	// OperatorVersion is the current version of the operator.
+	OperatorVersion = "2.0.0"
+
+	// DefaultNamespace is the default namespace for resources.
+	DefaultNamespace = "helios-operator-system"
+
+	// DefaultReconcileInterval is the default reconcile interval.
+	DefaultReconcileInterval = 30 * time.Second
+
+	// DefaultTimeout is the default timeout for operations.
+	DefaultTimeout = 5 * time.Minute
+)
+
+// Resource labels.
+const (
+	// LabelAppName is the label for application name.
+	LabelAppName = "app.kubernetes.io/name"
+
+	// LabelAppInstance is the label for application instance.
+	LabelAppInstance = "app.kubernetes.io/instance"
+
+	// LabelAppVersion is the label for application version.
+	LabelAppVersion = "app.kubernetes.io/version"
+
+	// LabelAppComponent is the label for application component.
+	LabelAppComponent = "app.kubernetes.io/component"
+
+	// LabelAppPartOf is the label for application part of.
+	LabelAppPartOf = "app.kubernetes.io/part-of"
+
+	// LabelAppManagedBy is the label for application managed by.
+	LabelAppManagedBy = "app.kubernetes.io/managed-by"
+
+	// LabelHeliosApp is the label for HeliosApp.
+	LabelHeliosApp = "helios.io/app"
+
+	// LabelHeliosAppName is the label for HeliosApp name.
+	LabelHeliosAppName = "helios.io/app-name"
+
+	// LabelManagedBy is the label for managed by.
 	LabelManagedBy = "helios.io/managed-by"
-	LabelAppName   = "helios.io/app-name"
+
+	// LabelComponent is the label for component.
 	LabelComponent = "helios.io/component"
+)
 
-	// Finalizer.
+// Resource annotations.
+const (
+	// AnnotationLastApplied is the annotation for last applied configuration.
+	AnnotationLastApplied = "kubectl.kubernetes.io/last-applied-configuration"
+
+	// AnnotationManagedBy is the annotation for managed by.
+	AnnotationManagedBy = "helios.io/managed-by"
+
+	// AnnotationReconcileTime is the annotation for reconcile time.
+	AnnotationReconcileTime = "helios.io/reconcile-time"
+)
+
+// Event reasons.
+const (
+	// EventReasonCreated is the event reason for created.
+	EventReasonCreated = "Created"
+
+	// EventReasonUpdated is the event reason for updated.
+	EventReasonUpdated = "Updated"
+
+	// EventReasonDeleted is the event reason for deleted.
+	EventReasonDeleted = "Deleted"
+
+	// EventReasonFailed is the event reason for failed.
+	EventReasonFailed = "Failed"
+
+	// EventReasonReconciled is the event reason for reconciled.
+	EventReasonReconciled = "Reconciled"
+)
+
+// Phase constants.
+const (
+	// PhasePending is the phase for pending.
+	PhasePending = "Pending"
+
+	// PhaseRunning is the phase for running.
+	PhaseRunning = "Running"
+
+	// PhaseSucceeded is the phase for succeeded.
+	PhaseSucceeded = "Succeeded"
+
+	// PhaseFailed is the phase for failed.
+	PhaseFailed = "Failed"
+
+	// PhaseUnknown is the phase for unknown.
+	PhaseUnknown = "Unknown"
+)
+
+// Condition types.
+const (
+	// ConditionReady indicates that the application is fully reconciled and healthy.
+	ConditionReady = "Ready"
+
+	// ConditionSynced indicates that the ArgoCD Application is synced with the GitOps repository.
+	ConditionSynced = "Synced"
+
+	// ConditionBuildSucceeded indicates the status of the last build pipeline.
+	ConditionBuildSucceeded = "BuildSucceeded"
+
+	// ConditionDeployed indicates that the application has been deployed.
+	ConditionDeployed = "Deployed"
+
+	// ConditionPipelineReady indicates that the Tekton Pipeline is ready.
+	ConditionPipelineReady = "PipelineReady"
+
+	// ConditionWebhookReady indicates that the webhook is ready.
+	ConditionWebhookReady = "WebhookReady"
+)
+
+// Finalizer constants.
+const (
+	// FinalizerName is the name of the finalizer used by the operator.
 	FinalizerName = "platform.helios.io/finalizer"
-
-	// Default values.
-	DefaultGitBranch  = "main"
-	DefaultGitopsPath = "" // Will use app name
-	DefaultReplicas   = int32(1)
-	DefaultPVCSize    = "1Gi"
-
-	// Tekton task names.
-	TaskGitClone = "git-clone"
-	TaskKaniko   = "kaniko"
-
-	// ArgoCD.
-	ArgoCDNamespace      = "argocd"
-	ArgoCDDefaultProject = "default"
-
-	// Condition types.
-	ConditionReady             = "Ready"
-	ConditionSynced            = "Synced"
-	ConditionBuildSucceeded    = "BuildSucceeded"
-	ConditionDeploymentHealthy = "DeploymentHealthy"
-	ConditionApplicationSynced = "ApplicationSynced"
-
-	// Build status values
-	BuildStatusSucceeded = "Succeeded"
-	BuildStatusFailed    = "Failed"
-	BuildStatusRunning   = "Running"
-	BuildStatusUnknown   = "Unknown"
-
-	// Deployment health values
-	DeploymentHealthHealthy     = "Healthy"
-	DeploymentHealthProgressing = "Progressing"
-	DeploymentHealthDegraded    = "Degraded"
-	DeploymentHealthUnknown     = "Unknown"
-
-	// ArgoCD sync status values
-	SyncStatusSynced    = "Synced"
-	SyncStatusOutOfSync = "OutOfSync"
-	SyncStatusUnknown   = "Unknown"
-
-	// ArgoCD health status values
-	HealthStatusHealthy     = "Healthy"
-	HealthStatusProgressing = "Progressing"
-	HealthStatusDegraded    = "Degraded"
-	HealthStatusUnknown     = "Unknown"
-	HealthStatusMissing     = "Missing"
 )

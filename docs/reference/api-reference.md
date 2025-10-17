@@ -1,381 +1,599 @@
-# HeliosApp API Reference
+# API Reference
 
-## Overview
+This document provides a comprehensive reference for the Helios Operator API, including all custom resources, their fields, and usage examples.
 
-The `HeliosApp` custom resource provides a declarative way to manage application deployments using GitOps. It automates the creation of Tekton Pipelines for building container images and ArgoCD Applications for deployment.
+## Table of Contents
 
-## API Version
+- [HeliosApp Resource](#heliosapp-resource)
+- [Status Fields](#status-fields)
+- [Condition Types](#condition-types)
+- [Events](#events)
+- [Webhooks](#webhooks)
+- [RBAC Requirements](#rbac-requirements)
 
-- **Group**: `platform.helios.io`
-- **Version**: `v1`
-- **Kind**: `HeliosApp`
+## HeliosApp Resource
 
-## Resource Specification
+The `HeliosApp` is the primary custom resource that defines a GitOps-based application managed by Helios Operator.
 
-### HeliosAppSpec
+### API Version and Kind
 
-The specification defines the desired state of a HeliosApp.
+```yaml
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+```
 
-| Field            | Type   | Required | Default         | Description                                                                                                         |
-| ---------------- | ------ | -------- | --------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `gitRepo`        | string | Yes      | -               | URL of the Git repository containing application source code. Must use https://, http://, ssh://, or git:// scheme. |
-| `gitBranch`      | string | No       | "main"          | Git branch or tag to build from.                                                                                    |
-| `imageRepo`      | string | Yes      | -               | Container image repository in format `[registry/]namespace/repository[:tag]`.                                       |
-| `port`           | int32  | Yes      | -               | Port the application listens on. Range: 1-65535.                                                                    |
-| `replicas`       | int32  | No       | 1               | Desired number of replicas. Range: 0-100.                                                                           |
-| `serviceAccount` | string | No       | "default"       | Kubernetes ServiceAccount for pipeline execution.                                                                   |
-| `webhookSecret`  | string | No       | ""              | Name of the Secret containing GitHub webhook token.                                                                 |
-| `pvcName`        | string | No       | ""              | Name of PersistentVolumeClaim for pipeline workspace. If empty, auto-generated.                                     |
-| `gitopsRepo`     | string | No       | Same as gitRepo | Git repository containing Kubernetes manifests.                                                                     |
-| `gitopsPath`     | string | No       | ""              | Path within gitopsRepo to application manifests.                                                                    |
-| `gitopsBranch`   | string | No       | "main"          | Branch of gitopsRepo to deploy from.                                                                                |
-
-### HeliosAppStatus
-
-The status reflects the current state of the HeliosApp.
-
-| Field                | Type                     | Description                                                            |
-| -------------------- | ------------------------ | ---------------------------------------------------------------------- |
-| `conditions`         | []Condition              | Standard Kubernetes conditions for resource state.                     |
-| `lastBuildTime`      | metav1.Time              | Timestamp of the last build attempt.                                   |
-| `lastBuildStatus`    | string                   | Status of last build: "Succeeded", "Failed", "Running", "Unknown".     |
-| `lastDeployTime`     | metav1.Time              | Timestamp of the last deployment.                                      |
-| `argocdSyncStatus`   | string                   | ArgoCD sync status: "Synced", "OutOfSync", "Unknown".                  |
-| `argocdHealthStatus` | string                   | ArgoCD health status: "Healthy", "Progressing", "Degraded", "Unknown". |
-| `observedGeneration` | int64                    | Generation of the spec that was last reconciled.                       |
-| `deploymentReplicas` | DeploymentReplicasStatus | Current replica counts.                                                |
-| `pipelineRunName`    | string                   | Name of the most recent PipelineRun.                                   |
-
-#### DeploymentReplicasStatus
-
-| Field       | Type  | Description                            |
-| ----------- | ----- | -------------------------------------- |
-| `desired`   | int32 | Desired number of replicas from spec.  |
-| `ready`     | int32 | Number of replicas that are ready.     |
-| `available` | int32 | Number of replicas that are available. |
-
-## Examples
-
-### Basic Application
+### Schema Definition
 
 ```yaml
 apiVersion: platform.helios.io/v1
 kind: HeliosApp
 metadata:
-  name: simple-app
-  namespace: default
+  # Standard Kubernetes metadata
+  name: string                    # Required: Name of the application
+  namespace: string               # Required: Namespace where the app is deployed
+  labels:                         # Optional: Additional labels
+    string: string
+  annotations:                    # Optional: Additional annotations
+    string: string
 spec:
-  gitRepo: https://github.com/example/simple-app
-  imageRepo: docker.io/example/simple-app
-  port: 8080
-```
+  # Source repository configuration
+  gitRepo: string                 # Required: Git repository URL
+  gitBranch: string               # Optional: Git branch to watch (default: "main")
 
-### Complete Configuration
+  # Container image configuration
+  imageRepo: string               # Required: Container registry URL
+  imageTag: string                # Optional: Image tag (default: "latest")
 
-```yaml
-apiVersion: platform.helios.io/v1
-kind: HeliosApp
-metadata:
-  name: production-app
-  namespace: production
-spec:
-  # Source Configuration
-  gitRepo: https://github.com/example/production-app
-  gitBranch: release-v1.0
+  # Application configuration
+  port: int32                     # Required: Application port (1-65535)
+  serviceAccount: string          # Optional: Service account (default: "default")
 
-  # Build Configuration
-  imageRepo: gcr.io/my-project/production-app
-  serviceAccount: build-pipeline-sa
-  pvcName: production-app-cache
+  # Security configuration
+  webhookSecret: string           # Required: Secret for Git webhook authentication
 
-  # GitOps Configuration
-  gitopsRepo: https://github.com/example/k8s-manifests
-  gitopsPath: apps/production-app
-  gitopsBranch: main
+  # GitOps repository configuration
+  gitopsRepo: string              # Required: GitOps repository URL
+  gitopsPath: string              # Required: Path to application manifests
+  gitopsBranch: string            # Required: GitOps repository branch
 
-  # Application Configuration
-  port: 3000
-  replicas: 3
+  # Optional: Resource configuration
+  resources:                      # Optional: Resource requests and limits
+    requests:
+      cpu: string
+      memory: string
+    limits:
+      cpu: string
+      memory: string
 
-  # Webhook Configuration
-  webhookSecret: github-webhook-token
-```
+  # Optional: Environment variables
+  env:                            # Optional: Environment variables
+    - name: string
+      value: string
+      valueFrom:
+        secretKeyRef:
+          name: string
+          key: string
+        configMapKeyRef:
+          name: string
+          key: string
 
-### With Webhook Automation
+  # Optional: Health check configuration
+  healthCheck:                    # Optional: Health check configuration
+    path: string                  # Health check endpoint path
+    port: int32                   # Health check port
+    initialDelaySeconds: int32    # Initial delay before first check
+    periodSeconds: int32          # Period between checks
+    timeoutSeconds: int32         # Timeout for each check
+    failureThreshold: int32       # Number of failures before marking unhealthy
 
-```yaml
-apiVersion: platform.helios.io/v1
-kind: HeliosApp
-metadata:
-  name: webhook-app
-  namespace: default
-spec:
-  gitRepo: https://github.com/example/webhook-app
-  imageRepo: docker.io/example/webhook-app
-  port: 8080
-  replicas: 2
-  webhookSecret: github-webhook-secret
-  serviceAccount: tekton-pipeline-sa
-```
+  # Optional: Scaling configuration
+  scaling:                        # Optional: Horizontal Pod Autoscaler configuration
+    minReplicas: int32            # Minimum number of replicas
+    maxReplicas: int32            # Maximum number of replicas
+    targetCPUUtilizationPercentage: int32  # Target CPU utilization
 
-## Field Validation Rules
+  # Optional: Networking configuration
+  networking:                     # Optional: Networking configuration
+    ingress:                      # Optional: Ingress configuration
+      enabled: bool               # Enable ingress
+      host: string                # Ingress host
+      tls:                        # TLS configuration
+        secretName: string        # TLS secret name
+      annotations:                # Ingress annotations
+        string: string
+    service:                      # Optional: Service configuration
+      type: string                # Service type (ClusterIP, NodePort, LoadBalancer)
+      annotations:                # Service annotations
+        string: string
 
-### gitRepo
+  # Optional: Custom pipeline configuration
+  pipeline:                       # Optional: Custom pipeline configuration
+    template: string              # Pipeline template name
+    parameters:                   # Pipeline parameters
+      - name: string
+        value: string
 
-- **Format**: Must be a valid URL
-- **Schemes**: https://, http://, ssh://, git://
-- **Pattern**: Should follow `scheme://host/owner/repository` pattern
-- **Example**: `https://github.com/example/my-app`
+  # Optional: Custom ArgoCD configuration
+  argocd:                         # Optional: Custom ArgoCD configuration
+    project: string               # ArgoCD project name
+    syncPolicy:                   # Sync policy configuration
+      automated:
+        prune: bool               # Enable automatic pruning
+        selfHeal: bool            # Enable self-healing
+      syncOptions:                # Additional sync options
+        - string
+    retry:                        # Retry configuration
+      limit: int32                # Maximum retry attempts
+      backoff:                    # Backoff configuration
+        duration: string          # Initial backoff duration
+        factor: int32             # Backoff factor
+        maxDuration: string       # Maximum backoff duration
 
-### imageRepo
-
-- **Format**: `[registry/]namespace/repository[:tag]`
-- **Components**:
-  - Registry (optional): Domain name, can include port (e.g., `localhost:5000`)
-  - Namespace: Lowercase alphanumeric with `.`, `-`, `_` separators
-  - Repository: Lowercase alphanumeric with `.`, `-`, `_` separators
-  - Tag (optional): Alphanumeric with `.`, `-`, `_`
-- **Examples**:
-  - `docker.io/mycompany/myapp`
-  - `gcr.io/my-project/myapp:v1.0.0`
-  - `localhost:5000/namespace/repo`
-
-### port
-
-- **Range**: 1-65535
-- **Note**: Ports < 1024 may require special permissions
-
-### replicas
-
-- **Range**: 0-100
-- **Zero replicas**: Pauses the application (warning issued on update)
-
-## Immutable Fields
-
-The following fields cannot be changed after creation:
-
-- `gitRepo`: Source repository URL
-- `imageRepo`: Image repository location
-
-Attempting to modify these fields will result in a validation error.
-
-## Update Warnings
-
-The admission webhook provides warnings for potentially disruptive changes:
-
-### Port Changes
-
-Changing the port triggers a rolling update of all pods.
-
-```yaml
-# Warning: Changing port from 8080 to 3000 will trigger a rolling update
-```
-
-### Large Replica Increases
-
-Scaling to more than 2x current replicas warns about resource requirements.
-
-```yaml
-# Warning: Scaling from 1 to 10 replicas is a large increase
-```
-
-### Scaling to Zero
-
-Setting replicas to 0 pauses the application.
-
-```yaml
-# Warning: Setting replicas to 0 will stop all pods
-```
-
-## Status Conditions
-
-### Condition Types
-
-| Type            | Description                                 |
-| --------------- | ------------------------------------------- |
-| `Ready`         | Application is fully reconciled and healthy |
-| `PipelineReady` | Tekton Pipeline is created and ready        |
-| `TriggersReady` | Tekton Triggers are configured              |
-| `ArgoCDReady`   | ArgoCD Application is synced                |
-
-### Condition Status
-
-- `True`: Condition is satisfied
-- `False`: Condition is not satisfied
-- `Unknown`: Condition state cannot be determined
-
-### Example Status
-
-```yaml
 status:
-  conditions:
-    - type: Ready
-      status: "True"
-      reason: ReconciliationSucceeded
-      message: All resources created successfully
-      lastTransitionTime: "2025-10-16T10:00:00Z"
-    - type: PipelineReady
-      status: "True"
-      reason: PipelineCreated
-      message: Tekton Pipeline is ready
-    - type: ArgoCDReady
-      status: "True"
-      reason: ApplicationSynced
-      message: ArgoCD Application is synced and healthy
-  lastBuildTime: "2025-10-16T09:55:00Z"
-  lastBuildStatus: Succeeded
-  argocdSyncStatus: Synced
-  argocdHealthStatus: Healthy
-  observedGeneration: 1
-  deploymentReplicas:
-    desired: 3
-    ready: 3
-    available: 3
-  pipelineRunName: webhook-app-run-abc123
+  # Application status information
+  phase: string                   # Current phase of the application
+  message: string                 # Human-readable status message
+  reason: string                  # Reason for current status
+
+  # Component statuses
+  pipelineStatus:                 # Tekton pipeline status
+    status: string                # Pipeline status (Pending, Running, Succeeded, Failed)
+    buildVersion: string          # Version of the built image
+    lastBuildTime: *Time          # Timestamp of last build
+
+  deploymentStatus:               # Deployment status
+    health: string                # Deployment health (Healthy, Progressing, Degraded)
+    readyReplicas: int32          # Number of ready replicas
+    desiredReplicas: int32        # Number of desired replicas
+    lastHealthyTime: *Time        # Timestamp when deployment was last healthy
+
+  argocdStatus:                   # ArgoCD application status
+    syncStatus: string            # ArgoCD sync status
+    healthStatus: string          # ArgoCD health status
+    lastSyncTime: *Time           # Timestamp of last sync
+
+  # Conditions array
+  conditions:                     # Array of condition objects
+    - type: string                # Condition type
+      status: string              # Condition status (True, False, Unknown)
+      lastTransitionTime: *Time   # When condition last changed
+      reason: string              # Reason for condition
+      message: string             # Human-readable message
+
+  # Observed generation
+  observedGeneration: int64       # Generation of the spec that was last processed
 ```
 
-## Resource Ownership
+### Field Validation Rules
 
-All resources created by the operator have:
+#### Required Fields
 
-- **OwnerReferences**: Links to the parent HeliosApp
-- **Labels**:
-  - `app.kubernetes.io/name`: HeliosApp name
-  - `app.kubernetes.io/managed-by`: "helios-operator"
-  - `helios.io/app`: HeliosApp name
+- `spec.gitRepo`: Must be a valid HTTP/HTTPS Git repository URL
+- `spec.imageRepo`: Must be a valid container registry URL
+- `spec.port`: Must be between 1 and 65535
+- `spec.webhookSecret`: Must be a non-empty string
+- `spec.gitopsRepo`: Must be a valid HTTP/HTTPS Git repository URL
+- `spec.gitopsPath`: Must be a non-empty string
+- `spec.gitopsBranch`: Must be a non-empty string
 
-This ensures:
+#### Optional Fields with Defaults
 
-- Automatic cleanup when HeliosApp is deleted
-- Easy resource discovery
-- Proper garbage collection
+- `spec.gitBranch`: Defaults to "main"
+- `spec.imageTag`: Defaults to "latest"
+- `spec.serviceAccount`: Defaults to "default"
+- `spec.resources.requests.cpu`: Defaults to "100m"
+- `spec.resources.requests.memory`: Defaults to "128Mi"
+- `spec.resources.limits.cpu`: Defaults to "500m"
+- `spec.resources.limits.memory`: Defaults to "512Mi"
+
+#### Validation Rules
+
+- Git URLs must use HTTP or HTTPS protocol
+- Image repository URLs must be valid container registry URLs
+- Port numbers must be valid integers between 1 and 65535
+- Resource specifications must follow Kubernetes resource format
+- Environment variable names must follow Kubernetes naming conventions
+
+## Status Fields
+
+### Phase
+
+The `status.phase` field indicates the overall state of the HeliosApp:
+
+- **Pending**: Initial state, waiting for processing
+- **Building**: Tekton pipeline is running
+- **Deploying**: ArgoCD is syncing the application
+- **Running**: Application is deployed and healthy
+- **Failed**: Application deployment failed
+- **Unknown**: Status cannot be determined
+
+### Message and Reason
+
+- `status.message`: Human-readable description of the current status
+- `status.reason`: Machine-readable reason code for the current status
+
+### Component Statuses
+
+#### Pipeline Status
+
+```yaml
+pipelineStatus:
+  status: string        # Pending, Running, Succeeded, Failed
+  buildVersion: string  # Version of the built image
+  lastBuildTime: *Time  # Timestamp of last build
+```
+
+#### Deployment Status
+
+```yaml
+deploymentStatus:
+  health: string           # Healthy, Progressing, Degraded
+  readyReplicas: int32     # Number of ready replicas
+  desiredReplicas: int32   # Number of desired replicas
+  lastHealthyTime: *Time   # Timestamp when deployment was last healthy
+```
+
+#### ArgoCD Status
+
+```yaml
+argocdStatus:
+  syncStatus: string    # Synced, OutOfSync, Unknown
+  healthStatus: string  # Healthy, Progressing, Degraded, Suspended
+  lastSyncTime: *Time   # Timestamp of last sync
+```
+
+## Condition Types
+
+The `status.conditions` array contains detailed information about various aspects of the application lifecycle:
+
+### Standard Conditions
+
+#### Ready
+
+Indicates whether the application is fully reconciled and ready for use.
+
+```yaml
+- type: "Ready"
+  status: "True" | "False" | "Unknown"
+  reason: "ApplicationReady" | "ApplicationNotReady" | "ReconciliationInProgress"
+  message: "Application is ready and healthy"
+```
+
+#### Synced
+
+Indicates whether the ArgoCD Application is in sync with the GitOps repository.
+
+```yaml
+- type: "Synced"
+  status: "True" | "False" | "Unknown"
+  reason: "Synced" | "OutOfSync" | "SyncFailed"
+  message: "Application is in sync with GitOps repository"
+```
+
+#### BuildSucceeded
+
+Indicates the status of the last build pipeline.
+
+```yaml
+- type: "BuildSucceeded"
+  status: "True" | "False" | "Unknown"
+  reason: "BuildCompleted" | "BuildFailed" | "BuildInProgress"
+  message: "Build pipeline completed successfully"
+```
+
+#### Deployed
+
+Indicates whether the application has been deployed.
+
+```yaml
+- type: "Deployed"
+  status: "True" | "False" | "Unknown"
+  reason: "DeploymentSucceeded" | "DeploymentFailed" | "DeploymentInProgress"
+  message: "Application deployment completed successfully"
+```
+
+#### PipelineReady
+
+Indicates whether the Tekton Pipeline is ready.
+
+```yaml
+- type: "PipelineReady"
+  status: "True" | "False" | "Unknown"
+  reason: "PipelineCreated" | "PipelineCreationFailed"
+  message: "Tekton Pipeline is ready for execution"
+```
+
+#### WebhookReady
+
+Indicates whether the webhook is ready.
+
+```yaml
+- type: "WebhookReady"
+  status: "True" | "False" | "Unknown"
+  reason: "WebhookCreated" | "WebhookCreationFailed"
+  message: "Git webhook is ready for triggers"
+```
+
+## Events
+
+Helios Operator emits Kubernetes events for important state changes:
+
+### Event Types
+
+#### Normal Events
+
+- **HeliosAppCreated**: HeliosApp resource was created
+- **PipelineCreated**: Tekton Pipeline was created
+- **WebhookCreated**: Git webhook was created
+- **ArgoAppCreated**: ArgoCD Application was created
+- **BuildSucceeded**: Build pipeline completed successfully
+- **DeploymentSucceeded**: Application deployment completed
+- **SyncSucceeded**: ArgoCD sync completed successfully
+
+#### Warning Events
+
+- **BuildFailed**: Build pipeline failed
+- **DeploymentFailed**: Application deployment failed
+- **SyncFailed**: ArgoCD sync failed
+- **WebhookFailed**: Git webhook creation failed
+- **PipelineFailed**: Tekton Pipeline creation failed
+- **ArgoAppFailed**: ArgoCD Application creation failed
+
+### Event Examples
+
+```bash
+# View events for a specific HeliosApp
+kubectl get events --field-selector involvedObject.name=my-app
+
+# View all events in a namespace
+kubectl get events --sort-by='.lastTimestamp'
+```
+
+## Webhooks
+
+Helios Operator supports admission webhooks for validating HeliosApp resources.
+
+### Validation Webhook
+
+The validation webhook ensures that HeliosApp resources are valid before they are stored in etcd.
+
+#### Validation Rules
+
+1. **Required Fields**: All required fields must be present
+2. **Field Format**: Fields must match expected formats (URLs, ports, etc.)
+3. **Resource Limits**: Resource specifications must be valid
+4. **Environment Variables**: Environment variable names must be valid
+
+#### Webhook Configuration
+
+```yaml
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionWebhook
+metadata:
+  name: heliosapp-validation.helios.io
+webhooks:
+  - name: heliosapp-validation.helios.io
+    clientConfig:
+      service:
+        name: helios-operator-webhook-service
+        namespace: helios-system
+        path: "/validate-platform-helios-io-v1-heliosapp"
+    rules:
+      - operations: ["CREATE", "UPDATE"]
+        apiGroups: ["platform.helios.io"]
+        apiVersions: ["v1"]
+        resources: ["heliosapps"]
+    failurePolicy: Fail
+    sideEffects: None
+```
+
+### Webhook Examples
+
+#### Valid HeliosApp
+
+```yaml
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: valid-app
+spec:
+  gitRepo: "https://github.com/example/valid-app"
+  imageRepo: "registry.example.com/valid-app"
+  port: 8080
+  webhookSecret: "valid-secret"
+  gitopsRepo: "https://github.com/example/gitops"
+  gitopsPath: "apps/valid-app"
+  gitopsBranch: "main"
+```
+
+#### Invalid HeliosApp (will be rejected)
+
+```yaml
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: invalid-app
+spec:
+  gitRepo: "invalid-url" # Invalid Git URL
+  imageRepo: "registry.example.com/invalid-app"
+  port: 99999 # Invalid port number
+  webhookSecret: "" # Empty webhook secret
+  gitopsRepo: "https://github.com/example/gitops"
+  gitopsPath: "apps/invalid-app"
+  gitopsBranch: "main"
+```
 
 ## RBAC Requirements
 
-To create HeliosApps, users need:
+Helios Operator requires specific RBAC permissions to manage resources.
+
+### ClusterRole Permissions
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
-  name: heliosapp-user
+  name: helios-operator-manager-role
 rules:
+# HeliosApp resources
   - apiGroups: ["platform.helios.io"]
     resources: ["heliosapps"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: ["platform.helios.io"]
-    resources: ["heliosapps/status"]
-    verbs: ["get"]
+  resources: ["heliosapps/status", "heliosapps/finalizers"]
+  verbs: ["get", "update", "patch"]
+
+# Core resources
+- apiGroups: [""]
+  resources: ["events", "pods", "services", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Apps resources
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "watch"]
+
+# Tekton resources
+- apiGroups: ["triggers.tekton.dev"]
+  resources: ["eventlisteners", "triggerbindings", "triggertemplates"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# ArgoCD resources
+- apiGroups: ["argoproj.io"]
+  resources: ["applications"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ```
 
-## Related Resources
-
-When a HeliosApp is created, the operator automatically generates:
-
-### Tekton Resources
-
-- **Pipeline**: `<app-name>-pipeline`
-- **EventListener**: `<app-name>-listener`
-- **TriggerBinding**: `<app-name>-binding`
-- **TriggerTemplate**: `<app-name>-template`
-
-### ArgoCD Resources
-
-- **Application**: `<app-name>-app`
-
-## Metrics
-
-The operator exposes Prometheus metrics for HeliosApp resources:
-
-- `heliosapp_reconciliation_duration_seconds`: Time to reconcile
-- `heliosapp_reconciliation_phase_duration_seconds`: Time per phase
-- `heliosapp_builds_total`: Build count by status
-- `heliosapp_deployment_health`: Current health status
-- `heliosapp_argocd_sync_status`: ArgoCD sync status
-
-See [Prometheus Metrics](../reference/prometheus-metrics.md) for details.
-
-## Troubleshooting
-
-### Common Issues
-
-#### Pipeline Not Created
-
-**Symptom**: Pipeline resource doesn't exist
-
-**Solutions**:
-
-1. Check operator logs: `kubectl logs -n helios-system deployment/helios-operator`
-2. Verify RBAC permissions
-3. Check HeliosApp status conditions
-
-#### Build Failures
-
-**Symptom**: `lastBuildStatus: Failed`
-
-**Solutions**:
-
-1. Check PipelineRun logs: `kubectl logs <pipelinerun-name>`
-2. Verify ServiceAccount has image push permissions
-3. Check git repository access
-
-#### ArgoCD Not Syncing
-
-**Symptom**: `argocdSyncStatus: OutOfSync`
-
-**Solutions**:
-
-1. Check ArgoCD Application: `kubectl get application <app-name>-app`
-2. Verify GitOps repository access
-3. Check manifest validity in gitopsRepo
-
-## Best Practices
-
-### 1. Use Separate GitOps Repository
+### ServiceAccount
 
 ```yaml
-spec:
-  gitRepo: https://github.com/example/app-source
-  gitopsRepo: https://github.com/example/k8s-manifests
-  gitopsPath: apps/my-app
-```
-
-### 2. Configure Resource Limits
-
-Use PVC for build cache to improve performance:
-
-```yaml
-spec:
-  pvcName: my-app-build-cache # Reuse build artifacts
-```
-
-### 3. Use Meaningful Names
-
-```yaml
+apiVersion: v1
+kind: ServiceAccount
 metadata:
-  name: production-payment-service # Clear, descriptive name
-  namespace: production # Appropriate namespace
+  name: helios-operator-manager
+  namespace: helios-system
 ```
 
-### 4. Enable Webhooks for Automation
+### ClusterRoleBinding
 
 ```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: helios-operator-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: helios-operator-manager-role
+subjects:
+  - kind: ServiceAccount
+    name: helios-operator-manager
+    namespace: helios-system
+```
+
+## API Examples
+
+### Complete Example
+
+```yaml
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: complete-example
+  namespace: production
+  labels:
+    app.kubernetes.io/name: complete-example
+    app.kubernetes.io/version: "1.0.0"
+    environment: production
+  annotations:
+    helios.io/description: "Complete example with all optional fields"
 spec:
-  webhookSecret: github-webhook-secret # Automate builds on push
+  # Source configuration
+  gitRepo: "https://github.com/example/complete-app"
+  gitBranch: "main"
+
+  # Build configuration
+  imageRepo: "registry.example.com/complete-app"
+  imageTag: "v1.0.0"
+
+  # Application configuration
+  port: 8080
+  serviceAccount: "complete-app-sa"
+
+  # Security configuration
+  webhookSecret: "complete-app-webhook-secret"
+
+  # GitOps configuration
+  gitopsRepo: "https://github.com/example/production-manifests"
+  gitopsPath: "apps/complete-app"
+  gitopsBranch: "production"
+
+  # Resource configuration
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+
+  # Environment variables
+  env:
+    - name: ENVIRONMENT
+      value: "production"
+    - name: LOG_LEVEL
+      value: "info"
+    - name: DATABASE_URL
+      valueFrom:
+        secretKeyRef:
+          name: complete-app-secrets
+          key: database-url
+
+  # Health check configuration
+  healthCheck:
+    path: "/health"
+    port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  # Scaling configuration
+  scaling:
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+
+  # Networking configuration
+  networking:
+    ingress:
+      enabled: true
+      host: "complete-app.example.com"
+      tls:
+        secretName: "complete-app-tls"
+      annotations:
+        nginx.ingress.kubernetes.io/rate-limit: "100"
+    service:
+      type: ClusterIP
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-type: nlb
+
+  # Custom ArgoCD configuration
+  argocd:
+    project: "production"
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+        - "CreateNamespace=true"
+        - "PrunePropagationPolicy=foreground"
+    retry:
+      limit: 5
+      backoff:
+        duration: 5m
+        factor: 2
+        maxDuration: 3h
 ```
 
-### 5. Monitor Status
-
-```bash
-# Watch application status
-kubectl get heliosapp my-app -w
-
-# Check detailed status
-kubectl describe heliosapp my-app
-```
-
-## API Stability
-
-- **v1**: Stable API, backward compatible changes only
-- Changes follow Kubernetes API deprecation policy
-- Breaking changes will be introduced in new API versions (v2, etc.)
+This API reference provides comprehensive documentation for all aspects of the Helios Operator API. For more examples and use cases, see the [Examples](../examples/) directory.

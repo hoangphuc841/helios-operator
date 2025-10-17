@@ -2,6 +2,62 @@
 
 This guide will help you set up a complete development environment for contributing to Helios Operator.
 
+## 🏗️ **Development Environment Architecture**
+
+```mermaid
+graph TB
+    subgraph "Local Development Machine"
+        IDE[IDE/Editor]
+        Go[Go 1.25+]
+        Docker[Docker]
+        Git[Git]
+        Make[Make]
+    end
+
+    subgraph "Kubernetes Cluster"
+        Minikube[Minikube]
+        Tekton[Tekton Pipelines]
+        ArgoCD[ArgoCD]
+        Operator[Helios Operator]
+    end
+
+    subgraph "Development Tools"
+        Kubectl[kubectl]
+        Helm[Helm 3.19+]
+        TknCLI[tkn CLI]
+        ArgoCDCLI[ArgoCD CLI]
+        Kustomize[kustomize]
+    end
+
+    subgraph "External Services"
+        GitHub[GitHub Repository]
+        Registry[Container Registry]
+    end
+
+    IDE --> Go
+    IDE --> Docker
+    IDE --> Git
+    Make --> Go
+    Make --> Docker
+    Make --> Minikube
+
+    Kubectl --> Minikube
+    Helm --> Minikube
+    TknCLI --> Tekton
+    ArgoCDCLI --> ArgoCD
+
+    Git --> GitHub
+    Docker --> Registry
+    Operator --> Tekton
+    Operator --> ArgoCD
+
+    style IDE fill:#c8e6c9
+    style Minikube fill:#fff9c4
+    style Operator fill:#e3f2fd
+    style GitHub fill:#ffcdd2
+    style Registry fill:#ffcdd2
+```
+
 ## 📋 **Prerequisites**
 
 ### Required Tools

@@ -41,15 +41,22 @@ spec:
           {{- include "helios-operator.securityContext" . | nindent 10 }}
         image: {{ include "helios-operator.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: health
+          containerPort: 8081
+          protocol: TCP
+        - name: webhook
+          containerPort: 9443
+          protocol: TCP
         args:
         - --leader-elect
-        - --leader-elect-resource-name={{ .Values.leaderElection.resourceName }}
-        - --leader-elect-resource-namespace={{ .Values.leaderElection.resourceNamespace }}
-        - --leader-elect-lease-duration={{ .Values.leaderElection.leaseDuration }}
-        - --leader-elect-renew-deadline={{ .Values.leaderElection.renewDeadline }}
-        - --leader-elect-retry-period={{ .Values.leaderElection.retryPeriod }}
+        - --webhook-cert-path=/tmp/k8s-webhook-server/serving-certs
         env:
           {{- include "helios-operator.env" . | nindent 10 }}
+        volumeMounts:
+        - name: webhook-certs
+          mountPath: /tmp/k8s-webhook-server/serving-certs
+          readOnly: true
         {{- if .Values.startupProbe }}
         startupProbe:
           {{- toYaml .Values.startupProbe | nindent 10 }}
@@ -77,8 +84,21 @@ spec:
           {{- include "helios-operator.securityContext" . | nindent 10 }}
         image: {{ include "helios-operator.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: health
+          containerPort: 8081
+          protocol: TCP
+        - name: webhook
+          containerPort: 9443
+          protocol: TCP
+        args:
+        - --webhook-cert-path=/tmp/k8s-webhook-server/serving-certs
         env:
           {{- include "helios-operator.env" . | nindent 10 }}
+        volumeMounts:
+        - name: webhook-certs
+          mountPath: /tmp/k8s-webhook-server/serving-certs
+          readOnly: true
         {{- if .Values.startupProbe }}
         startupProbe:
           {{- toYaml .Values.startupProbe | nindent 10 }}
@@ -115,6 +135,9 @@ spec:
       volumes:
       - name: tmp
         emptyDir: {}
+      - name: webhook-certs
+        secret:
+          secretName: helios-operator-webhook-cert
       {{- with .Values.extraVolumes }}
       {{- toYaml . | nindent 6 }}
       {{- end }}

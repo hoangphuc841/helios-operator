@@ -264,4 +264,4 @@ rm -rf bin/ dist/ coverage.out coverage.html
 
 ---
 
-**Need help?** Check our [Troubleshooting Guide](../user-guide/03-troubleshooting.md) or [Development Setup Guide](02-development-setup.md).
+**Need help?** Check our [Troubleshooting Guide](../user-guide/04-troubleshooting.md) or [Development Setup Guide](02-development-setup.md).

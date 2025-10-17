@@ -255,7 +255,7 @@ install: manifests kustomize ## Install Helios CRDs - GitOps
 .PHONY: deploy
 deploy: manifests kustomize ## Deploy Helios operator - GitOps
 	@echo "Deploying Helios operator..."
-	@cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
+	@cd config/default/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	@$(KUSTOMIZE) build config/default | $(KUBECTL) apply -f -
 
 .PHONY: deploy-local

@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package resources provides utilities for creating and managing Kubernetes resources
+// including ArgoCD Applications, Tekton Pipelines, and other infrastructure components.
 package resources
 
 import (

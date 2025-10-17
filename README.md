@@ -111,8 +111,8 @@ Built-in Kubernetes Watches provide instant feedback on:
 ### 👥 **For Users**
 
 - **[Getting Started Guide](docs/user-guide/01-getting-started.md)** - Complete setup and first application
-- **[HeliosApp Reference](docs/user-guide/02-helios-app-spec.md)** - Detailed spec explanation
-- **[Troubleshooting](docs/user-guide/03-troubleshooting.md)** - Common issues and solutions
+- **[HeliosApp Reference](docs/user-guide/03-helios-app-spec.md)** - Detailed spec explanation
+- **[Troubleshooting](docs/user-guide/04-troubleshooting.md)** - Common issues and solutions
 
 ### 👨‍💻 **For Developers**
 

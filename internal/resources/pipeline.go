@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// GetPipelineName generates the pipeline name from the app name
+// GetPipelineName generates the pipeline name from the app name.
 func GetPipelineName(appName string) string {
 	return fmt.Sprintf("%s-pipeline", appName)
 }
@@ -21,7 +21,7 @@ func GetPipelineName(appName string) string {
 // This function constructs a Pipeline that:
 // 1. Clones source code from the specified Git repository
 // 2. Builds and pushes a container image using Kaniko
-// 3. Uses a persistent workspace for source code storage
+// 3. Uses a persistent workspace for source code storage.
 func GeneratePipeline(heliosApp *heliosappv1.HeliosApp) (*unstructured.Unstructured, error) {
 	appName := heliosApp.Name
 	pipelineName := GetPipelineName(appName)

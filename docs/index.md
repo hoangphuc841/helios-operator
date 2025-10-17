@@ -11,8 +11,8 @@ New to Helios? Start here for a smooth onboarding experience:
 If you want to deploy applications using Helios:
 
 1. **[🚀 Getting Started Guide](user-guide/01-getting-started.md)** - Complete setup in 15 minutes
-2. **[📋 HeliosApp Specification](user-guide/02-helios-app-spec.md)** - Understand the configuration options
-3. **[🔧 Troubleshooting](user-guide/03-troubleshooting.md)** - Solve common issues
+2. **[📋 HeliosApp Specification](user-guide/03-helios-app-spec.md)** - Understand the configuration options
+3. **[🔧 Troubleshooting](user-guide/04-troubleshooting.md)** - Solve common issues
 
 ### 👨‍💻 **For Platform Engineers**
 
@@ -30,8 +30,8 @@ If you're managing or contributing to the Helios platform:
 | Document                                                       | Description                                       | Time to Read |
 | -------------------------------------------------------------- | ------------------------------------------------- | ------------ |
 | [🚀 Getting Started](user-guide/01-getting-started.md)         | Complete setup and first application deployment   | 15 minutes   |
-| [📋 HeliosApp Specification](user-guide/02-helios-app-spec.md) | Detailed explanation of all configuration options | 10 minutes   |
-| [🔧 Troubleshooting](user-guide/03-troubleshooting.md)         | Common issues and their solutions                 | 5 minutes    |
+| [📋 HeliosApp Specification](user-guide/03-helios-app-spec.md) | Detailed explanation of all configuration options | 10 minutes   |
+| [🔧 Troubleshooting](user-guide/04-troubleshooting.md)         | Common issues and their solutions                 | 5 minutes    |
 
 ### 👨‍💻 **Developer Guide** - For Platform Engineers
 
@@ -62,7 +62,7 @@ If you're managing or contributing to the Helios platform:
 
 ### 🔧 **Something isn't working**
 
-→ [Troubleshooting Guide](user-guide/03-troubleshooting.md)
+→ [Troubleshooting Guide](user-guide/04-troubleshooting.md)
 
 ### 🏗️ **I want to understand how it works**
 
@@ -122,4 +122,4 @@ The project follows Go best practices with:
 
 ---
 
-**Need help?** Check our [Troubleshooting Guide](user-guide/03-troubleshooting.md) or open an [issue](https://github.com/hoangphuc841/helios-operator/issues) 🆘
+**Need help?** Check our [Troubleshooting Guide](user-guide/04-troubleshooting.md) or open an [issue](https://github.com/hoangphuc841/helios-operator/issues) 🆘

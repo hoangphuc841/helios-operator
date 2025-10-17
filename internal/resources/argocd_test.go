@@ -27,6 +27,67 @@ import (
 	"github.com/hoangphuc841/helios-operator/internal/common"
 )
 
+// createTestHeliosApp creates a test HeliosApp with the specified namespace
+func createTestHeliosApp(name, namespace string) *heliosappv1.HeliosApp {
+	return &heliosappv1.HeliosApp{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: heliosappv1.HeliosAppSpec{
+			GitRepo:        "https://github.com/example/test-app",
+			ImageRepo:      "test-registry.com/test-app",
+			Port:           8080,
+			ServiceAccount: "test-sa",
+			WebhookSecret:  "test-secret",
+			GitopsRepo:     "https://github.com/example/test-app-manifests",
+			GitopsPath:     "apps/test-app",
+			GitopsBranch:   "main",
+		},
+	}
+}
+
+// createExpectedArgoApp creates the expected ArgoCD Application structure
+func createExpectedArgoApp(name, destinationNamespace string) *unstructured.Unstructured {
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "argoproj.io/v1alpha1",
+			"kind":       "Application",
+			"metadata": map[string]interface{}{
+				"name":      name,
+				"namespace": "argocd",
+				"labels": map[string]interface{}{
+					common.LabelManagedBy: "helios-operator",
+					common.LabelAppName:   name,
+				},
+			},
+			"spec": map[string]interface{}{
+				"project": "default",
+				"source": map[string]interface{}{
+					"repoURL":        "https://github.com/example/test-app-manifests",
+					"targetRevision": "main",
+					"path":           "apps/test-app",
+				},
+				"destination": map[string]interface{}{
+					"server":    "https://kubernetes.default.svc",
+					"namespace": destinationNamespace,
+				},
+				"syncPolicy": map[string]interface{}{
+					"automated": map[string]interface{}{
+						"prune":    true,
+						"selfHeal": true,
+					},
+					"syncOptions": []string{
+						"CreateNamespace=true",
+						"PrunePropagationPolicy=foreground",
+						"PruneLast=true",
+					},
+				},
+			},
+		},
+	}
+}
+
 func TestGenerateArgoApplication(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -34,116 +95,14 @@ func TestGenerateArgoApplication(t *testing.T) {
 		expected  *unstructured.Unstructured
 	}{
 		{
-			name: "basic helios app",
-			heliosApp: &heliosappv1.HeliosApp{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-app",
-					Namespace: "default",
-				},
-				Spec: heliosappv1.HeliosAppSpec{
-					GitRepo:        "https://github.com/example/test-app",
-					ImageRepo:      "test-registry.com/test-app",
-					Port:           8080,
-					ServiceAccount: "test-sa",
-					WebhookSecret:  "test-secret",
-					GitopsRepo:     "https://github.com/example/test-app-manifests",
-					GitopsPath:     "apps/test-app",
-					GitopsBranch:   "main",
-				},
-			},
-			expected: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "argoproj.io/v1alpha1",
-					"kind":       "Application",
-					"metadata": map[string]interface{}{
-						"name":      "test-app",
-						"namespace": "argocd",
-						"labels": map[string]interface{}{
-							common.LabelManagedBy: "helios-operator",
-							common.LabelAppName:   "test-app",
-						},
-					},
-					"spec": map[string]interface{}{
-						"project": "default",
-						"source": map[string]interface{}{
-							"repoURL":        "https://github.com/example/test-app-manifests",
-							"targetRevision": "main",
-							"path":           "apps/test-app",
-						},
-						"destination": map[string]interface{}{
-							"server":    "https://kubernetes.default.svc",
-							"namespace": "default",
-						},
-						"syncPolicy": map[string]interface{}{
-							"automated": map[string]interface{}{
-								"prune":    true,
-								"selfHeal": true,
-							},
-							"syncOptions": []string{
-								"CreateNamespace=true",
-								"PrunePropagationPolicy=foreground",
-								"PruneLast=true",
-							},
-						},
-					},
-				},
-			},
+			name:      "basic helios app",
+			heliosApp: createTestHeliosApp("test-app", "default"),
+			expected:  createExpectedArgoApp("test-app", "default"),
 		},
 		{
-			name: "helios app with custom namespace",
-			heliosApp: &heliosappv1.HeliosApp{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-app",
-					Namespace: "production",
-				},
-				Spec: heliosappv1.HeliosAppSpec{
-					GitRepo:        "https://github.com/example/test-app",
-					ImageRepo:      "test-registry.com/test-app",
-					Port:           8080,
-					ServiceAccount: "test-sa",
-					WebhookSecret:  "test-secret",
-					GitopsRepo:     "https://github.com/example/test-app-manifests",
-					GitopsPath:     "apps/test-app",
-					GitopsBranch:   "main",
-				},
-			},
-			expected: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "argoproj.io/v1alpha1",
-					"kind":       "Application",
-					"metadata": map[string]interface{}{
-						"name":      "test-app",
-						"namespace": "argocd",
-						"labels": map[string]interface{}{
-							common.LabelManagedBy: "helios-operator",
-							common.LabelAppName:   "test-app",
-						},
-					},
-					"spec": map[string]interface{}{
-						"project": "default",
-						"source": map[string]interface{}{
-							"repoURL":        "https://github.com/example/test-app-manifests",
-							"targetRevision": "main",
-							"path":           "apps/test-app",
-						},
-						"destination": map[string]interface{}{
-							"server":    "https://kubernetes.default.svc",
-							"namespace": "production",
-						},
-						"syncPolicy": map[string]interface{}{
-							"automated": map[string]interface{}{
-								"prune":    true,
-								"selfHeal": true,
-							},
-							"syncOptions": []string{
-								"CreateNamespace=true",
-								"PrunePropagationPolicy=foreground",
-								"PruneLast=true",
-							},
-						},
-					},
-				},
-			},
+			name:      "helios app with custom namespace",
+			heliosApp: createTestHeliosApp("test-app", "production"),
+			expected:  createExpectedArgoApp("test-app", "production"),
 		},
 	}
 

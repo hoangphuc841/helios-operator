@@ -80,7 +80,9 @@ podAnnotations: {}
 podLabels: {}
 
 # Environment variables
-env: []
+env:
+  - name: ENABLE_WEBHOOKS
+    value: "true"
 
 # Extra volumes
 extraVolumes: []

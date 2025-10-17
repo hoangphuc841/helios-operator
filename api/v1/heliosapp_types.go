@@ -291,6 +291,18 @@ type HeliosApp struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="Git Repo",type="string",JSONPath=".spec.gitRepo"
+// +kubebuilder:printcolumn:name="Image Repo",type="string",JSONPath=".spec.imageRepo"
+// +kubebuilder:printcolumn:name="Port",type="integer",JSONPath=".spec.port"
+// +kubebuilder:printcolumn:name="Replicas",type="integer",JSONPath=".spec.replicas"
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.conditions[?(@.type==\"Ready\")].status"
+// +kubebuilder:printcolumn:name="Synced",type="string",JSONPath=".status.conditions[?(@.type==\"Synced\")].status"
+// +kubebuilder:printcolumn:name="Build",type="string",JSONPath=".status.conditions[?(@.type==\"BuildSucceeded\")].status"
+// +kubebuilder:printcolumn:name="Message",type="string",JSONPath=".status.conditions[?(@.type==\"Ready\")].message"
+// +kubebuilder:webhook:path=/mutate-platform-helios-io-v1-heliosapp,mutating=true,failurePolicy=fail,sideEffects=None,groups=platform.helios.io,resources=heliosapps,verbs=create;update,versions=v1,name=mheliosapp.kb.io,admissionReviewVersions=v1;v1beta1
+// +kubebuilder:webhook:path=/validate-platform-helios-io-v1-heliosapp,mutating=false,failurePolicy=fail,sideEffects=None,groups=platform.helios.io,resources=heliosapps,verbs=create;update,versions=v1,name=vheliosapp.kb.io,admissionReviewVersions=v1;v1beta1
 
 // HeliosAppList contains a list of HeliosApp
 type HeliosAppList struct {

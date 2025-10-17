@@ -606,3 +606,80 @@ func TestIsAlphanumeric(t *testing.T) {
 		})
 	}
 }
+
+func TestHeliosApp_validatePVC(t *testing.T) {
+	tests := []struct {
+		name      string
+		heliosApp *HeliosApp
+		wantErr   bool
+	}{
+		{
+			name: "empty PVC name should pass",
+			heliosApp: &HeliosApp{
+				Spec: HeliosAppSpec{
+					PVCName: "",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid PVC name should pass",
+			heliosApp: &HeliosApp{
+				Spec: HeliosAppSpec{
+					PVCName: "test-pvc",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid PVC name with hyphens should pass",
+			heliosApp: &HeliosApp{
+				Spec: HeliosAppSpec{
+					PVCName: "test-pvc-123",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid PVC name with uppercase should pass",
+			heliosApp: &HeliosApp{
+				Spec: HeliosAppSpec{
+					PVCName: "Test-PVC",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid PVC name with special characters should fail",
+			heliosApp: &HeliosApp{
+				Spec: HeliosAppSpec{
+					PVCName: "test_pvc@123",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "valid PVC name starting with number should pass",
+			heliosApp: &HeliosApp{
+				Spec: HeliosAppSpec{
+					PVCName: "123-test-pvc",
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.heliosApp.validatePVC()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+// Note: SetupWebhookWithManager test is skipped due to complex manager interface requirements
+// In a real test environment, you'd need a proper manager setup with all required methods

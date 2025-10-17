@@ -559,4 +559,4 @@ helm get values helios-operator --all
 
 ---
 
-**Need help with configuration?** Check our [Troubleshooting Guide](../user-guide/03-troubleshooting.md) or open an [issue on GitHub](https://github.com/hoangphuc841/helios-operator/issues) 🆘
+**Need help with configuration?** Check our [Troubleshooting Guide](../user-guide/04-troubleshooting.md) or open an [issue on GitHub](https://github.com/hoangphuc841/helios-operator/issues) 🆘

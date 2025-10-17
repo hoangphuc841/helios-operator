@@ -27,7 +27,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	log "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -63,7 +63,7 @@ func init() {
 
 // validateHeliosApp validates the HeliosApp spec
 func (r *HeliosApp) validateHeliosApp() (admission.Warnings, error) {
-	logger := logf.Log.WithName("webhook").WithValues(
+	logger := log.Log.WithName("webhook").WithValues(
 		"operation", "validate",
 		"heliosapp", r.Name,
 		"namespace", r.Namespace,
@@ -105,107 +105,108 @@ func (r *HeliosApp) validateHeliosApp() (admission.Warnings, error) {
 
 // validateBasicFields validates basic required fields
 func (r *HeliosApp) validateBasicFields() []string {
-	var errors []string
+	var validationErrors []string
 
 	// Validate GitRepo URL
 	if err := validateGitURL(r.Spec.GitRepo, "gitRepo"); err != nil {
-		errors = append(errors, err.Error())
+		validationErrors = append(validationErrors, err.Error())
 	}
 
 	// Validate GitopsRepo URL
 	if err := validateGitURL(r.Spec.GitopsRepo, "gitopsRepo"); err != nil {
-		errors = append(errors, err.Error())
+		validationErrors = append(validationErrors, err.Error())
 	}
 
 	// Validate ImageRepo format
 	if err := validateImageRepo(r.Spec.ImageRepo); err != nil {
-		errors = append(errors, err.Error())
+		validationErrors = append(validationErrors, err.Error())
 	}
 
-	return errors
+	return validationErrors
 }
 
 // validateResourceExistence validates that referenced resources exist
 func (r *HeliosApp) validateResourceExistence() []string {
-	var errors []string
+	var validationErrors []string
 
 	// Validate ServiceAccount existence
 	if err := r.validateServiceAccount(); err != nil {
-		errors = append(errors, err.Error())
+		validationErrors = append(validationErrors, err.Error())
 	}
 
 	// Validate WebhookSecret existence
 	if err := r.validateWebhookSecret(); err != nil {
-		errors = append(errors, err.Error())
+		validationErrors = append(validationErrors, err.Error())
 	}
 
 	// Validate PVC existence if specified
 	if r.Spec.PVCName != "" {
 		if err := r.validatePVC(); err != nil {
-			errors = append(errors, err.Error())
+			validationErrors = append(validationErrors, err.Error())
 		}
 	}
 
-	return errors
+	return validationErrors
 }
 
 // validateNumericFields validates numeric fields
 func (r *HeliosApp) validateNumericFields() []string {
-	var errors []string
+	var validationErrors []string
 
 	// Validate port (standard port range)
 	if r.Spec.Port < 1 || r.Spec.Port > 65535 {
-		errors = append(errors, fmt.Sprintf("port must be between 1 and 65535, got %d", r.Spec.Port))
+		validationErrors = append(validationErrors, fmt.Sprintf("port must be between 1 and 65535, got %d", r.Spec.Port))
 	}
 
 	// Warn about privileged ports (< 1024) - could be a warning instead
 	if r.Spec.Port > 0 && r.Spec.Port < 1024 {
 		// This is still valid but might need special permissions
 		// We'll allow it but could add a warning in the future
+		_ = r.Spec.Port // Acknowledge the port value
 	}
 
 	// Validate replicas (reasonable upper bound to prevent resource exhaustion)
 	if r.Spec.Replicas < 0 {
-		errors = append(errors, fmt.Sprintf("replicas must be non-negative, got %d", r.Spec.Replicas))
+		validationErrors = append(validationErrors, fmt.Sprintf("replicas must be non-negative, got %d", r.Spec.Replicas))
 	}
 
 	// Validate replicas upper bound (prevent accidental large deployments)
 	const maxReplicas = 100
 	if r.Spec.Replicas > maxReplicas {
-		errors = append(errors, fmt.Sprintf("replicas cannot exceed %d (got %d) to prevent resource exhaustion", maxReplicas, r.Spec.Replicas))
+		validationErrors = append(validationErrors, fmt.Sprintf("replicas cannot exceed %d (got %d) to prevent resource exhaustion", maxReplicas, r.Spec.Replicas))
 	}
 
-	return errors
+	return validationErrors
 }
 
 // validateOptionalFields validates optional fields
 func (r *HeliosApp) validateOptionalFields() []string {
-	var errors []string
+	var validationErrors []string
 
 	// Namespace validation is handled by Kubernetes metadata.namespace
 
 	// Validate serviceAccount if specified
 	if r.Spec.ServiceAccount != "" {
 		if !isValidDNSSubdomain(r.Spec.ServiceAccount) {
-			errors = append(errors, fmt.Sprintf("serviceAccount '%s' is not a valid DNS subdomain name", r.Spec.ServiceAccount))
+			validationErrors = append(validationErrors, fmt.Sprintf("serviceAccount '%s' is not a valid DNS subdomain name", r.Spec.ServiceAccount))
 		}
 	}
 
 	// Validate webhookSecret if specified
 	if r.Spec.WebhookSecret != "" {
 		if !isValidDNSSubdomain(r.Spec.WebhookSecret) {
-			errors = append(errors, fmt.Sprintf("webhookSecret '%s' is not a valid DNS subdomain name", r.Spec.WebhookSecret))
+			validationErrors = append(validationErrors, fmt.Sprintf("webhookSecret '%s' is not a valid DNS subdomain name", r.Spec.WebhookSecret))
 		}
 	}
 
 	// Validate pvcName if specified
 	if r.Spec.PVCName != "" {
 		if !isValidDNSSubdomain(r.Spec.PVCName) {
-			errors = append(errors, fmt.Sprintf("pvcName '%s' is not a valid DNS subdomain name", r.Spec.PVCName))
+			validationErrors = append(validationErrors, fmt.Sprintf("pvcName '%s' is not a valid DNS subdomain name", r.Spec.PVCName))
 		}
 	}
 
-	return errors
+	return validationErrors
 }
 
 // validateServiceAccount validates that the ServiceAccount exists
@@ -218,7 +219,7 @@ func (r *HeliosApp) validateServiceAccount() error {
 	// This is a simplified validation - in practice, you'd inject the client
 	// For now, we'll just validate the format
 	if !isValidDNSSubdomain(r.Spec.ServiceAccount) {
-		return fmt.Errorf("serviceAccount must be a valid DNS subdomain")
+		return errors.New("serviceAccount must be a valid DNS subdomain")
 	}
 
 	return nil
@@ -234,7 +235,7 @@ func (r *HeliosApp) validateWebhookSecret() error {
 	// This is a simplified validation - in practice, you'd inject the client
 	// For now, we'll just validate the format
 	if !isValidDNSSubdomain(r.Spec.WebhookSecret) {
-		return fmt.Errorf("webhookSecret must be a valid DNS subdomain")
+		return errors.New("webhookSecret must be a valid DNS subdomain")
 	}
 
 	return nil
@@ -250,7 +251,7 @@ func (r *HeliosApp) validatePVC() error {
 	// This is a simplified validation - in practice, you'd inject the client
 	// For now, we'll just validate the format
 	if !isValidDNSSubdomain(r.Spec.PVCName) {
-		return fmt.Errorf("pvcName must be a valid DNS subdomain")
+		return errors.New("pvcName must be a valid DNS subdomain")
 	}
 
 	return nil
@@ -316,7 +317,7 @@ func validateGitURL(gitURL, fieldName string) error {
 // validateImageRepo validates an image repository URL
 func validateImageRepo(imageRepo string) error {
 	if imageRepo == "" {
-		return fmt.Errorf("imageRepo is required")
+		return errors.New("imageRepo is required")
 	}
 
 	// Trim whitespace
@@ -344,7 +345,7 @@ func validateImageRepo(imageRepo string) error {
 	if len(imageParts) > 1 {
 		tag := imageParts[len(imageParts)-1]
 		if tag == "" {
-			return fmt.Errorf("imageRepo tag cannot be empty when ':' is present")
+			return errors.New("imageRepo tag cannot be empty when ':' is present")
 		}
 		// Tag should only contain alphanumeric, dots, dashes, and underscores
 		tagRegex := regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
@@ -374,7 +375,8 @@ func validateImageRepo(imageRepo string) error {
 		} else {
 			// Namespace and repository components
 			if !componentRegex.MatchString(part) {
-				return fmt.Errorf("imageRepo component '%s' contains invalid characters (must be lowercase alphanumeric with '.', '-', or '_' separators)", part)
+				return fmt.Errorf("imageRepo component '%s' contains invalid characters "+
+					"(must be lowercase alphanumeric with '.', '-', or '_' separators)", part)
 			}
 		}
 	}
@@ -430,7 +432,7 @@ func isAlphanumeric(char rune) bool {
 
 // validateHeliosAppUpdate validates updates to HeliosApp
 func (r *HeliosApp) validateHeliosAppUpdate(old *HeliosApp) (admission.Warnings, error) {
-	logger := logf.Log.WithName("webhook").WithValues(
+	logger := log.Log.WithName("webhook").WithValues(
 		"operation", "validateUpdate",
 		"heliosapp", r.Name,
 		"namespace", r.Namespace,
@@ -487,7 +489,7 @@ func (r *HeliosApp) validateHeliosAppUpdate(old *HeliosApp) (admission.Warnings,
 
 // validateHeliosAppDelete validates deletion of HeliosApp
 func (r *HeliosApp) validateHeliosAppDelete() (admission.Warnings, error) {
-	logger := logf.Log.WithName("webhook").WithValues(
+	logger := log.Log.WithName("webhook").WithValues(
 		"operation", "validateDelete",
 		"heliosapp", r.Name,
 		"namespace", r.Namespace,
@@ -569,7 +571,7 @@ func (r *HeliosApp) ValidateUpdate(old runtime.Object) (admission.Warnings, erro
 		duration := time.Since(startTime).Seconds()
 		webhookValidationDuration.WithLabelValues("update").Observe(duration)
 		webhookValidationsTotal.WithLabelValues("update", "reject").Inc()
-		return nil, fmt.Errorf("expected old object to be of type HeliosApp")
+		return nil, errors.New("expected old object to be of type HeliosApp")
 	}
 
 	warnings, err := r.validateHeliosAppUpdate(oldHeliosApp)
@@ -605,7 +607,10 @@ func (r *HeliosApp) ValidateDelete() (admission.Warnings, error) {
 
 // SetupWebhookWithManager sets up the webhook with the manager
 func (r *HeliosApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
+	if err := ctrl.NewWebhookManagedBy(mgr).
 		For(r).
-		Complete()
+		Complete(); err != nil {
+		return fmt.Errorf("failed to setup webhook: %w", err)
+	}
+	return nil
 }

@@ -26,6 +26,8 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -41,6 +43,7 @@ type ReconcilePhase string
 
 const (
 	PhasePipeline ReconcilePhase = "Pipeline"
+	PhasePVC      ReconcilePhase = "PVC"
 	PhaseTriggers ReconcilePhase = "Triggers"
 	PhaseArgoCD   ReconcilePhase = "ArgoCD"
 	PhaseStatus   ReconcilePhase = "Status"
@@ -109,6 +112,111 @@ func (r *HeliosAppReconciler) ReconcilePipeline(ctx context.Context, heliosApp *
 		string(PhasePipeline),
 		"Success",
 		fmt.Sprintf("Pipeline %s reconciled successfully", pipeline.GetName()),
+	)
+}
+
+// ReconcilePVC handles the reconciliation of PersistentVolumeClaim resources
+func (r *HeliosAppReconciler) ReconcilePVC(ctx context.Context, heliosApp *heliosappv1.HeliosApp, logger logr.Logger) *common.ReconcileResult {
+	logger = logger.WithValues("phase", "pvc")
+	logger.V(1).Info("Starting PVC reconciliation")
+
+	// Determine PVC name from spec or default convention
+	pvcName := heliosApp.Spec.PVCName
+	if pvcName == "" {
+		pvcName = heliosApp.Name + "-workspace"
+	}
+
+	// Check if PVC already exists
+	existingPVC := &corev1.PersistentVolumeClaim{}
+	err := r.Get(ctx, client.ObjectKey{
+		Name:      pvcName,
+		Namespace: heliosApp.Namespace,
+	}, existingPVC)
+
+	if err == nil {
+		// PVC exists, check if it's managed by us
+		if existingPVC.Labels[common.LabelManagedBy] == "helios-operator" {
+			logger.V(1).Info("PVC already exists and is managed by operator", "pvcName", pvcName)
+			return common.NewSuccessResult(
+				string(PhasePVC),
+				"Success",
+				fmt.Sprintf("PVC %s already exists and is managed", pvcName),
+			)
+		} else {
+			logger.V(1).Info("PVC exists but is not managed by operator, skipping creation", "pvcName", pvcName)
+			return common.NewSuccessResult(
+				string(PhasePVC),
+				"Success",
+				fmt.Sprintf("PVC %s exists but is not managed by operator", pvcName),
+			)
+		}
+	}
+
+	// PVC doesn't exist, create it
+	if client.IgnoreNotFound(err) != nil {
+		logger.Error(err, "Failed to check if PVC exists", "pvcName", pvcName)
+		return common.NewErrorResult(
+			string(PhasePVC),
+			"Failed",
+			fmt.Sprintf("Failed to check PVC existence: %v", err),
+			err,
+			0,
+		)
+	}
+
+	// Create new PVC
+	pvc := &corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      pvcName,
+			Namespace: heliosApp.Namespace,
+			Labels: map[string]string{
+				common.LabelManagedBy:     "helios-operator",
+				common.LabelComponent:     "workspace",
+				"helios.io/app-name":      heliosApp.Name,
+				"helios.io/app-namespace": heliosApp.Namespace,
+			},
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			AccessModes: []corev1.PersistentVolumeAccessMode{
+				corev1.ReadWriteOnce,
+			},
+			Resources: corev1.VolumeResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceStorage: resource.MustParse("1Gi"),
+				},
+			},
+		},
+	}
+
+	// Set the controller reference
+	if err := controllerutil.SetControllerReference(heliosApp, pvc, r.Scheme); err != nil {
+		logger.Error(err, "Failed to set controller reference for PVC", "pvcName", pvcName)
+		return common.NewErrorResult(
+			string(PhasePVC),
+			"Failed",
+			fmt.Sprintf("Failed to set controller reference: %v", err),
+			err,
+			0,
+		)
+	}
+
+	// Create the PVC
+	if err := r.Create(ctx, pvc); err != nil {
+		logger.Error(err, "Failed to create PVC", "pvcName", pvcName)
+		return common.NewErrorResult(
+			string(PhasePVC),
+			"Failed",
+			fmt.Sprintf("Failed to create PVC: %v", err),
+			err,
+			0,
+		)
+	}
+
+	logger.V(1).Info("PVC created successfully", "pvcName", pvcName)
+	return common.NewSuccessResult(
+		string(PhasePVC),
+		"Success",
+		fmt.Sprintf("PVC %s created successfully", pvcName),
 	)
 }
 
@@ -357,6 +465,14 @@ func (r *HeliosAppReconciler) ReconcileStatus(ctx context.Context, heliosApp *he
 	logger = logger.WithValues("phase", "status")
 	logger.V(1).Info("Starting status reconciliation")
 
+	// Set default Ready condition
+	logger.V(1).Info("Setting default Ready condition")
+	if err := r.updateStatus(ctx, heliosApp, "Ready", metav1.ConditionTrue, "Reconciled", "HeliosApp is being reconciled"); err != nil {
+		logger.Error(err, "Failed to update Ready status")
+	} else {
+		logger.V(1).Info("Successfully set Ready condition")
+	}
+
 	// Get PipelineRun status
 	buildStatus, buildVersion, pipelineRunName, lastBuildTime, err := r.getPipelineRunStatus(ctx, heliosApp)
 	if err != nil {
@@ -374,11 +490,17 @@ func (r *HeliosAppReconciler) ReconcileStatus(ctx context.Context, heliosApp *he
 
 		// Update build condition
 		if buildStatus == "Succeeded" {
-			_ = r.updateStatus(ctx, heliosApp, "BuildSucceeded", metav1.ConditionTrue, "BuildCompleted", fmt.Sprintf("Build succeeded: %s", buildVersion))
+			if err := r.updateStatus(ctx, heliosApp, "BuildSucceeded", metav1.ConditionTrue, "BuildCompleted", fmt.Sprintf("Build succeeded: %s", buildVersion)); err != nil {
+				logger.Error(err, "Failed to update build succeeded status")
+			}
 		} else if buildStatus == "Failed" {
-			_ = r.updateStatus(ctx, heliosApp, "BuildSucceeded", metav1.ConditionFalse, "BuildFailed", "Build failed")
+			if err := r.updateStatus(ctx, heliosApp, "BuildSucceeded", metav1.ConditionFalse, "BuildFailed", "Build failed"); err != nil {
+				logger.Error(err, "Failed to update build failed status")
+			}
 		} else if buildStatus == "Running" {
-			_ = r.updateStatus(ctx, heliosApp, "BuildSucceeded", metav1.ConditionFalse, "BuildInProgress", "Build is in progress")
+			if err := r.updateStatus(ctx, heliosApp, "BuildSucceeded", metav1.ConditionFalse, "BuildInProgress", "Build is in progress"); err != nil {
+				logger.Error(err, "Failed to update build in progress status")
+			}
 		}
 	}
 
@@ -401,11 +523,17 @@ func (r *HeliosAppReconciler) ReconcileStatus(ctx context.Context, heliosApp *he
 
 		// Update deployment condition
 		if deployHealth == "Healthy" {
-			_ = r.updateStatus(ctx, heliosApp, "DeploymentHealthy", metav1.ConditionTrue, "AllReplicasReady", fmt.Sprintf("All %d replicas are ready", readyReplicas))
+			if err := r.updateStatus(ctx, heliosApp, "DeploymentHealthy", metav1.ConditionTrue, "AllReplicasReady", fmt.Sprintf("All %d replicas are ready", readyReplicas)); err != nil {
+				logger.Error(err, "Failed to update deployment healthy status")
+			}
 		} else if deployHealth == "Progressing" {
-			_ = r.updateStatus(ctx, heliosApp, "DeploymentHealthy", metav1.ConditionFalse, "RollingOut", fmt.Sprintf("Rolling out: %d/%d replicas ready", readyReplicas, desiredReplicas))
+			if err := r.updateStatus(ctx, heliosApp, "DeploymentHealthy", metav1.ConditionFalse, "RollingOut", fmt.Sprintf("Rolling out: %d/%d replicas ready", readyReplicas, desiredReplicas)); err != nil {
+				logger.Error(err, "Failed to update deployment progressing status")
+			}
 		} else if deployHealth == "Degraded" {
-			_ = r.updateStatus(ctx, heliosApp, "DeploymentHealthy", metav1.ConditionFalse, "NoReplicasReady", "No replicas are ready")
+			if err := r.updateStatus(ctx, heliosApp, "DeploymentHealthy", metav1.ConditionFalse, "NoReplicasReady", "No replicas are ready"); err != nil {
+				logger.Error(err, "Failed to update deployment degraded status")
+			}
 		}
 	}
 
@@ -431,9 +559,13 @@ func (r *HeliosAppReconciler) ReconcileStatus(ctx context.Context, heliosApp *he
 
 		// Update ArgoCD sync condition
 		if syncStatus == "Synced" {
-			_ = r.updateStatus(ctx, heliosApp, "ApplicationSynced", metav1.ConditionTrue, "Synced", "ArgoCD Application is synced")
+			if err := r.updateStatus(ctx, heliosApp, "ApplicationSynced", metav1.ConditionTrue, "Synced", "ArgoCD Application is synced"); err != nil {
+				logger.Error(err, "Failed to update ArgoCD synced status")
+			}
 		} else {
-			_ = r.updateStatus(ctx, heliosApp, "ApplicationSynced", metav1.ConditionFalse, "NotSynced", "ArgoCD Application sync status: "+syncStatus)
+			if err := r.updateStatus(ctx, heliosApp, "ApplicationSynced", metav1.ConditionFalse, "NotSynced", "ArgoCD Application sync status: "+syncStatus); err != nil {
+				logger.Error(err, "Failed to update ArgoCD not synced status")
+			}
 		}
 	}
 

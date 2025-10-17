@@ -2,7 +2,7 @@
 
 This directory contains ready-to-use example configurations for the Helios Operator, demonstrating different use cases and deployment scenarios.
 
-> 📚 **Looking for more examples?** Check out the comprehensive [Examples Guide](../docs/user-guide/04-examples.md) for advanced scenarios and complete real-world configurations.
+> 📚 **Looking for more examples?** Check out the comprehensive [Examples Guide](../docs/user-guide/05-examples.md) for advanced scenarios and complete real-world configurations.
 
 ## 📋 Available Examples
 
@@ -101,13 +101,13 @@ If you encounter issues:
 3. Check ArgoCD Application: `kubectl get applications -n argocd`
 4. Review operator logs: `kubectl logs -n helios-operator-system deployment/helios-operator-controller-manager`
 
-For detailed troubleshooting, see the [Troubleshooting Guide](../docs/user-guide/03-troubleshooting.md).
+For detailed troubleshooting, see the [Troubleshooting Guide](../docs/user-guide/04-troubleshooting.md).
 
 ## 📚 Additional Resources
 
-- **[Examples Documentation](../docs/user-guide/04-examples.md)** - Advanced examples and complete scenarios
-- **[HeliosApp Specification](../docs/user-guide/02-helios-app-spec.md)** - Complete API reference
+- **[Examples Documentation](../docs/user-guide/05-examples.md)** - Advanced examples and complete scenarios
+- **[HeliosApp Specification](../docs/user-guide/03-helios-app-spec.md)** - Complete API reference
 - **[Getting Started Guide](../docs/user-guide/01-getting-started.md)** - Setup and installation
-- **[Monitoring Guide](../docs/user-guide/05-monitoring.md)** - Observability and metrics
+- **[Monitoring Guide](../docs/user-guide/06-monitoring.md)** - Observability and metrics
 
-For more information, see the [troubleshooting guide](../../docs/user-guide/03-troubleshooting.md).
+For more information, see the [troubleshooting guide](../../docs/user-guide/04-troubleshooting.md).

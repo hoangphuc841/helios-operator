@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: helios-operator-system
+  labels:
+    control-plane: controller-manager
+    app.kubernetes.io/name: helios-operator
+    app.kubernetes.io/managed-by: kustomize

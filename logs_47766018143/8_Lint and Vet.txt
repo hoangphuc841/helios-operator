@@ -1,0 +1,1701 @@
+﻿2025-10-16T14:56:23.3528139Z Current runner version: '2.328.0'
+2025-10-16T14:56:23.3552357Z ##[group]Runner Image Provisioner
+2025-10-16T14:56:23.3553220Z Hosted Compute Agent
+2025-10-16T14:56:23.3553744Z Version: 20250912.392
+2025-10-16T14:56:23.3554394Z Commit: d921fda672a98b64f4f82364647e2f10b2267d0b
+2025-10-16T14:56:23.3555127Z Build Date: 2025-09-12T15:23:14Z
+2025-10-16T14:56:23.3555723Z ##[endgroup]
+2025-10-16T14:56:23.3556200Z ##[group]Operating System
+2025-10-16T14:56:23.3556883Z Ubuntu
+2025-10-16T14:56:23.3557340Z 24.04.3
+2025-10-16T14:56:23.3557796Z LTS
+2025-10-16T14:56:23.3558456Z ##[endgroup]
+2025-10-16T14:56:23.3558937Z ##[group]Runner Image
+2025-10-16T14:56:23.3559472Z Image: ubuntu-24.04
+2025-10-16T14:56:23.3560023Z Version: 20250929.60.1
+2025-10-16T14:56:23.3561051Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250929.60/images/ubuntu/Ubuntu2404-Readme.md
+2025-10-16T14:56:23.3562811Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250929.60
+2025-10-16T14:56:23.3563773Z ##[endgroup]
+2025-10-16T14:56:23.3564869Z ##[group]GITHUB_TOKEN Permissions
+2025-10-16T14:56:23.3566665Z Contents: read
+2025-10-16T14:56:23.3567232Z Metadata: read
+2025-10-16T14:56:23.3567820Z Packages: read
+2025-10-16T14:56:23.3568352Z ##[endgroup]
+2025-10-16T14:56:23.3570629Z Secret source: Actions
+2025-10-16T14:56:23.3572169Z Prepare workflow directory
+2025-10-16T14:56:23.3947658Z Prepare all required actions
+2025-10-16T14:56:23.3984543Z Getting action download info
+2025-10-16T14:56:23.8135103Z Download action repository 'actions/checkout@v5' (SHA:08c6903cd8c0fde910a37f88322edcfb5dd907a8)
+2025-10-16T14:56:23.9346724Z Download action repository 'actions/setup-go@v6' (SHA:44694675825211faa026b3c33043df3e48a5fa00)
+2025-10-16T14:56:24.2448540Z Download action repository 'actions/cache@v4' (SHA:0057852bfaa89a56745cba8c7296529d2fc39830)
+2025-10-16T14:56:24.3497695Z Download action repository 'golangci/golangci-lint-action@v8' (SHA:4afd733a84b1f43292c63897423277bb7f4313a9)
+2025-10-16T14:56:24.7438299Z Download action repository 'github/codeql-action@v4' (SHA:f443b600d91635bebf5b0d9ebc620189c0d6fba5)
+2025-10-16T14:56:25.4247804Z Complete job name: Lint and Vet
+2025-10-16T14:56:25.5043835Z ##[group]Run actions/checkout@v5
+2025-10-16T14:56:25.5045112Z with:
+2025-10-16T14:56:25.5045946Z   repository: hoangphuc841/helios-operator
+2025-10-16T14:56:25.5047247Z   token: ***
+2025-10-16T14:56:25.5048019Z   ssh-strict: true
+2025-10-16T14:56:25.5048812Z   ssh-user: git
+2025-10-16T14:56:25.5049622Z   persist-credentials: true
+2025-10-16T14:56:25.5050518Z   clean: true
+2025-10-16T14:56:25.5051485Z   sparse-checkout-cone-mode: true
+2025-10-16T14:56:25.5052481Z   fetch-depth: 1
+2025-10-16T14:56:25.5053268Z   fetch-tags: false
+2025-10-16T14:56:25.5054090Z   show-progress: true
+2025-10-16T14:56:25.5054910Z   lfs: false
+2025-10-16T14:56:25.5055659Z   submodules: false
+2025-10-16T14:56:25.5056474Z   set-safe-directory: true
+2025-10-16T14:56:25.5057590Z env:
+2025-10-16T14:56:25.5058298Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:25.5059165Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:25.5060076Z ##[endgroup]
+2025-10-16T14:56:25.5966800Z Syncing repository: hoangphuc841/helios-operator
+2025-10-16T14:56:25.5969358Z ##[group]Getting Git version info
+2025-10-16T14:56:25.5970793Z Working directory is '/home/runner/work/helios-operator/helios-operator'
+2025-10-16T14:56:25.5973186Z [command]/usr/bin/git version
+2025-10-16T14:56:25.6038540Z git version 2.51.0
+2025-10-16T14:56:25.6059762Z ##[endgroup]
+2025-10-16T14:56:25.6073735Z Temporarily overriding HOME='/home/runner/work/_temp/df4e107e-316f-4c53-b7a9-1953ee5db7c9' before making global git config changes
+2025-10-16T14:56:25.6077062Z Adding repository directory to the temporary git global config as a safe directory
+2025-10-16T14:56:25.6080448Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:56:25.6114665Z Deleting the contents of '/home/runner/work/helios-operator/helios-operator'
+2025-10-16T14:56:25.6118039Z ##[group]Initializing the repository
+2025-10-16T14:56:25.6122702Z [command]/usr/bin/git init /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:56:25.6254701Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-10-16T14:56:25.6257836Z hint: is subject to change. To configure the initial branch name to use in all
+2025-10-16T14:56:25.6260675Z hint: of your new repositories, which will suppress this warning, call:
+2025-10-16T14:56:25.6262890Z hint:
+2025-10-16T14:56:25.6264268Z hint: 	git config --global init.defaultBranch <name>
+2025-10-16T14:56:25.6265745Z hint:
+2025-10-16T14:56:25.6266876Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-10-16T14:56:25.6269336Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-10-16T14:56:25.6270780Z hint:
+2025-10-16T14:56:25.6271800Z hint: 	git branch -m <name>
+2025-10-16T14:56:25.6272722Z hint:
+2025-10-16T14:56:25.6273942Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2025-10-16T14:56:25.6276122Z Initialized empty Git repository in /home/runner/work/helios-operator/helios-operator/.git/
+2025-10-16T14:56:25.6279691Z [command]/usr/bin/git remote add origin https://github.com/hoangphuc841/helios-operator
+2025-10-16T14:56:25.6310245Z ##[endgroup]
+2025-10-16T14:56:25.6312159Z ##[group]Disabling automatic garbage collection
+2025-10-16T14:56:25.6313791Z [command]/usr/bin/git config --local gc.auto 0
+2025-10-16T14:56:25.6342063Z ##[endgroup]
+2025-10-16T14:56:25.6344274Z ##[group]Setting up auth
+2025-10-16T14:56:25.6348503Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-10-16T14:56:25.6381020Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-10-16T14:56:25.6727739Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-10-16T14:56:25.6757838Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-10-16T14:56:25.6970113Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-10-16T14:56:25.7003059Z ##[endgroup]
+2025-10-16T14:56:25.7005366Z ##[group]Fetching the repository
+2025-10-16T14:56:25.7014624Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1:refs/remotes/pull/1/merge
+2025-10-16T14:56:25.9762150Z From https://github.com/hoangphuc841/helios-operator
+2025-10-16T14:56:25.9763758Z  * [new ref]         e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1 -> pull/1/merge
+2025-10-16T14:56:25.9794042Z ##[endgroup]
+2025-10-16T14:56:25.9795351Z ##[group]Determining the checkout info
+2025-10-16T14:56:25.9797008Z ##[endgroup]
+2025-10-16T14:56:25.9802672Z [command]/usr/bin/git sparse-checkout disable
+2025-10-16T14:56:25.9844356Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-10-16T14:56:25.9871701Z ##[group]Checking out the ref
+2025-10-16T14:56:25.9874706Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/1/merge
+2025-10-16T14:56:25.9992719Z Note: switching to 'refs/remotes/pull/1/merge'.
+2025-10-16T14:56:25.9994047Z 
+2025-10-16T14:56:25.9995180Z You are in 'detached HEAD' state. You can look around, make experimental
+2025-10-16T14:56:25.9997843Z changes and commit them, and you can discard any commits you make in this
+2025-10-16T14:56:25.9999618Z state without impacting any branches by switching back to a branch.
+2025-10-16T14:56:26.0001105Z 
+2025-10-16T14:56:26.0002107Z If you want to create a new branch to retain commits you create, you may
+2025-10-16T14:56:26.0003719Z do so (now or later) by using -c with the switch command. Example:
+2025-10-16T14:56:26.0004919Z 
+2025-10-16T14:56:26.0005577Z   git switch -c <new-branch-name>
+2025-10-16T14:56:26.0006251Z 
+2025-10-16T14:56:26.0006629Z Or undo this operation with:
+2025-10-16T14:56:26.0007241Z 
+2025-10-16T14:56:26.0007569Z   git switch -
+2025-10-16T14:56:26.0008051Z 
+2025-10-16T14:56:26.0008828Z Turn off this advice by setting config variable advice.detachedHead to false
+2025-10-16T14:56:26.0009880Z 
+2025-10-16T14:56:26.0011146Z HEAD is now at e1ff28e Merge ff6f498efdf5599219b5f62fbf20e6c98a1c02df into ed87fb28aec8054c283f32b91578ac0ec021d6ef
+2025-10-16T14:56:26.0015382Z ##[endgroup]
+2025-10-16T14:56:26.0037419Z [command]/usr/bin/git log -1 --format=%H
+2025-10-16T14:56:26.0058661Z e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1
+2025-10-16T14:56:26.0388286Z ##[group]Run actions/setup-go@v6
+2025-10-16T14:56:26.0389235Z with:
+2025-10-16T14:56:26.0389923Z   go-version: 1.25.3
+2025-10-16T14:56:26.0390709Z   check-latest: false
+2025-10-16T14:56:26.0391997Z   token: ***
+2025-10-16T14:56:26.0392729Z   cache: true
+2025-10-16T14:56:26.0393431Z env:
+2025-10-16T14:56:26.0394103Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:26.0394907Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:26.0395775Z ##[endgroup]
+2025-10-16T14:56:26.1999968Z Setup go version spec 1.25.3
+2025-10-16T14:56:26.2022148Z Attempting to download 1.25.3...
+2025-10-16T14:56:26.5828146Z matching 1.25.3...
+2025-10-16T14:56:26.5857190Z Acquiring 1.25.3 from https://github.com/actions/go-versions/releases/download/1.25.3-18483679098/go-1.25.3-linux-x64.tar.gz
+2025-10-16T14:56:27.0825015Z Extracting Go...
+2025-10-16T14:56:27.0933843Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/baacef96-0f09-4b5e-a1d0-8c51f436b7f7 -f /home/runner/work/_temp/b9333d67-99d6-4a9e-91b6-c69a092265d3
+2025-10-16T14:56:28.5725730Z Successfully extracted go to /home/runner/work/_temp/baacef96-0f09-4b5e-a1d0-8c51f436b7f7
+2025-10-16T14:56:28.5726551Z Adding to the cache ...
+2025-10-16T14:56:33.0114589Z Successfully cached go to /opt/hostedtoolcache/go/1.25.3/x64
+2025-10-16T14:56:33.0117228Z Added go to the path
+2025-10-16T14:56:33.0117945Z Successfully set up Go version 1.25.3
+2025-10-16T14:56:33.0320131Z [command]/opt/hostedtoolcache/go/1.25.3/x64/bin/go env GOMODCACHE
+2025-10-16T14:56:33.0348037Z [command]/opt/hostedtoolcache/go/1.25.3/x64/bin/go env GOCACHE
+2025-10-16T14:56:33.0380235Z /home/runner/go/pkg/mod
+2025-10-16T14:56:33.0395469Z /home/runner/.cache/go-build
+2025-10-16T14:56:33.1640042Z Cache is not found
+2025-10-16T14:56:33.1659748Z go version go1.25.3 linux/amd64
+2025-10-16T14:56:33.1659965Z 
+2025-10-16T14:56:33.1660289Z ##[group]go env
+2025-10-16T14:56:33.3013566Z AR='ar'
+2025-10-16T14:56:33.3013999Z CC='gcc'
+2025-10-16T14:56:33.3014340Z CGO_CFLAGS='-O2 -g'
+2025-10-16T14:56:33.3014750Z CGO_CPPFLAGS=''
+2025-10-16T14:56:33.3015074Z CGO_CXXFLAGS='-O2 -g'
+2025-10-16T14:56:33.3015410Z CGO_ENABLED='1'
+2025-10-16T14:56:33.3015726Z CGO_FFLAGS='-O2 -g'
+2025-10-16T14:56:33.3016062Z CGO_LDFLAGS='-O2 -g'
+2025-10-16T14:56:33.3016430Z CXX='g++'
+2025-10-16T14:56:33.3016743Z GCCGO='gccgo'
+2025-10-16T14:56:33.3017091Z GO111MODULE=''
+2025-10-16T14:56:33.3017394Z GOAMD64='v1'
+2025-10-16T14:56:33.3017677Z GOARCH='amd64'
+2025-10-16T14:56:33.3017991Z GOAUTH='netrc'
+2025-10-16T14:56:33.3018283Z GOBIN=''
+2025-10-16T14:56:33.3018578Z GOCACHE='/home/runner/.cache/go-build'
+2025-10-16T14:56:33.3019031Z GOCACHEPROG=''
+2025-10-16T14:56:33.3019333Z GODEBUG=''
+2025-10-16T14:56:33.3019682Z GOENV='/home/runner/.config/go/env'
+2025-10-16T14:56:33.3020043Z GOEXE=''
+2025-10-16T14:56:33.3020344Z GOEXPERIMENT=''
+2025-10-16T14:56:33.3020670Z GOFIPS140='off'
+2025-10-16T14:56:33.3020969Z GOFLAGS=''
+2025-10-16T14:56:33.3022210Z GOGCCFLAGS='-fPIC -m64 -pthread -Wl,--no-gc-sections -fmessage-length=0 -ffile-prefix-map=/tmp/go-build3271722362=/tmp/go-build -gno-record-gcc-switches'
+2025-10-16T14:56:33.3023194Z GOHOSTARCH='amd64'
+2025-10-16T14:56:33.3023505Z GOHOSTOS='linux'
+2025-10-16T14:56:33.3023791Z GOINSECURE=''
+2025-10-16T14:56:33.3024292Z GOMOD='/home/runner/work/helios-operator/helios-operator/go.mod'
+2025-10-16T14:56:33.3025156Z GOMODCACHE='/home/runner/go/pkg/mod'
+2025-10-16T14:56:33.3025536Z GONOPROXY=''
+2025-10-16T14:56:33.3025798Z GONOSUMDB=''
+2025-10-16T14:56:33.3026059Z GOOS='linux'
+2025-10-16T14:56:33.3026373Z GOPATH='/home/runner/go'
+2025-10-16T14:56:33.3026679Z GOPRIVATE=''
+2025-10-16T14:56:33.3027155Z GOPROXY='https://proxy.golang.org,direct'
+2025-10-16T14:56:33.3027639Z GOROOT='/opt/hostedtoolcache/go/1.25.3/x64'
+2025-10-16T14:56:33.3028072Z GOSUMDB='sum.golang.org'
+2025-10-16T14:56:33.3028419Z GOTELEMETRY='local'
+2025-10-16T14:56:33.3028792Z GOTELEMETRYDIR='/home/runner/.config/go/telemetry'
+2025-10-16T14:56:33.3029212Z GOTMPDIR=''
+2025-10-16T14:56:33.3029483Z GOTOOLCHAIN='local'
+2025-10-16T14:56:33.3030213Z GOTOOLDIR='/opt/hostedtoolcache/go/1.25.3/x64/pkg/tool/linux_amd64'
+2025-10-16T14:56:33.3030763Z GOVCS=''
+2025-10-16T14:56:33.3031040Z GOVERSION='go1.25.3'
+2025-10-16T14:56:33.3031572Z GOWORK=''
+2025-10-16T14:56:33.3031878Z PKG_CONFIG='pkg-config'
+2025-10-16T14:56:33.3032092Z 
+2025-10-16T14:56:33.3032605Z ##[endgroup]
+2025-10-16T14:56:33.3977263Z ##[group]Run actions/cache@v4
+2025-10-16T14:56:33.3977549Z with:
+2025-10-16T14:56:33.3977730Z   path: ~/go/pkg/mod
+2025-10-16T14:56:33.3978095Z   key: Linux-go-b40a5f9e954b0d6208dfe5b6ec68af2fcbc427be3d6f48b944dad59040b800eb
+2025-10-16T14:56:33.3978505Z   restore-keys: Linux-go-
+
+2025-10-16T14:56:33.3978741Z   enableCrossOsArchive: false
+2025-10-16T14:56:33.3978968Z   fail-on-cache-miss: false
+2025-10-16T14:56:33.3979191Z   lookup-only: false
+2025-10-16T14:56:33.3979392Z   save-always: false
+2025-10-16T14:56:33.3979578Z env:
+2025-10-16T14:56:33.3979746Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:33.3979942Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:33.3980164Z   GOTOOLCHAIN: local
+2025-10-16T14:56:33.3980347Z ##[endgroup]
+2025-10-16T14:56:33.6493470Z Cache not found for input keys: Linux-go-b40a5f9e954b0d6208dfe5b6ec68af2fcbc427be3d6f48b944dad59040b800eb, Linux-go-
+2025-10-16T14:56:33.6594372Z ##[group]Run go mod download
+2025-10-16T14:56:33.6594695Z [36;1mgo mod download[0m
+2025-10-16T14:56:33.6630543Z shell: /usr/bin/bash -e {0}
+2025-10-16T14:56:33.6630794Z env:
+2025-10-16T14:56:33.6630971Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:33.6631178Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:33.6631658Z   GOTOOLCHAIN: local
+2025-10-16T14:56:33.6631855Z ##[endgroup]
+2025-10-16T14:56:40.1076430Z ##[group]Run go vet ./...
+2025-10-16T14:56:40.1076714Z [36;1mgo vet ./...[0m
+2025-10-16T14:56:40.1109324Z shell: /usr/bin/bash -e {0}
+2025-10-16T14:56:40.1109549Z env:
+2025-10-16T14:56:40.1109729Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:40.1109923Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:40.1110144Z   GOTOOLCHAIN: local
+2025-10-16T14:56:40.1110327Z ##[endgroup]
+2025-10-16T14:58:19.7419460Z ##[group]Run golangci/golangci-lint-action@v8
+2025-10-16T14:58:19.7419744Z with:
+2025-10-16T14:58:19.7419911Z   version: v2.5.0
+2025-10-16T14:58:19.7420110Z   args: --timeout=5m
+2025-10-16T14:58:19.7420304Z   install-mode: binary
+2025-10-16T14:58:19.7420647Z   github-token: ***
+2025-10-16T14:58:19.7420850Z   verify: true
+2025-10-16T14:58:19.7421027Z   only-new-issues: false
+2025-10-16T14:58:19.7421226Z   skip-cache: false
+2025-10-16T14:58:19.7421656Z   skip-save-cache: false
+2025-10-16T14:58:19.7421859Z   problem-matchers: false
+2025-10-16T14:58:19.7422082Z   cache-invalidation-interval: 7
+2025-10-16T14:58:19.7422292Z env:
+2025-10-16T14:58:19.7422450Z   GO_VERSION: 1.25.3
+2025-10-16T14:58:19.7422638Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:58:19.7422850Z   GOTOOLCHAIN: local
+2025-10-16T14:58:19.7423023Z ##[endgroup]
+2025-10-16T14:58:19.9059079Z ##[group]prepare environment
+2025-10-16T14:58:19.9063917Z Checking for go.mod: go.mod
+2025-10-16T14:58:20.0424061Z Cache not found for input keys: golangci-lint.cache-Linux-2911-59b23eee29c48b09b3595ddc3fdcafd12134bc7d, golangci-lint.cache-Linux-2911-
+2025-10-16T14:58:20.0425622Z Finding needed golangci-lint version...
+2025-10-16T14:58:20.0428902Z Installation mode: binary
+2025-10-16T14:58:20.0429857Z Installing golangci-lint binary v2.5.0...
+2025-10-16T14:58:20.0432089Z Downloading binary https://github.com/golangci/golangci-lint/releases/download/v2.5.0/golangci-lint-2.5.0-linux-amd64.tar.gz ...
+2025-10-16T14:58:20.2162096Z [command]/usr/bin/tar xz --overwrite --warning=no-unknown-keyword --overwrite -C /home/runner -f /home/runner/work/_temp/dfabc931-baca-40d6-917b-4519e4d8dd56
+2025-10-16T14:58:20.4623411Z Installed golangci-lint into /home/runner/golangci-lint-2.5.0-linux-amd64/golangci-lint in 419ms
+2025-10-16T14:58:20.4624243Z Prepared env in 557ms
+2025-10-16T14:58:20.4625031Z ##[endgroup]
+2025-10-16T14:58:20.4627581Z ##[group]run golangci-lint
+2025-10-16T14:58:20.4634060Z Running [/home/runner/golangci-lint-2.5.0-linux-amd64/golangci-lint config path] in [/home/runner/work/helios-operator/helios-operator] ...
+2025-10-16T14:58:20.5696302Z Running [/home/runner/golangci-lint-2.5.0-linux-amd64/golangci-lint config verify] in [/home/runner/work/helios-operator/helios-operator] ...
+2025-10-16T14:58:20.7279745Z Running [/home/runner/golangci-lint-2.5.0-linux-amd64/golangci-lint run  --timeout=5m] in [/home/runner/work/helios-operator/helios-operator] ...
+2025-10-16T14:59:10.2496119Z ##[error]cmd/main.go:89:1: calculated cyclomatic complexity for function main is 18, max is 15 (cyclop)
+2025-10-16T14:59:10.2505483Z func main() {
+2025-10-16T14:59:10.2505792Z ^
+2025-10-16T14:59:10.2507370Z ##[error]internal/config/config.go:74:1: calculated cyclomatic complexity for function LoadFromEnv is 30, max is 15 (cyclop)
+2025-10-16T14:59:10.2509003Z func LoadFromEnv() (*OperatorConfig, error) {
+2025-10-16T14:59:10.2509431Z ^
+2025-10-16T14:59:10.2510899Z ##[error]internal/controller/heliosapp_controller.go:100:1: calculated cyclomatic complexity for function Reconcile is 19, max is 15 (cyclop)
+2025-10-16T14:59:10.2513376Z func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+2025-10-16T14:59:10.2514120Z ^
+2025-10-16T14:59:10.2515649Z ##[error]internal/controller/heliosapp_controller.go:333:1: calculated cyclomatic complexity for function getPipelineRunStatus is 23, max is 15 (cyclop)
+2025-10-16T14:59:10.2518432Z func (r *HeliosAppReconciler) getPipelineRunStatus(ctx context.Context, heliosApp *heliosappv1.HeliosApp) (buildStatus, buildVersion, pipelineRunName string, lastBuildTime *metav1.Time, err error) {
+2025-10-16T14:59:10.2519760Z ^
+2025-10-16T14:59:10.2521150Z ##[error]internal/controller/heliosapp_controller.go:443:1: calculated cyclomatic complexity for function getDeploymentHealth is 21, max is 15 (cyclop)
+2025-10-16T14:59:10.2524440Z func (r *HeliosAppReconciler) getDeploymentHealth(ctx context.Context, heliosApp *heliosappv1.HeliosApp) (health string, readyReplicas, desiredReplicas int32, lastHealthyTime *metav1.Time, err error) {
+2025-10-16T14:59:10.2525718Z ^
+2025-10-16T14:59:10.2527063Z ##[error]internal/controller/reconcile_phases.go:356:1: calculated cyclomatic complexity for function ReconcileStatus is 17, max is 15 (cyclop)
+2025-10-16T14:59:10.2529364Z func (r *HeliosAppReconciler) ReconcileStatus(ctx context.Context, heliosApp *heliosappv1.HeliosApp, name, namespace string, logger logr.Logger) *common.ReconcileResult {
+2025-10-16T14:59:10.2530527Z ^
+2025-10-16T14:59:10.2532139Z ##[error]api/v1/groupversion_info.go:11:2: import 'k8s.io/apimachinery/pkg/runtime/schema' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2558697Z 	"k8s.io/apimachinery/pkg/runtime/schema"
+2025-10-16T14:59:10.2559126Z 	^
+2025-10-16T14:59:10.2560378Z ##[error]api/v1/groupversion_info.go:12:2: import 'sigs.k8s.io/controller-runtime/pkg/scheme' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2561710Z 	"sigs.k8s.io/controller-runtime/pkg/scheme"
+2025-10-16T14:59:10.2562050Z 	^
+2025-10-16T14:59:10.2563066Z ##[error]api/v1/heliosapp_types.go:29:2: import 'github.com/hoangphuc841/helios-operator/internal/common' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2564161Z 	"github.com/hoangphuc841/helios-operator/internal/common"
+2025-10-16T14:59:10.2564455Z 	^
+2025-10-16T14:59:10.2565213Z ##[error]api/v1/heliosapp_types.go:30:2: import 'k8s.io/apimachinery/pkg/apis/meta/v1' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2566444Z 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+2025-10-16T14:59:10.2566700Z 	^
+2025-10-16T14:59:10.2567479Z ##[error]api/v1/heliosapp_types_test.go:22:2: import 'github.com/stretchr/testify/assert' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2568402Z 	"github.com/stretchr/testify/assert"
+2025-10-16T14:59:10.2568632Z 	^
+2025-10-16T14:59:10.2569415Z ##[error]api/v1/heliosapp_types_test.go:23:2: import 'k8s.io/apimachinery/pkg/apis/meta/v1' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2570347Z 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+2025-10-16T14:59:10.2570600Z 	^
+2025-10-16T14:59:10.2571653Z ##[error]api/v1/heliosapp_webhook.go:27:2: import 'github.com/prometheus/client_golang/prometheus' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2572668Z 	"github.com/prometheus/client_golang/prometheus"
+2025-10-16T14:59:10.2572937Z 	^
+2025-10-16T14:59:10.2573670Z ##[error]api/v1/heliosapp_webhook.go:28:2: import 'k8s.io/apimachinery/pkg/runtime' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2574614Z 	"k8s.io/apimachinery/pkg/runtime"
+2025-10-16T14:59:10.2574847Z 	^
+2025-10-16T14:59:10.2575552Z ##[error]api/v1/heliosapp_webhook.go:29:2: import 'sigs.k8s.io/controller-runtime' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2576453Z 	ctrl "sigs.k8s.io/controller-runtime"
+2025-10-16T14:59:10.2576689Z 	^
+2025-10-16T14:59:10.2577442Z ##[error]api/v1/heliosapp_webhook.go:30:2: import 'sigs.k8s.io/controller-runtime/pkg/log' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2578394Z 	logf "sigs.k8s.io/controller-runtime/pkg/log"
+2025-10-16T14:59:10.2578653Z 	^
+2025-10-16T14:59:10.2579432Z ##[error]api/v1/heliosapp_webhook.go:31:2: import 'sigs.k8s.io/controller-runtime/pkg/metrics' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2580388Z 	"sigs.k8s.io/controller-runtime/pkg/metrics"
+2025-10-16T14:59:10.2580639Z 	^
+2025-10-16T14:59:10.2581691Z ##[error]api/v1/heliosapp_webhook.go:32:2: import 'sigs.k8s.io/controller-runtime/pkg/webhook/admission' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2582760Z 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
+2025-10-16T14:59:10.2583040Z 	^
+2025-10-16T14:59:10.2583816Z ##[error]api/v1/heliosapp_webhook_test.go:22:2: import 'github.com/stretchr/testify/assert' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2584734Z 	"github.com/stretchr/testify/assert"
+2025-10-16T14:59:10.2584971Z 	^
+2025-10-16T14:59:10.2585889Z ##[error]api/v1/heliosapp_webhook_test.go:23:2: import 'k8s.io/apimachinery/pkg/apis/meta/v1' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2586869Z 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+2025-10-16T14:59:10.2587114Z 	^
+2025-10-16T14:59:10.2587850Z ##[error]cmd/main.go:28:2: import 'k8s.io/client-go/plugin/pkg/client/auth' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2588749Z 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+2025-10-16T14:59:10.2588993Z 	^
+2025-10-16T14:59:10.2589638Z ##[error]cmd/main.go:30:2: import 'k8s.io/apimachinery/pkg/runtime' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2590471Z 	"k8s.io/apimachinery/pkg/runtime"
+2025-10-16T14:59:10.2590747Z 	^
+2025-10-16T14:59:10.2591766Z ##[error]cmd/main.go:31:2: import 'k8s.io/apimachinery/pkg/util/runtime' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2592757Z 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+2025-10-16T14:59:10.2593025Z 	^
+2025-10-16T14:59:10.2593725Z ##[error]cmd/main.go:32:2: import 'k8s.io/client-go/kubernetes/scheme' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2594669Z 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+2025-10-16T14:59:10.2594933Z 	^
+2025-10-16T14:59:10.2595562Z ##[error]cmd/main.go:33:2: import 'sigs.k8s.io/controller-runtime' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2596597Z 	ctrl "sigs.k8s.io/controller-runtime"
+2025-10-16T14:59:10.2596833Z 	^
+2025-10-16T14:59:10.2597605Z ##[error]cmd/main.go:34:2: import 'sigs.k8s.io/controller-runtime/pkg/certwatcher' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2598546Z 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
+2025-10-16T14:59:10.2598811Z 	^
+2025-10-16T14:59:10.2599533Z ##[error]cmd/main.go:35:2: import 'sigs.k8s.io/controller-runtime/pkg/log/zap' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2600418Z 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+2025-10-16T14:59:10.2600669Z 	^
+2025-10-16T14:59:10.2601700Z ##[error]cmd/main.go:36:2: import 'sigs.k8s.io/controller-runtime/pkg/metrics/filters' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2602680Z 	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
+2025-10-16T14:59:10.2602951Z 	^
+2025-10-16T14:59:10.2603741Z ##[error]cmd/main.go:37:2: import 'sigs.k8s.io/controller-runtime/pkg/metrics/server' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2604780Z 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+2025-10-16T14:59:10.2605095Z 	^
+2025-10-16T14:59:10.2605825Z ##[error]cmd/main.go:38:2: import 'sigs.k8s.io/controller-runtime/pkg/webhook' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2606759Z 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+2025-10-16T14:59:10.2607013Z 	^
+2025-10-16T14:59:10.2607808Z ##[error]cmd/main.go:41:2: import 'github.com/tektoncd/pipeline/pkg/apis/pipeline/v1' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2608789Z 	tektonv1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
+2025-10-16T14:59:10.2609081Z 	^
+2025-10-16T14:59:10.2609912Z ##[error]cmd/main.go:42:2: import 'github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2610949Z 	triggersv1beta1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
+2025-10-16T14:59:10.2611460Z 	^
+2025-10-16T14:59:10.2612248Z ##[error]cmd/main.go:46:2: import 'github.com/hoangphuc841/helios-operator/api/v1' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2613241Z 	heliosappv1 "github.com/hoangphuc841/helios-operator/api/v1"
+2025-10-16T14:59:10.2613544Z 	^
+2025-10-16T14:59:10.2614402Z ##[error]cmd/main.go:47:2: import 'github.com/hoangphuc841/helios-operator/internal/controller' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2615410Z 	"github.com/hoangphuc841/helios-operator/internal/controller"
+2025-10-16T14:59:10.2615713Z 	^
+2025-10-16T14:59:10.2616536Z ##[error]cmd/main.go:48:2: import 'github.com/hoangphuc841/helios-operator/internal/health' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2617660Z 	"github.com/hoangphuc841/helios-operator/internal/health"
+2025-10-16T14:59:10.2617965Z 	^
+2025-10-16T14:59:10.2618754Z ##[error]internal/common/errors.go:13:2: import 'k8s.io/apimachinery/pkg/api/errors' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2619669Z 	"k8s.io/apimachinery/pkg/api/errors"
+2025-10-16T14:59:10.2619912Z 	^
+2025-10-16T14:59:10.2620649Z ##[error]internal/common/errors_test.go:23:2: import 'github.com/stretchr/testify/assert' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2621777Z 	"github.com/stretchr/testify/assert"
+2025-10-16T14:59:10.2622008Z 	^
+2025-10-16T14:59:10.2622782Z ##[error]internal/config/config_test.go:25:2: import 'github.com/stretchr/testify/require' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2623703Z 	"github.com/stretchr/testify/require"
+2025-10-16T14:59:10.2623932Z 	^
+2025-10-16T14:59:10.2624661Z ##[error]internal/controller/heliosapp_controller.go:28:2: import 'github.com/go-logr/logr' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2625567Z 	"github.com/go-logr/logr"
+2025-10-16T14:59:10.2625773Z 	^
+2025-10-16T14:59:10.2626559Z ##[error]internal/controller/heliosapp_controller.go:29:2: import 'k8s.io/apimachinery/pkg/api/errors' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2627519Z 	"k8s.io/apimachinery/pkg/api/errors"
+2025-10-16T14:59:10.2627894Z 	^
+2025-10-16T14:59:10.2628813Z ##[error]internal/controller/heliosapp_controller.go:31:2: import 'k8s.io/apimachinery/pkg/apis/meta/v1/unstructured' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2629877Z 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+2025-10-16T14:59:10.2630148Z 	^
+2025-10-16T14:59:10.2630914Z ##[error]internal/controller/heliosapp_controller.go:32:2: import 'k8s.io/apimachinery/pkg/runtime' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2632152Z 	"k8s.io/apimachinery/pkg/runtime"
+2025-10-16T14:59:10.2632381Z 	^
+2025-10-16T14:59:10.2633229Z ##[error]internal/controller/heliosapp_controller.go:33:2: import 'k8s.io/apimachinery/pkg/runtime/schema' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2634211Z 	"k8s.io/apimachinery/pkg/runtime/schema"
+2025-10-16T14:59:10.2634450Z 	^
+2025-10-16T14:59:10.2635198Z ##[error]internal/controller/heliosapp_controller.go:34:2: import 'k8s.io/apimachinery/pkg/types' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2636130Z 	"k8s.io/apimachinery/pkg/types"
+2025-10-16T14:59:10.2636343Z 	^
+2025-10-16T14:59:10.2637089Z ##[error]internal/controller/heliosapp_controller.go:35:2: import 'sigs.k8s.io/controller-runtime' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2638032Z 	ctrl "sigs.k8s.io/controller-runtime"
+2025-10-16T14:59:10.2638265Z 	^
+2025-10-16T14:59:10.2639106Z ##[error]internal/controller/heliosapp_controller.go:36:2: import 'sigs.k8s.io/controller-runtime/pkg/builder' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2640110Z 	"sigs.k8s.io/controller-runtime/pkg/builder"
+2025-10-16T14:59:10.2640365Z 	^
+2025-10-16T14:59:10.2641205Z ##[error]internal/controller/heliosapp_controller.go:37:2: import 'sigs.k8s.io/controller-runtime/pkg/client' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2642479Z 	"sigs.k8s.io/controller-runtime/pkg/client"
+2025-10-16T14:59:10.2642731Z 	^
+2025-10-16T14:59:10.2643743Z ##[error]internal/controller/heliosapp_controller.go:38:2: import 'sigs.k8s.io/controller-runtime/pkg/controller/controllerutil' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2644875Z 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+2025-10-16T14:59:10.2645177Z 	^
+2025-10-16T14:59:10.2645997Z ##[error]internal/controller/heliosapp_controller.go:39:2: import 'sigs.k8s.io/controller-runtime/pkg/event' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2646986Z 	"sigs.k8s.io/controller-runtime/pkg/event"
+2025-10-16T14:59:10.2647230Z 	^
+2025-10-16T14:59:10.2648203Z ##[error]internal/controller/heliosapp_controller.go:40:2: import 'sigs.k8s.io/controller-runtime/pkg/handler' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2649233Z 	"sigs.k8s.io/controller-runtime/pkg/handler"
+2025-10-16T14:59:10.2649485Z 	^
+2025-10-16T14:59:10.2650301Z ##[error]internal/controller/heliosapp_controller.go:41:2: import 'sigs.k8s.io/controller-runtime/pkg/log' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2651507Z 	"sigs.k8s.io/controller-runtime/pkg/log"
+2025-10-16T14:59:10.2651769Z 	^
+2025-10-16T14:59:10.2652661Z ##[error]internal/controller/heliosapp_controller.go:42:2: import 'sigs.k8s.io/controller-runtime/pkg/predicate' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2653711Z 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+2025-10-16T14:59:10.2653971Z 	^
+2025-10-16T14:59:10.2654817Z ##[error]internal/controller/heliosapp_controller.go:43:2: import 'sigs.k8s.io/controller-runtime/pkg/reconcile' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2655830Z 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+2025-10-16T14:59:10.2656090Z 	^
+2025-10-16T14:59:10.2656969Z ##[error]internal/controller/heliosapp_controller.go:45:2: import 'github.com/hoangphuc841/helios-operator/api/v1' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2658039Z 	heliosappv1 "github.com/hoangphuc841/helios-operator/api/v1"
+2025-10-16T14:59:10.2658498Z 	^
+2025-10-16T14:59:10.2659459Z ##[error]internal/controller/heliosapp_controller.go:46:2: import 'github.com/hoangphuc841/helios-operator/internal/common' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2660570Z 	"github.com/hoangphuc841/helios-operator/internal/common"
+2025-10-16T14:59:10.2660851Z 	^
+2025-10-16T14:59:10.2661835Z ##[error]test/utils/utils.go:27:2: import 'github.com/onsi/ginkgo/v2' is not allowed from list 'Main' (depguard)
+2025-10-16T14:59:10.2662719Z 	"github.com/onsi/ginkgo/v2"
+2025-10-16T14:59:10.2662929Z 	^
+2025-10-16T14:59:10.2663357Z api/v1/heliosapp_types_test.go:215: 215-253 lines are duplicate of `api/v1/heliosapp_types_test.go:255-293` (dupl)
+2025-10-16T14:59:10.2663880Z func TestHeliosApp_GetStatusMessage(t *testing.T) {
+2025-10-16T14:59:10.2664174Z 	tests := []struct {
+2025-10-16T14:59:10.2664374Z 		name      string
+2025-10-16T14:59:10.2664580Z 		heliosApp *HeliosApp
+2025-10-16T14:59:10.2664786Z 		expected  string
+2025-10-16T14:59:10.2664968Z 	}{
+2025-10-16T14:59:10.2665121Z 		{
+2025-10-16T14:59:10.2665322Z 			name: "with ready condition",
+2025-10-16T14:59:10.2665570Z 			heliosApp: &HeliosApp{
+2025-10-16T14:59:10.2665817Z 				Status: HeliosAppStatus{
+2025-10-16T14:59:10.2666095Z 					Conditions: []metav1.Condition{
+2025-10-16T14:59:10.2666335Z 						{
+2025-10-16T14:59:10.2666562Z 							Type:    ConditionReady,
+2025-10-16T14:59:10.2666853Z 							Status:  metav1.ConditionTrue,
+2025-10-16T14:59:10.2667172Z 							Message: "Application is ready",
+2025-10-16T14:59:10.2667422Z 						},
+2025-10-16T14:59:10.2667591Z 					},
+2025-10-16T14:59:10.2667747Z 				},
+2025-10-16T14:59:10.2667904Z 			},
+2025-10-16T14:59:10.2668110Z 			expected: "Application is ready",
+2025-10-16T14:59:10.2668331Z 		},
+2025-10-16T14:59:10.2668474Z 		{
+2025-10-16T14:59:10.2668671Z 			name: "no ready condition",
+2025-10-16T14:59:10.2668920Z 			heliosApp: &HeliosApp{
+2025-10-16T14:59:10.2669186Z 				Status: HeliosAppStatus{
+2025-10-16T14:59:10.2669466Z 					Conditions: []metav1.Condition{},
+2025-10-16T14:59:10.2669707Z 				},
+2025-10-16T14:59:10.2669855Z 			},
+2025-10-16T14:59:10.2670036Z 			expected: "",
+2025-10-16T14:59:10.2670205Z 		},
+2025-10-16T14:59:10.2670356Z 	}
+2025-10-16T14:59:10.2670447Z 
+2025-10-16T14:59:10.2670541Z 	for _, tt := range tests {
+2025-10-16T14:59:10.2670787Z 		t.Run(tt.name, func(t *testing.T) {
+2025-10-16T14:59:10.2671094Z 			result := tt.heliosApp.GetStatusMessage()
+2025-10-16T14:59:10.2671615Z 			assert.Equal(t, tt.expected, result)
+2025-10-16T14:59:10.2671848Z 		})
+2025-10-16T14:59:10.2671994Z 	}
+2025-10-16T14:59:10.2672144Z }
+2025-10-16T14:59:10.2672705Z api/v1/heliosapp_types_test.go:255: 255-293 lines are duplicate of `api/v1/heliosapp_types_test.go:215-253` (dupl)
+2025-10-16T14:59:10.2673230Z func TestHeliosApp_GetStatusReason(t *testing.T) {
+2025-10-16T14:59:10.2673510Z 	tests := []struct {
+2025-10-16T14:59:10.2673716Z 		name      string
+2025-10-16T14:59:10.2673914Z 		heliosApp *HeliosApp
+2025-10-16T14:59:10.2674123Z 		expected  string
+2025-10-16T14:59:10.2674302Z 	}{
+2025-10-16T14:59:10.2674448Z 		{
+2025-10-16T14:59:10.2674644Z 			name: "with ready condition",
+2025-10-16T14:59:10.2674891Z 			heliosApp: &HeliosApp{
+2025-10-16T14:59:10.2675140Z 				Status: HeliosAppStatus{
+2025-10-16T14:59:10.2675412Z 					Conditions: []metav1.Condition{
+2025-10-16T14:59:10.2675653Z 						{
+2025-10-16T14:59:10.2675871Z 							Type:   ConditionReady,
+2025-10-16T14:59:10.2676158Z 							Status: metav1.ConditionTrue,
+2025-10-16T14:59:10.2676423Z 							Reason: "Ready",
+2025-10-16T14:59:10.2676622Z 						},
+2025-10-16T14:59:10.2676791Z 					},
+2025-10-16T14:59:10.2676945Z 				},
+2025-10-16T14:59:10.2677099Z 			},
+2025-10-16T14:59:10.2677272Z 			expected: "Ready",
+2025-10-16T14:59:10.2677461Z 		},
+2025-10-16T14:59:10.2677605Z 		{
+2025-10-16T14:59:10.2677799Z 			name: "no ready condition",
+2025-10-16T14:59:10.2678040Z 			heliosApp: &HeliosApp{
+2025-10-16T14:59:10.2678286Z 				Status: HeliosAppStatus{
+2025-10-16T14:59:10.2678558Z 					Conditions: []metav1.Condition{},
+2025-10-16T14:59:10.2678926Z 				},
+2025-10-16T14:59:10.2679083Z 			},
+2025-10-16T14:59:10.2679257Z 			expected: "",
+2025-10-16T14:59:10.2679430Z 		},
+2025-10-16T14:59:10.2679577Z 	}
+2025-10-16T14:59:10.2679664Z 
+2025-10-16T14:59:10.2679762Z 	for _, tt := range tests {
+2025-10-16T14:59:10.2680007Z 		t.Run(tt.name, func(t *testing.T) {
+2025-10-16T14:59:10.2680310Z 			result := tt.heliosApp.GetStatusReason()
+2025-10-16T14:59:10.2680614Z 			assert.Equal(t, tt.expected, result)
+2025-10-16T14:59:10.2680845Z 		})
+2025-10-16T14:59:10.2680991Z 	}
+2025-10-16T14:59:10.2681139Z }
+2025-10-16T14:59:10.2681940Z internal/controller/heliosapp_controller.go:657: 657-673 lines are duplicate of `internal/controller/heliosapp_controller.go:728-744` (dupl)
+2025-10-16T14:59:10.2682637Z func (r *HeliosAppReconciler) pipelineRunPredicate() predicate.Predicate {
+2025-10-16T14:59:10.2683019Z 	return predicate.Funcs{
+2025-10-16T14:59:10.2683286Z 		CreateFunc: func(e event.CreateEvent) bool {
+2025-10-16T14:59:10.2683607Z 			return r.isHeliosPipelineRun(e.Object)
+2025-10-16T14:59:10.2683849Z 		},
+2025-10-16T14:59:10.2684072Z 		UpdateFunc: func(e event.UpdateEvent) bool {
+2025-10-16T14:59:10.2684410Z 			// Only trigger on status changes, not spec changes
+2025-10-16T14:59:10.2684743Z 			return r.isHeliosPipelineRun(e.ObjectNew)
+2025-10-16T14:59:10.2684988Z 		},
+2025-10-16T14:59:10.2685201Z 		DeleteFunc: func(e event.DeleteEvent) bool {
+2025-10-16T14:59:10.2685513Z 			return r.isHeliosPipelineRun(e.Object)
+2025-10-16T14:59:10.2685747Z 		},
+2025-10-16T14:59:10.2685976Z 		GenericFunc: func(e event.GenericEvent) bool {
+2025-10-16T14:59:10.2686343Z 			return false // Ignore generic events for PipelineRuns
+2025-10-16T14:59:10.2686619Z 		},
+2025-10-16T14:59:10.2686766Z 	}
+2025-10-16T14:59:10.2686912Z }
+2025-10-16T14:59:10.2687422Z internal/controller/heliosapp_controller.go:728: 728-744 lines are duplicate of `internal/controller/heliosapp_controller.go:657-673` (dupl)
+2025-10-16T14:59:10.2688100Z func (r *HeliosAppReconciler) deploymentPredicate() predicate.Predicate {
+2025-10-16T14:59:10.2688481Z 	return predicate.Funcs{
+2025-10-16T14:59:10.2688747Z 		CreateFunc: func(e event.CreateEvent) bool {
+2025-10-16T14:59:10.2689059Z 			return r.isHeliosDeployment(e.Object)
+2025-10-16T14:59:10.2689291Z 		},
+2025-10-16T14:59:10.2689508Z 		UpdateFunc: func(e event.UpdateEvent) bool {
+2025-10-16T14:59:10.2689863Z 			// Only trigger on status changes (replicas, conditions)
+2025-10-16T14:59:10.2690212Z 			return r.isHeliosDeployment(e.ObjectNew)
+2025-10-16T14:59:10.2690453Z 		},
+2025-10-16T14:59:10.2690663Z 		DeleteFunc: func(e event.DeleteEvent) bool {
+2025-10-16T14:59:10.2690971Z 			return r.isHeliosDeployment(e.Object)
+2025-10-16T14:59:10.2691200Z 		},
+2025-10-16T14:59:10.2691713Z 		GenericFunc: func(e event.GenericEvent) bool {
+2025-10-16T14:59:10.2692000Z 			return false
+2025-10-16T14:59:10.2692171Z 		},
+2025-10-16T14:59:10.2692314Z 	}
+2025-10-16T14:59:10.2692463Z }
+2025-10-16T14:59:10.2693005Z internal/controller/heliosapp_controller_test.go:564: 564-615 lines are duplicate of `internal/controller/heliosapp_controller_test.go:617-668` (dupl)
+2025-10-16T14:59:10.2693749Z 		It("should return Progressing status when some replicas are ready", func() {
+2025-10-16T14:59:10.2694162Z 			By("Creating a progressing Deployment")
+2025-10-16T14:59:10.2694479Z 			deployment := &unstructured.Unstructured{}
+2025-10-16T14:59:10.2694868Z 			deployment.SetGroupVersionKind(schema.GroupVersionKind{
+2025-10-16T14:59:10.2695198Z 				Group:   "apps",
+2025-10-16T14:59:10.2695414Z 				Version: "v1",
+2025-10-16T14:59:10.2695628Z 				Kind:    "Deployment",
+2025-10-16T14:59:10.2695824Z 			})
+2025-10-16T14:59:10.2696028Z 			deployment.SetName("test-app")
+2025-10-16T14:59:10.2696320Z 			deployment.SetNamespace("default")
+2025-10-16T14:59:10.2696621Z 			deployment.SetLabels(map[string]string{
+2025-10-16T14:59:10.2696888Z 				"app": "test-app",
+2025-10-16T14:59:10.2697067Z 			})
+2025-10-16T14:59:10.2697152Z 
+2025-10-16T14:59:10.2697248Z 			// Set spec.replicas
+2025-10-16T14:59:10.2697654Z 			err := unstructured.SetNestedField(deployment.Object, int64(3), "spec", "replicas")
+2025-10-16T14:59:10.2698192Z 			Expect(err).NotTo(HaveOccurred())
+2025-10-16T14:59:10.2698352Z 
+2025-10-16T14:59:10.2698479Z 			// Set status - only 1 ready out of 3
+2025-10-16T14:59:10.2698958Z 			err = unstructured.SetNestedField(deployment.Object, int64(1), "status", "readyReplicas")
+2025-10-16T14:59:10.2699395Z 			Expect(err).NotTo(HaveOccurred())
+2025-10-16T14:59:10.2699878Z 			err = unstructured.SetNestedField(deployment.Object, int64(1), "status", "availableReplicas")
+2025-10-16T14:59:10.2700325Z 			Expect(err).NotTo(HaveOccurred())
+2025-10-16T14:59:10.2700482Z 
+2025-10-16T14:59:10.2700571Z 			// Set conditions
+2025-10-16T14:59:10.2700794Z 			conditions := []interface{}{
+2025-10-16T14:59:10.2701042Z 				map[string]interface{}{
+2025-10-16T14:59:10.2701449Z 					"type":   "Available",
+2025-10-16T14:59:10.2701682Z 					"status": "False",
+2025-10-16T14:59:10.2701871Z 				},
+2025-10-16T14:59:10.2702057Z 				map[string]interface{}{
+2025-10-16T14:59:10.2702305Z 					"type":   "Progressing",
+2025-10-16T14:59:10.2702536Z 					"status": "True",
+2025-10-16T14:59:10.2702725Z 				},
+2025-10-16T14:59:10.2702873Z 			}
+2025-10-16T14:59:10.2703273Z 			err = unstructured.SetNestedSlice(deployment.Object, conditions, "status", "conditions")
+2025-10-16T14:59:10.2703710Z 			Expect(err).NotTo(HaveOccurred())
+2025-10-16T14:59:10.2703871Z 
+2025-10-16T14:59:10.2704083Z 			Expect(k8sClient.Create(ctx, deployment)).To(Succeed())
+2025-10-16T14:59:10.2704299Z 
+2025-10-16T14:59:10.2704426Z 			By("Calling getDeploymentHealth")
+2025-10-16T14:59:10.2704992Z 			health, readyReplicas, desiredReplicas, lastHealthyTime, err := reconciler.getDeploymentHealth(ctx, heliosApp)
+2025-10-16T14:59:10.2705400Z 
+2025-10-16T14:59:10.2705517Z 			Expect(err).NotTo(HaveOccurred())
+2025-10-16T14:59:10.2705798Z 			Expect(health).To(Equal("Progressing"))
+2025-10-16T14:59:10.2706106Z 			Expect(readyReplicas).To(Equal(int32(1)))
+2025-10-16T14:59:10.2706421Z 			Expect(desiredReplicas).To(Equal(int32(3)))
+2025-10-16T14:59:10.2706776Z 			Expect(lastHealthyTime).To(BeNil()) // Not healthy yet
+2025-10-16T14:59:10.2706981Z 
+2025-10-16T14:59:10.2707069Z 			// Cleanup
+2025-10-16T14:59:10.2707284Z 			k8sClient.Delete(ctx, deployment)
+2025-10-16T14:59:10.2707509Z 		})
+2025-10-16T14:59:10.2708053Z internal/controller/heliosapp_controller_test.go:617: 617-668 lines are duplicate of `internal/controller/heliosapp_controller_test.go:564-615` (dupl)
+2025-10-16T14:59:10.2708770Z 		It("should return Degraded status when no replicas are ready", func() {
+2025-10-16T14:59:10.2709150Z 			By("Creating a degraded Deployment")
+2025-10-16T14:59:10.2709456Z 			deployment := &unstructured.Unstructured{}
+2025-10-16T14:59:10.2709959Z 			deployment.SetGroupVersionKind(schema.GroupVersionKind{
+2025-10-16T14:59:10.2710292Z 				Group:   "apps",
+2025-10-16T14:59:10.2710507Z 				Version: "v1",
+2025-10-16T14:59:10.2710721Z 				Kind:    "Deployment",
+2025-10-16T14:59:10.2710915Z 			})
+2025-10-16T14:59:10.2711119Z 			deployment.SetName("test-app")
+2025-10-16T14:59:10.2711596Z 			deployment.SetNamespace("default")
+2025-10-16T14:59:10.2711894Z 			deployment.SetLabels(map[string]string{
+2025-10-16T14:59:10.2712175Z 				"app": "test-app",
+2025-10-16T14:59:10.2712370Z 			})
+2025-10-16T14:59:10.2712458Z 
+2025-10-16T14:59:10.2712555Z 			// Set spec.replicas
+2025-10-16T14:59:10.2712969Z 			err := unstructured.SetNestedField(deployment.Object, int64(3), "spec", "replicas")
+2025-10-16T14:59:10.2713395Z 			Expect(err).NotTo(HaveOccurred())
+2025-10-16T14:59:10.2713559Z 
+2025-10-16T14:59:10.2713674Z 			// Set status - no ready replicas
+2025-10-16T14:59:10.2714151Z 			err = unstructured.SetNestedField(deployment.Object, int64(0), "status", "readyReplicas")
+2025-10-16T14:59:10.2714591Z 			Expect(err).NotTo(HaveOccurred())
+2025-10-16T14:59:10.2715079Z 			err = unstructured.SetNestedField(deployment.Object, int64(0), "status", "availableReplicas")
+2025-10-16T14:59:10.2715529Z 			Expect(err).NotTo(HaveOccurred())
+2025-10-16T14:59:10.2715688Z 
+2025-10-16T14:59:10.2715926Z 			// Set conditions
+2025-10-16T14:59:10.2716149Z 			conditions := []interface{}{
+2025-10-16T14:59:10.2716403Z 				map[string]interface{}{
+2025-10-16T14:59:10.2716647Z 					"type":   "Available",
+2025-10-16T14:59:10.2716874Z 					"status": "False",
+2025-10-16T14:59:10.2717067Z 				},
+2025-10-16T14:59:10.2717258Z 				map[string]interface{}{
+2025-10-16T14:59:10.2717508Z 					"type":   "Progressing",
+2025-10-16T14:59:10.2717742Z 					"status": "False",
+2025-10-16T14:59:10.2717933Z 				},
+2025-10-16T14:59:10.2718080Z 			}
+2025-10-16T14:59:10.2718483Z 			err = unstructured.SetNestedSlice(deployment.Object, conditions, "status", "conditions")
+2025-10-16T14:59:10.2718924Z 			Expect(err).NotTo(HaveOccurred())
+2025-10-16T14:59:10.2719088Z 
+2025-10-16T14:59:10.2719269Z 			Expect(k8sClient.Create(ctx, deployment)).To(Succeed())
+2025-10-16T14:59:10.2719484Z 
+2025-10-16T14:59:10.2719610Z 			By("Calling getDeploymentHealth")
+2025-10-16T14:59:10.2720173Z 			health, readyReplicas, desiredReplicas, lastHealthyTime, err := reconciler.getDeploymentHealth(ctx, heliosApp)
+2025-10-16T14:59:10.2720579Z 
+2025-10-16T14:59:10.2720697Z 			Expect(err).NotTo(HaveOccurred())
+2025-10-16T14:59:10.2720971Z 			Expect(health).To(Equal("Degraded"))
+2025-10-16T14:59:10.2721483Z 			Expect(readyReplicas).To(Equal(int32(0)))
+2025-10-16T14:59:10.2721818Z 			Expect(desiredReplicas).To(Equal(int32(3)))
+2025-10-16T14:59:10.2722115Z 			Expect(lastHealthyTime).To(BeNil())
+2025-10-16T14:59:10.2722277Z 
+2025-10-16T14:59:10.2722364Z 			// Cleanup
+2025-10-16T14:59:10.2722578Z 			k8sClient.Delete(ctx, deployment)
+2025-10-16T14:59:10.2722797Z 		})
+2025-10-16T14:59:10.2723253Z internal/controller/test_helpers.go:106: 106-131 lines are duplicate of `internal/controller/test_helpers.go:134-159` (dupl)
+2025-10-16T14:59:10.2724050Z func (h *TestHelper) CreateMockEventListener(ctx context.Context, name, namespace string) (*unstructured.Unstructured, error) {
+2025-10-16T14:59:10.2724625Z 	eventListener := &unstructured.Unstructured{}
+2025-10-16T14:59:10.2725003Z 	eventListener.SetGroupVersionKind(schema.GroupVersionKind{
+2025-10-16T14:59:10.2725363Z 		Group:   "triggers.tekton.dev",
+2025-10-16T14:59:10.2725604Z 		Version: "v1beta1",
+2025-10-16T14:59:10.2725818Z 		Kind:    "EventListener",
+2025-10-16T14:59:10.2726012Z 	})
+2025-10-16T14:59:10.2726201Z 	eventListener.SetName(name)
+2025-10-16T14:59:10.2726459Z 	eventListener.SetNamespace(namespace)
+2025-10-16T14:59:10.2726635Z 
+2025-10-16T14:59:10.2726719Z 	// Set minimal spec
+2025-10-16T14:59:10.2726995Z 	eventListener.Object["spec"] = map[string]interface{}{
+2025-10-16T14:59:10.2727306Z 		"triggers": []interface{}{
+2025-10-16T14:59:10.2727546Z 			map[string]interface{}{
+2025-10-16T14:59:10.2727956Z 				"name":       "github-trigger",
+2025-10-16T14:59:10.2728272Z 				"triggerRef": "github-trigger-template",
+2025-10-16T14:59:10.2728513Z 			},
+2025-10-16T14:59:10.2728671Z 		},
+2025-10-16T14:59:10.2728816Z 	}
+2025-10-16T14:59:10.2728907Z 
+2025-10-16T14:59:10.2729066Z 	if err := h.Client.Create(ctx, eventListener); err != nil {
+2025-10-16T14:59:10.2729374Z 		return nil, err
+2025-10-16T14:59:10.2729544Z 	}
+2025-10-16T14:59:10.2729628Z 
+2025-10-16T14:59:10.2729728Z 	return eventListener, nil
+2025-10-16T14:59:10.2729920Z }
+2025-10-16T14:59:10.2730368Z internal/controller/test_helpers.go:134: 134-159 lines are duplicate of `internal/controller/test_helpers.go:106-131` (dupl)
+2025-10-16T14:59:10.2731155Z func (h *TestHelper) CreateMockTriggerBinding(ctx context.Context, name, namespace string) (*unstructured.Unstructured, error) {
+2025-10-16T14:59:10.2731983Z 	triggerBinding := &unstructured.Unstructured{}
+2025-10-16T14:59:10.2732374Z 	triggerBinding.SetGroupVersionKind(schema.GroupVersionKind{
+2025-10-16T14:59:10.2732744Z 		Group:   "triggers.tekton.dev",
+2025-10-16T14:59:10.2732989Z 		Version: "v1beta1",
+2025-10-16T14:59:10.2733206Z 		Kind:    "TriggerBinding",
+2025-10-16T14:59:10.2733409Z 	})
+2025-10-16T14:59:10.2733593Z 	triggerBinding.SetName(name)
+2025-10-16T14:59:10.2733858Z 	triggerBinding.SetNamespace(namespace)
+2025-10-16T14:59:10.2734168Z 
+2025-10-16T14:59:10.2734252Z 	// Set minimal spec
+2025-10-16T14:59:10.2734534Z 	triggerBinding.Object["spec"] = map[string]interface{}{
+2025-10-16T14:59:10.2734844Z 		"params": []interface{}{
+2025-10-16T14:59:10.2735078Z 			map[string]interface{}{
+2025-10-16T14:59:10.2735317Z 				"name":  "git-repo",
+2025-10-16T14:59:10.2735625Z 				"value": "https://github.com/example/test-app.git",
+2025-10-16T14:59:10.2735893Z 			},
+2025-10-16T14:59:10.2736043Z 		},
+2025-10-16T14:59:10.2736195Z 	}
+2025-10-16T14:59:10.2736280Z 
+2025-10-16T14:59:10.2736443Z 	if err := h.Client.Create(ctx, triggerBinding); err != nil {
+2025-10-16T14:59:10.2736748Z 		return nil, err
+2025-10-16T14:59:10.2736920Z 	}
+2025-10-16T14:59:10.2737013Z 
+2025-10-16T14:59:10.2737110Z 	return triggerBinding, nil
+2025-10-16T14:59:10.2737314Z }
+2025-10-16T14:59:10.2737736Z internal/resources/argocd_test.go:36: 36-91 lines are duplicate of `internal/resources/argocd_test.go:92-147` (dupl)
+2025-10-16T14:59:10.2738180Z 		{
+2025-10-16T14:59:10.2738374Z 			name: "basic helios app",
+2025-10-16T14:59:10.2738646Z 			heliosApp: &heliosappv1.HeliosApp{
+2025-10-16T14:59:10.2738933Z 				ObjectMeta: metav1.ObjectMeta{
+2025-10-16T14:59:10.2739201Z 					Name:      "test-app",
+2025-10-16T14:59:10.2739439Z 					Namespace: "default",
+2025-10-16T14:59:10.2739646Z 				},
+2025-10-16T14:59:10.2739872Z 				Spec: heliosappv1.HeliosAppSpec{
+2025-10-16T14:59:10.2740232Z 					GitRepo:        "https://github.com/example/test-app",
+2025-10-16T14:59:10.2740616Z 					ImageRepo:      "test-registry.com/test-app",
+2025-10-16T14:59:10.2740912Z 					Port:           8080,
+2025-10-16T14:59:10.2741164Z 					ServiceAccount: "test-sa",
+2025-10-16T14:59:10.2741577Z 					WebhookSecret:  "test-secret",
+2025-10-16T14:59:10.2741984Z 					GitopsRepo:     "https://github.com/example/test-app-manifests",
+2025-10-16T14:59:10.2742359Z 					GitopsPath:     "apps/test-app",
+2025-10-16T14:59:10.2742636Z 					GitopsBranch:   "main",
+2025-10-16T14:59:10.2742847Z 				},
+2025-10-16T14:59:10.2743000Z 			},
+2025-10-16T14:59:10.2743224Z 			expected: &unstructured.Unstructured{
+2025-10-16T14:59:10.2743516Z 				Object: map[string]interface{}{
+2025-10-16T14:59:10.2743822Z 					"apiVersion": "argoproj.io/v1alpha1",
+2025-10-16T14:59:10.2744108Z 					"kind":       "Application",
+2025-10-16T14:59:10.2744392Z 					"metadata": map[string]interface{}{
+2025-10-16T14:59:10.2744671Z 						"name":      "test-app",
+2025-10-16T14:59:10.2744926Z 						"namespace": "argocd",
+2025-10-16T14:59:10.2745193Z 						"labels": map[string]interface{}{
+2025-10-16T14:59:10.2745568Z 							common.LabelManagedBy: "helios-operator",
+2025-10-16T14:59:10.2745916Z 							common.LabelAppName:   "test-app",
+2025-10-16T14:59:10.2746280Z 						},
+2025-10-16T14:59:10.2746454Z 					},
+2025-10-16T14:59:10.2746666Z 					"spec": map[string]interface{}{
+2025-10-16T14:59:10.2746943Z 						"project": "default",
+2025-10-16T14:59:10.2747209Z 						"source": map[string]interface{}{
+2025-10-16T14:59:10.2747639Z 							"repoURL":        "https://github.com/example/test-app-manifests",
+2025-10-16T14:59:10.2748011Z 							"targetRevision": "main",
+2025-10-16T14:59:10.2748313Z 							"path":           "apps/test-app",
+2025-10-16T14:59:10.2748556Z 						},
+2025-10-16T14:59:10.2748796Z 						"destination": map[string]interface{}{
+2025-10-16T14:59:10.2749168Z 							"server":    "https://kubernetes.default.svc",
+2025-10-16T14:59:10.2749489Z 							"namespace": "default",
+2025-10-16T14:59:10.2749707Z 						},
+2025-10-16T14:59:10.2749945Z 						"syncPolicy": map[string]interface{}{
+2025-10-16T14:59:10.2750273Z 							"automated": map[string]interface{}{
+2025-10-16T14:59:10.2750557Z 								"prune":    true,
+2025-10-16T14:59:10.2750807Z 								"selfHeal": true,
+2025-10-16T14:59:10.2751018Z 							},
+2025-10-16T14:59:10.2751343Z 							"syncOptions": []string{
+2025-10-16T14:59:10.2751626Z 								"CreateNamespace=true",
+2025-10-16T14:59:10.2751952Z 								"PrunePropagationPolicy=foreground",
+2025-10-16T14:59:10.2752258Z 								"PruneLast=true",
+2025-10-16T14:59:10.2752585Z 							},
+2025-10-16T14:59:10.2752754Z 						},
+2025-10-16T14:59:10.2752914Z 					},
+2025-10-16T14:59:10.2753076Z 				},
+2025-10-16T14:59:10.2753226Z 			},
+2025-10-16T14:59:10.2753379Z 		},
+2025-10-16T14:59:10.2753803Z internal/resources/argocd_test.go:92: 92-147 lines are duplicate of `internal/resources/argocd_test.go:36-91` (dupl)
+2025-10-16T14:59:10.2754256Z 		{
+2025-10-16T14:59:10.2754480Z 			name: "helios app with custom namespace",
+2025-10-16T14:59:10.2754783Z 			heliosApp: &heliosappv1.HeliosApp{
+2025-10-16T14:59:10.2755076Z 				ObjectMeta: metav1.ObjectMeta{
+2025-10-16T14:59:10.2755342Z 					Name:      "test-app",
+2025-10-16T14:59:10.2755598Z 					Namespace: "production",
+2025-10-16T14:59:10.2755812Z 				},
+2025-10-16T14:59:10.2756034Z 				Spec: heliosappv1.HeliosAppSpec{
+2025-10-16T14:59:10.2756397Z 					GitRepo:        "https://github.com/example/test-app",
+2025-10-16T14:59:10.2756784Z 					ImageRepo:      "test-registry.com/test-app",
+2025-10-16T14:59:10.2757086Z 					Port:           8080,
+2025-10-16T14:59:10.2757338Z 					ServiceAccount: "test-sa",
+2025-10-16T14:59:10.2757620Z 					WebhookSecret:  "test-secret",
+2025-10-16T14:59:10.2758017Z 					GitopsRepo:     "https://github.com/example/test-app-manifests",
+2025-10-16T14:59:10.2758397Z 					GitopsPath:     "apps/test-app",
+2025-10-16T14:59:10.2758668Z 					GitopsBranch:   "main",
+2025-10-16T14:59:10.2758878Z 				},
+2025-10-16T14:59:10.2759031Z 			},
+2025-10-16T14:59:10.2759247Z 			expected: &unstructured.Unstructured{
+2025-10-16T14:59:10.2759536Z 				Object: map[string]interface{}{
+2025-10-16T14:59:10.2759841Z 					"apiVersion": "argoproj.io/v1alpha1",
+2025-10-16T14:59:10.2760137Z 					"kind":       "Application",
+2025-10-16T14:59:10.2760424Z 					"metadata": map[string]interface{}{
+2025-10-16T14:59:10.2760711Z 						"name":      "test-app",
+2025-10-16T14:59:10.2760963Z 						"namespace": "argocd",
+2025-10-16T14:59:10.2761339Z 						"labels": map[string]interface{}{
+2025-10-16T14:59:10.2761696Z 							common.LabelManagedBy: "helios-operator",
+2025-10-16T14:59:10.2762050Z 							common.LabelAppName:   "test-app",
+2025-10-16T14:59:10.2762294Z 						},
+2025-10-16T14:59:10.2762462Z 					},
+2025-10-16T14:59:10.2762679Z 					"spec": map[string]interface{}{
+2025-10-16T14:59:10.2762951Z 						"project": "default",
+2025-10-16T14:59:10.2763221Z 						"source": map[string]interface{}{
+2025-10-16T14:59:10.2763646Z 							"repoURL":        "https://github.com/example/test-app-manifests",
+2025-10-16T14:59:10.2764022Z 							"targetRevision": "main",
+2025-10-16T14:59:10.2764317Z 							"path":           "apps/test-app",
+2025-10-16T14:59:10.2764557Z 						},
+2025-10-16T14:59:10.2764798Z 						"destination": map[string]interface{}{
+2025-10-16T14:59:10.2765283Z 							"server":    "https://kubernetes.default.svc",
+2025-10-16T14:59:10.2765633Z 							"namespace": "production",
+2025-10-16T14:59:10.2765858Z 						},
+2025-10-16T14:59:10.2766105Z 						"syncPolicy": map[string]interface{}{
+2025-10-16T14:59:10.2766427Z 							"automated": map[string]interface{}{
+2025-10-16T14:59:10.2766719Z 								"prune":    true,
+2025-10-16T14:59:10.2766961Z 								"selfHeal": true,
+2025-10-16T14:59:10.2767164Z 							},
+2025-10-16T14:59:10.2767378Z 							"syncOptions": []string{
+2025-10-16T14:59:10.2767653Z 								"CreateNamespace=true",
+2025-10-16T14:59:10.2767974Z 								"PrunePropagationPolicy=foreground",
+2025-10-16T14:59:10.2768273Z 								"PruneLast=true",
+2025-10-16T14:59:10.2768480Z 							},
+2025-10-16T14:59:10.2768641Z 						},
+2025-10-16T14:59:10.2768802Z 					},
+2025-10-16T14:59:10.2768957Z 				},
+2025-10-16T14:59:10.2769112Z 			},
+2025-10-16T14:59:10.2769260Z 		},
+2025-10-16T14:59:10.2769939Z ##[error]internal/config/config_test.go:36:14: Error return value of `os.Setenv` is not checked (errcheck)
+2025-10-16T14:59:10.2770862Z 				os.Setenv(pair[0], pair[1])
+2025-10-16T14:59:10.2771111Z 				         ^
+2025-10-16T14:59:10.2771854Z ##[error]internal/config/config_test.go:173:14: Error return value of `os.Setenv` is not checked (errcheck)
+2025-10-16T14:59:10.2772697Z 				os.Setenv(k, v)
+2025-10-16T14:59:10.2773060Z 				         ^
+2025-10-16T14:59:10.2773834Z ##[error]internal/controller/heliosapp_controller.go:325:17: Error return value of `unstructured.NestedString` is not checked (errcheck)
+2025-10-16T14:59:10.2774948Z 	syncStatus, _, _ = unstructured.NestedString(argoApp.Object, "status", "sync", "status")
+2025-10-16T14:59:10.2775375Z 	               ^
+2025-10-16T14:59:10.2776120Z ##[error]internal/controller/heliosapp_controller.go:327:19: Error return value of `unstructured.NestedString` is not checked (errcheck)
+2025-10-16T14:59:10.2777229Z 	healthStatus, _, _ = unstructured.NestedString(argoApp.Object, "status", "health", "status")
+2025-10-16T14:59:10.2777676Z 	                 ^
+2025-10-16T14:59:10.2778413Z ##[error]internal/controller/heliosapp_controller.go:382:21: Error return value of `unstructured.NestedSlice` is not checked (errcheck)
+2025-10-16T14:59:10.2779513Z 	conditions, found, _ := unstructured.NestedSlice(mostRecent.Object, "status", "conditions")
+2025-10-16T14:59:10.2779969Z 	                   ^
+2025-10-16T14:59:10.2780719Z ##[error]internal/controller/heliosapp_controller.go:394:16: Error return value of `unstructured.NestedString` is not checked (errcheck)
+2025-10-16T14:59:10.2781859Z 		condType, _, _ := unstructured.NestedString(condMap, "type")
+2025-10-16T14:59:10.2782192Z 		             ^
+2025-10-16T14:59:10.2782943Z ##[error]internal/controller/heliosapp_controller.go:416:19: Error return value of `unstructured.NestedSlice` is not checked (errcheck)
+2025-10-16T14:59:10.2784044Z 		results, found, _ := unstructured.NestedSlice(mostRecent.Object, "status", "results")
+2025-10-16T14:59:10.2784462Z 		                ^
+2025-10-16T14:59:10.2785203Z ##[error]internal/controller/heliosapp_controller.go:493:23: Error return value of `unstructured.NestedInt64` is not checked (errcheck)
+2025-10-16T14:59:10.2786287Z 	specReplicas, found, _ := unstructured.NestedInt64(deployment.Object, "spec", "replicas")
+2025-10-16T14:59:10.2786745Z 	                     ^
+2025-10-16T14:59:10.2787488Z ##[error]internal/controller/heliosapp_controller.go:498:29: Error return value of `unstructured.NestedInt64` is not checked (errcheck)
+2025-10-16T14:59:10.2788627Z 	readyReplicasInt64, found, _ := unstructured.NestedInt64(deployment.Object, "status", "readyReplicas")
+2025-10-16T14:59:10.2789164Z 	                           ^
+2025-10-16T14:59:10.2789916Z ##[error]internal/controller/heliosapp_controller.go:503:24: Error return value of `unstructured.NestedInt64` is not checked (errcheck)
+2025-10-16T14:59:10.2791047Z 	availableReplicas, _, _ := unstructured.NestedInt64(deployment.Object, "status", "availableReplicas")
+2025-10-16T14:59:10.2791667Z 	                      ^
+2025-10-16T14:59:10.2792560Z ##[error]internal/controller/heliosapp_controller.go:519:21: Error return value of `unstructured.NestedSlice` is not checked (errcheck)
+2025-10-16T14:59:10.2793697Z 	conditions, found, _ := unstructured.NestedSlice(deployment.Object, "status", "conditions")
+2025-10-16T14:59:10.2794148Z 	                   ^
+2025-10-16T14:59:10.2794982Z ##[error]internal/controller/heliosapp_controller_test.go:112:34: Error return value of `controllerReconciler.Reconcile` is not checked (errcheck)
+2025-10-16T14:59:10.2796038Z 			controllerReconciler.Reconcile(ctx, reconcile.Request{
+2025-10-16T14:59:10.2796469Z 			                              ^
+2025-10-16T14:59:10.2797205Z ##[error]internal/controller/heliosapp_controller_test.go:174:4: Error return value of `k8sClient.Delete` is not checked (errcheck)
+2025-10-16T14:59:10.2798137Z 			_ = k8sClient.Delete(ctx, heliosApp)
+2025-10-16T14:59:10.2798374Z 			^
+2025-10-16T14:59:10.2799082Z ##[error]internal/controller/heliosapp_controller_test.go:183:24: Error return value of `reconciler.Reconcile` is not checked (errcheck)
+2025-10-16T14:59:10.2800050Z 			reconciler.Reconcile(ctx, reconcile.Request{
+2025-10-16T14:59:10.2800388Z 			                    ^
+2025-10-16T14:59:10.2801121Z ##[error]internal/controller/heliosapp_controller_test.go:224:24: Error return value of `reconciler.Reconcile` is not checked (errcheck)
+2025-10-16T14:59:10.2802402Z 			reconciler.Reconcile(ctx, reconcile.Request{
+2025-10-16T14:59:10.2802737Z 			                    ^
+2025-10-16T14:59:10.2803489Z ##[error]internal/controller/heliosapp_controller_test.go:242:4: Error return value of `k8sClient.Delete` is not checked (errcheck)
+2025-10-16T14:59:10.2804462Z 			_ = k8sClient.Delete(ctx, argoApp)
+2025-10-16T14:59:10.2804698Z 			^
+2025-10-16T14:59:10.2805380Z ##[error]internal/controller/heliosapp_controller_test.go:277:4: Error return value of `k8sClient.Delete` is not checked (errcheck)
+2025-10-16T14:59:10.2806312Z 			_ = k8sClient.Delete(ctx, heliosApp)
+2025-10-16T14:59:10.2806544Z 			^
+2025-10-16T14:59:10.2807261Z ##[error]internal/controller/heliosapp_controller_test.go:286:24: Error return value of `reconciler.Reconcile` is not checked (errcheck)
+2025-10-16T14:59:10.2808234Z 			reconciler.Reconcile(ctx, reconcile.Request{
+2025-10-16T14:59:10.2808572Z 			                    ^
+2025-10-16T14:59:10.2809260Z ##[error]internal/controller/reconcile_phases.go:377:4: Error return value of `r.updateStatus` is not checked (errcheck)
+2025-10-16T14:59:10.2810590Z 			_ = r.updateStatus(ctx, heliosApp, "BuildSucceeded", metav1.ConditionTrue, "BuildCompleted", fmt.Sprintf("Build succeeded: %s", buildVersion))
+2025-10-16T14:59:10.2811129Z 			^
+2025-10-16T14:59:10.2811905Z ##[error]internal/controller/reconcile_phases.go:379:4: Error return value of `r.updateStatus` is not checked (errcheck)
+2025-10-16T14:59:10.2813066Z 			_ = r.updateStatus(ctx, heliosApp, "BuildSucceeded", metav1.ConditionFalse, "BuildFailed", "Build failed")
+2025-10-16T14:59:10.2813492Z 			^
+2025-10-16T14:59:10.2814134Z ##[error]internal/controller/reconcile_phases.go:381:4: Error return value of `r.updateStatus` is not checked (errcheck)
+2025-10-16T14:59:10.2815325Z 			_ = r.updateStatus(ctx, heliosApp, "BuildSucceeded", metav1.ConditionFalse, "BuildInProgress", "Build is in progress")
+2025-10-16T14:59:10.2815785Z 			^
+2025-10-16T14:59:10.2816309Z ##[error]internal/health/health_test.go:37:2: Error return value is not checked (errcheck)
+2025-10-16T14:59:10.2817090Z 	_ = corev1.AddToScheme(scheme)
+2025-10-16T14:59:10.2817307Z 	^
+2025-10-16T14:59:10.2817778Z ##[error]internal/health/health_test.go:52:2: Error return value is not checked (errcheck)
+2025-10-16T14:59:10.2818544Z 	_ = corev1.AddToScheme(scheme)
+2025-10-16T14:59:10.2818750Z 	^
+2025-10-16T14:59:10.2819352Z ##[error]internal/health/health_test.go:257:9: Error return value of `http.NewRequest` is not checked (errcheck)
+2025-10-16T14:59:10.2820244Z 			req, _ := http.NewRequest("GET", "/healthz", nil)
+2025-10-16T14:59:10.2820525Z 			     ^
+2025-10-16T14:59:10.2821421Z ##[error]internal/health/health_test.go:258:4: Error return value of `checker.LivenessCheck` is not checked (errcheck)
+2025-10-16T14:59:10.2822366Z 			_ = checker.LivenessCheck(req)
+2025-10-16T14:59:10.2822593Z 			^
+2025-10-16T14:59:10.2823178Z ##[error]test/e2e/e2e_test.go:80:6: Error return value of `utils.Run` is not checked (errcheck)
+2025-10-16T14:59:10.2823956Z 		_, _ = utils.Run(cmd)
+2025-10-16T14:59:10.2824155Z 		   ^
+2025-10-16T14:59:10.2824675Z ##[error]test/e2e/e2e_test.go:84:6: Error return value of `utils.Run` is not checked (errcheck)
+2025-10-16T14:59:10.2825443Z 		_, _ = utils.Run(cmd)
+2025-10-16T14:59:10.2825636Z 		   ^
+2025-10-16T14:59:10.2826143Z ##[error]test/e2e/e2e_test.go:88:6: Error return value of `utils.Run` is not checked (errcheck)
+2025-10-16T14:59:10.2826903Z 		_, _ = utils.Run(cmd)
+2025-10-16T14:59:10.2827093Z 		   ^
+2025-10-16T14:59:10.2827629Z ##[error]test/utils/utils.go:40:5: Error return value of `fmt.Fprintf` is not checked (errcheck)
+2025-10-16T14:59:10.2828481Z 	_, _ = fmt.Fprintf(ginkgo.GinkgoWriter, "warning: %v\n", err)
+2025-10-16T14:59:10.2828766Z 	   ^
+2025-10-16T14:59:10.2829206Z ##[error]test/utils/utils.go:45:7: Error return value is not checked (errcheck)
+2025-10-16T14:59:10.2829932Z 	dir, _ := GetProjectDir()
+2025-10-16T14:59:10.2830147Z 	     ^
+2025-10-16T14:59:10.2830670Z ##[error]test/utils/utils.go:49:6: Error return value of `fmt.Fprintf` is not checked (errcheck)
+2025-10-16T14:59:10.2831818Z 		_, _ = fmt.Fprintf(ginkgo.GinkgoWriter, "chdir dir: %q\n", err)
+2025-10-16T14:59:10.2832116Z 		   ^
+2025-10-16T14:59:10.2832666Z ##[error]test/utils/utils.go:54:5: Error return value of `fmt.Fprintf` is not checked (errcheck)
+2025-10-16T14:59:10.2833530Z 	_, _ = fmt.Fprintf(ginkgo.GinkgoWriter, "running: %q\n", command)
+2025-10-16T14:59:10.2833825Z 	   ^
+2025-10-16T14:59:10.2834664Z ##[error]internal/common/errors.go:197:19: type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors (errorlint)
+2025-10-16T14:59:10.2835671Z 	if netErr, ok := err.(net.Error); ok && netErr.Temporary() {
+2025-10-16T14:59:10.2836009Z 	                 ^
+2025-10-16T14:59:10.2836607Z ##[error]api/v1/groupversion_info.go:20:19: scheme.Builder is missing field SchemeBuilder (exhaustruct)
+2025-10-16T14:59:10.2837511Z 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
+2025-10-16T14:59:10.2837870Z 	                 ^
+2025-10-16T14:59:10.2838571Z ##[error]api/v1/heliosapp_types.go:303:26: v1.HeliosApp is missing fields TypeMeta, ObjectMeta, Spec, Status (exhaustruct)
+2025-10-16T14:59:10.2839506Z 	SchemeBuilder.Register(&HeliosApp{}, &HeliosAppList{})
+2025-10-16T14:59:10.2839877Z 	                        ^
+2025-10-16T14:59:10.2840741Z ##[error]api/v1/heliosapp_types.go:340:9: v1.Condition is missing fields ObservedGeneration, LastTransitionTime, Reason, Message (exhaustruct)
+2025-10-16T14:59:10.2841797Z 	return metav1.Condition{
+2025-10-16T14:59:10.2842019Z 	       ^
+2025-10-16T14:59:10.2842622Z ##[error]api/v1/heliosapp_types.go:349:15: v1.Condition is missing field ObservedGeneration (exhaustruct)
+2025-10-16T14:59:10.2843435Z 	condition := metav1.Condition{
+2025-10-16T14:59:10.2843686Z 	             ^
+2025-10-16T14:59:10.2844342Z ##[error]api/v1/heliosapp_types_test.go:35:16: v1.HeliosApp is missing fields TypeMeta, ObjectMeta, Spec (exhaustruct)
+2025-10-16T14:59:10.2845197Z 			heliosApp: &HeliosApp{
+2025-10-16T14:59:10.2845436Z 			            ^
+2025-10-16T14:59:10.2847249Z ##[error]api/v1/heliosapp_types_test.go:36:13: v1.HeliosAppStatus is missing fields DeployedVersion, LastAppliedRevision, LastBuild, WebhookURL, BuildStatus, BuildVersion, LastBuildTime, CurrentPipelineRun, ReadyReplicas, DesiredReplicas, DeploymentHealth, LastHealthyTime (exhaustruct)
+2025-10-16T14:59:10.2848684Z 				Status: HeliosAppStatus{
+2025-10-16T14:59:10.2848922Z 				        ^
+2025-10-16T14:59:10.2849771Z ##[error]api/v1/heliosapp_types_test.go:38:7: v1.Condition is missing fields ObservedGeneration, LastTransitionTime, Reason, Message (exhaustruct)
+2025-10-16T14:59:10.2850696Z 						{
+2025-10-16T14:59:10.2850996Z 						^
+2025-10-16T14:59:10.2851795Z ##[error]api/v1/heliosapp_types_test.go:49:16: v1.HeliosApp is missing fields TypeMeta, ObjectMeta, Spec (exhaustruct)
+2025-10-16T14:59:10.2852703Z 			heliosApp: &HeliosApp{
+2025-10-16T14:59:10.2852938Z 			            ^
+2025-10-16T14:59:10.2854765Z ##[error]api/v1/heliosapp_types_test.go:50:13: v1.HeliosAppStatus is missing fields DeployedVersion, LastAppliedRevision, LastBuild, WebhookURL, BuildStatus, BuildVersion, LastBuildTime, CurrentPipelineRun, ReadyReplicas, DesiredReplicas, DeploymentHealth, LastHealthyTime (exhaustruct)
+2025-10-16T14:59:10.2856200Z 				Status: HeliosAppStatus{
+2025-10-16T14:59:10.2856437Z 				        ^
+2025-10-16T14:59:10.2857276Z ##[error]api/v1/heliosapp_types_test.go:52:7: v1.Condition is missing fields ObservedGeneration, LastTransitionTime, Reason, Message (exhaustruct)
+2025-10-16T14:59:10.2858190Z 						{
+2025-10-16T14:59:10.2858352Z 						^
+2025-10-16T14:59:10.2858986Z ##[error]api/v1/heliosapp_types_test.go:63:16: v1.HeliosApp is missing fields TypeMeta, ObjectMeta, Spec (exhaustruct)
+2025-10-16T14:59:10.2859837Z 			heliosApp: &HeliosApp{
+2025-10-16T14:59:10.2860074Z 			            ^
+2025-10-16T14:59:10.2862009Z ##[error]api/v1/heliosapp_types_test.go:64:13: v1.HeliosAppStatus is missing fields DeployedVersion, LastAppliedRevision, LastBuild, WebhookURL, BuildStatus, BuildVersion, LastBuildTime, CurrentPipelineRun, ReadyReplicas, DesiredReplicas, DeploymentHealth, LastHealthyTime (exhaustruct)
+2025-10-16T14:59:10.2863611Z 				Status: HeliosAppStatus{
+2025-10-16T14:59:10.2863846Z 				        ^
+2025-10-16T14:59:10.2864659Z ##[error]api/v1/heliosapp_types_test.go:226:7: v1.Condition is missing fields ObservedGeneration, LastTransitionTime, Reason (exhaustruct)
+2025-10-16T14:59:10.2878749Z 						{
+2025-10-16T14:59:10.2879000Z 						^
+2025-10-16T14:59:10.2879984Z ##[error]api/v1/heliosapp_types_test.go:266:7: v1.Condition is missing fields ObservedGeneration, LastTransitionTime, Message (exhaustruct)
+2025-10-16T14:59:10.2881020Z 						{
+2025-10-16T14:59:10.2881205Z 						^
+2025-10-16T14:59:10.2881961Z ##[error]api/v1/heliosapp_types_test.go:296:15: v1.HeliosApp is missing field TypeMeta (exhaustruct)
+2025-10-16T14:59:10.2882813Z 	original := &HeliosApp{
+2025-10-16T14:59:10.2883051Z 	             ^
+2025-10-16T14:59:10.2884835Z ##[error]api/v1/heliosapp_types_test.go:297:15: v1.ObjectMeta is missing fields GenerateName, SelfLink, UID, ResourceVersion, Generation, CreationTimestamp, DeletionTimestamp, DeletionGracePeriodSeconds, Labels, Annotations, OwnerReferences, Finalizers, ManagedFields (exhaustruct)
+2025-10-16T14:59:10.2886260Z 		ObjectMeta: metav1.ObjectMeta{
+2025-10-16T14:59:10.2886517Z 		            ^
+2025-10-16T14:59:10.2887642Z ##[error]api/v1/heliosapp_types_test.go:301:9: v1.HeliosAppSpec is missing fields GitBranch, ServiceAccount, WebhookSecret, PVCName, GitopsRepo, GitopsPath, GitopsBranch (exhaustruct)
+2025-10-16T14:59:10.2888714Z 		Spec: HeliosAppSpec{
+2025-10-16T14:59:10.2888927Z 		      ^
+2025-10-16T14:59:10.2889516Z ##[error]api/v1/heliosapp_types_test.go:335:15: v1.HeliosApp is missing fields TypeMeta, Status (exhaustruct)
+2025-10-16T14:59:10.2890339Z 	original := &HeliosApp{
+2025-10-16T14:59:10.2890572Z 	             ^
+2025-10-16T14:59:10.2892432Z ##[error]api/v1/heliosapp_types_test.go:336:15: v1.ObjectMeta is missing fields GenerateName, SelfLink, UID, ResourceVersion, Generation, CreationTimestamp, DeletionTimestamp, DeletionGracePeriodSeconds, Labels, Annotations, OwnerReferences, Finalizers, ManagedFields (exhaustruct)
+2025-10-16T14:59:10.2893849Z 		ObjectMeta: metav1.ObjectMeta{
+2025-10-16T14:59:10.2894104Z 		            ^
+2025-10-16T14:59:10.2895202Z ##[error]api/v1/heliosapp_types_test.go:340:9: v1.HeliosAppSpec is missing fields GitBranch, ServiceAccount, WebhookSecret, PVCName, GitopsRepo, GitopsPath, GitopsBranch (exhaustruct)
+2025-10-16T14:59:10.2896263Z 		Spec: HeliosAppSpec{
+2025-10-16T14:59:10.2896472Z 		      ^
+2025-10-16T14:59:10.2897266Z ##[error]api/v1/heliosapp_types_test.go:361:15: v1.HeliosAppList is missing fields TypeMeta, ListMeta (exhaustruct)
+2025-10-16T14:59:10.2898157Z 	original := &HeliosAppList{
+2025-10-16T14:59:10.2898408Z 	             ^
+2025-10-16T14:59:10.2899016Z ##[error]api/v1/heliosapp_types_test.go:363:4: v1.HeliosApp is missing fields TypeMeta, Status (exhaustruct)
+2025-10-16T14:59:10.2899806Z 			{
+2025-10-16T14:59:10.2899970Z 			^
+2025-10-16T14:59:10.2901817Z ##[error]api/v1/heliosapp_types_test.go:364:17: v1.ObjectMeta is missing fields GenerateName, SelfLink, UID, ResourceVersion, Generation, CreationTimestamp, DeletionTimestamp, DeletionGracePeriodSeconds, Labels, Annotations, OwnerReferences, Finalizers, ManagedFields (exhaustruct)
+2025-10-16T14:59:10.2903247Z 				ObjectMeta: metav1.ObjectMeta{
+2025-10-16T14:59:10.2903518Z 				            ^
+2025-10-16T14:59:10.2904659Z ##[error]api/v1/heliosapp_types_test.go:368:11: v1.HeliosAppSpec is missing fields GitBranch, ServiceAccount, WebhookSecret, PVCName, GitopsRepo, GitopsPath, GitopsBranch (exhaustruct)
+2025-10-16T14:59:10.2905744Z 				Spec: HeliosAppSpec{
+2025-10-16T14:59:10.2905964Z 				      ^
+2025-10-16T14:59:10.2906551Z ##[error]api/v1/heliosapp_types_test.go:375:4: v1.HeliosApp is missing fields TypeMeta, Status (exhaustruct)
+2025-10-16T14:59:10.2907339Z 			{
+2025-10-16T14:59:10.2907489Z 			^
+2025-10-16T14:59:10.2908116Z ##[error]api/v1/heliosapp_types_test.go:402:15: v1.HeliosAppList is missing fields TypeMeta, ListMeta (exhaustruct)
+2025-10-16T14:59:10.2909129Z 	original := &HeliosAppList{
+2025-10-16T14:59:10.2909379Z 	             ^
+2025-10-16T14:59:10.2910020Z ##[error]api/v1/heliosapp_types_test.go:404:4: v1.HeliosApp is missing fields TypeMeta, Spec, Status (exhaustruct)
+2025-10-16T14:59:10.2910828Z 			{
+2025-10-16T14:59:10.2910980Z 			^
+2025-10-16T14:59:10.2911926Z ##[error]api/v1/heliosapp_webhook.go:38:3: prometheus.CounterOpts is missing fields Namespace, Subsystem, ConstLabels (exhaustruct)
+2025-10-16T14:59:10.2912876Z 		prometheus.CounterOpts{
+2025-10-16T14:59:10.2913090Z 		^
+2025-10-16T14:59:10.2915506Z ##[error]api/v1/heliosapp_webhook.go:47:3: prometheus.HistogramOpts is missing fields Namespace, Subsystem, ConstLabels, NativeHistogramBucketFactor, NativeHistogramZeroThreshold, NativeHistogramMaxBucketNumber, NativeHistogramMinResetDuration, NativeHistogramMaxZeroThreshold, NativeHistogramMaxExemplars, NativeHistogramExemplarTTL (exhaustruct)
+2025-10-16T14:59:10.2917239Z 		prometheus.HistogramOpts{
+2025-10-16T14:59:10.2917445Z 		^
+2025-10-16T14:59:10.2919258Z ##[error]api/v1/heliosapp_webhook_test.go:35:17: v1.ObjectMeta is missing fields GenerateName, Namespace, SelfLink, UID, ResourceVersion, Generation, CreationTimestamp, DeletionTimestamp, DeletionGracePeriodSeconds, Labels, Annotations, OwnerReferences, Finalizers, ManagedFields (exhaustruct)
+2025-10-16T14:59:10.2920704Z 				ObjectMeta: metav1.ObjectMeta{
+2025-10-16T14:59:10.2920980Z 				            ^
+2025-10-16T14:59:10.2921959Z ##[error]api/v1/heliosapp_webhook_test.go:38:11: v1.HeliosAppSpec is missing fields GitBranch, Replicas, PVCName, GitopsPath, GitopsBranch (exhaustruct)
+2025-10-16T14:59:10.2922940Z 				Spec: HeliosAppSpec{
+2025-10-16T14:59:10.2923157Z 				      ^
+2025-10-16T14:59:10.2923727Z ##[error]api/v1/heliosapp_webhook_test.go:47:18: v1.HeliosAppSpec is missing field PVCName (exhaustruct)
+2025-10-16T14:59:10.2924559Z 			expectedSpec: HeliosAppSpec{
+2025-10-16T14:59:10.2924834Z 			              ^
+2025-10-16T14:59:10.2926654Z ##[error]api/v1/heliosapp_webhook_test.go:63:17: v1.ObjectMeta is missing fields GenerateName, Namespace, SelfLink, UID, ResourceVersion, Generation, CreationTimestamp, DeletionTimestamp, DeletionGracePeriodSeconds, Labels, Annotations, OwnerReferences, Finalizers, ManagedFields (exhaustruct)
+2025-10-16T14:59:10.2928102Z 				ObjectMeta: metav1.ObjectMeta{
+2025-10-16T14:59:10.2928375Z 				            ^
+2025-10-16T14:59:10.2928952Z ##[error]api/v1/heliosapp_webhook_test.go:66:11: v1.HeliosAppSpec is missing field PVCName (exhaustruct)
+2025-10-16T14:59:10.2929778Z 				Spec: HeliosAppSpec{
+2025-10-16T14:59:10.2930015Z 				      ^
+2025-10-16T14:59:10.2930756Z ##[error]api/v1/heliosapp_webhook_test.go:79:18: v1.HeliosAppSpec is missing field PVCName (exhaustruct)
+2025-10-16T14:59:10.2931756Z 			expectedSpec: HeliosAppSpec{
+2025-10-16T14:59:10.2932022Z 			              ^
+2025-10-16T14:59:10.2932630Z ##[error]api/v1/heliosapp_webhook_test.go:113:3: v1.<anonymous> is missing field errMsg (exhaustruct)
+2025-10-16T14:59:10.2933423Z 		{
+2025-10-16T14:59:10.2933578Z 		^
+2025-10-16T14:59:10.2935391Z ##[error]api/v1/heliosapp_webhook_test.go:116:17: v1.ObjectMeta is missing fields GenerateName, Namespace, SelfLink, UID, ResourceVersion, Generation, CreationTimestamp, DeletionTimestamp, DeletionGracePeriodSeconds, Labels, Annotations, OwnerReferences, Finalizers, ManagedFields (exhaustruct)
+2025-10-16T14:59:10.2936848Z 				ObjectMeta: metav1.ObjectMeta{
+2025-10-16T14:59:10.2937115Z 				            ^
+2025-10-16T14:59:10.2937999Z ##[error]api/v1/heliosapp_webhook_test.go:119:11: v1.HeliosAppSpec is missing fields GitBranch, Replicas, PVCName, GitopsPath, GitopsBranch (exhaustruct)
+2025-10-16T14:59:10.2938975Z 				Spec: HeliosAppSpec{
+2025-10-16T14:59:10.2939198Z 				      ^
+2025-10-16T14:59:10.2940052Z ##[error]api/v1/heliosapp_webhook_test.go:136:11: v1.HeliosAppSpec is missing fields GitBranch, Replicas, PVCName, GitopsPath, GitopsBranch (exhaustruct)
+2025-10-16T14:59:10.2941177Z 				Spec: HeliosAppSpec{
+2025-10-16T14:59:10.2941511Z 				      ^
+2025-10-16T14:59:10.2942069Z ##[error]api/v1/heliosapp_webhook_test.go:184:3: v1.<anonymous> is missing field errMsg (exhaustruct)
+2025-10-16T14:59:10.2942840Z 		{
+2025-10-16T14:59:10.2942994Z 		^
+2025-10-16T14:59:10.2943520Z ##[error]api/v1/heliosapp_webhook_test.go:201:3: v1.<anonymous> is missing field errMsg (exhaustruct)
+2025-10-16T14:59:10.2944277Z 		{
+2025-10-16T14:59:10.2944428Z 		^
+2025-10-16T14:59:10.2945217Z ##[error]api/v1/heliosapp_webhook_test.go:266:11: v1.HeliosAppSpec is missing fields GitBranch, PVCName, GitopsPath, GitopsBranch (exhaustruct)
+2025-10-16T14:59:10.2946155Z 				Spec: HeliosAppSpec{
+2025-10-16T14:59:10.2946379Z 				      ^
+2025-10-16T14:59:10.2947229Z ##[error]cmd/main.go:129:37: webhook.Options is missing fields Host, Port, CertDir, CertName, KeyName, ClientCAName, WebhookMux (exhaustruct)
+2025-10-16T14:59:10.2948192Z 	webhookServer := webhook.NewServer(webhook.Options{
+2025-10-16T14:59:10.2948643Z 	                                   ^
+2025-10-16T14:59:10.2952151Z ##[error]cmd/main.go:156:53: manager.Options is missing fields MapperProvider, Cache, NewCache, Client, NewClient, Logger, LeaderElectionResourceLock, LeaderElectionNamespace, LeaderElectionConfig, LeaderElectionReleaseOnCancel, LeaderElectionLabels, LeaderElectionResourceLockInterface, LeaseDuration, RenewDeadline, RetryPeriod, ReadinessEndpointName, LivenessEndpointName, PprofBindAddress, BaseContext, EventBroadcaster, GracefulShutdownTimeout, Controller (exhaustruct)
+2025-10-16T14:59:10.2954357Z 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+2025-10-16T14:59:10.2954995Z 	                                                   ^
+2025-10-16T14:59:10.2955723Z ##[error]cmd/main.go:190:14: v1.HeliosApp is missing fields TypeMeta, ObjectMeta, Spec, Status (exhaustruct)
+2025-10-16T14:59:10.2956692Z 		if err = (&heliosappv1.HeliosApp{}).SetupWebhookWithManager(mgr); err != nil {
+2025-10-16T14:59:10.2957061Z 		           ^
+2025-10-16T14:59:10.2958752Z ##[error]cmd/main.go:243:13: main.Config is missing fields metricsAddr, metricsCertPath, metricsCertName, metricsCertKey, webhookCertPath, webhookCertName, webhookCertKey, enableLeaderElection, probeAddr, secureMetrics, enableHTTP2, printVersion (exhaustruct)
+2025-10-16T14:59:10.2960067Z 	config := &Config{
+2025-10-16T14:59:10.2960281Z 	           ^
+2025-10-16T14:59:10.2961471Z ##[error]cmd/main.go:244:15: zap.Options is missing fields Encoder, EncoderConfigOptions, NewEncoder, DestWriter, Level, StacktraceLevel, ZapOpts, TimeEncoder (exhaustruct)
+2025-10-16T14:59:10.2962576Z 		loggerOpts: zap.Options{Development: true},
+2025-10-16T14:59:10.2962861Z 		            ^
+2025-10-16T14:59:10.2963922Z ##[error]cmd/main.go:306:26: server.Options is missing fields ExtraHandlers, FilterProvider, CertDir, CertName, KeyName, ListenConfig (exhaustruct)
+2025-10-16T14:59:10.2964947Z 	metricsServerOptions := metricsserver.Options{
+2025-10-16T14:59:10.2965309Z 	                        ^
+2025-10-16T14:59:10.2966210Z ##[error]internal/common/errors.go:146:11: common.ReconcileStatus is missing fields Phase, Status, Message, RetryCount, MaxRetries (exhaustruct)
+2025-10-16T14:59:10.2967158Z 		Status: ReconcileStatus{
+2025-10-16T14:59:10.2967378Z 		        ^
+2025-10-16T14:59:10.2968058Z ##[error]internal/common/errors.go:154:10: common.ReconcileResult is missing fields Error, RequeueAfter (exhaustruct)
+2025-10-16T14:59:10.2968925Z 	return &ReconcileResult{
+2025-10-16T14:59:10.2969147Z 	        ^
+2025-10-16T14:59:10.2969549Z ##[error]cmd/main.go:26:1: File is not properly formatted (gci)
+2025-10-16T14:59:10.2970358Z 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
+2025-10-16T14:59:10.2970698Z ^
+2025-10-16T14:59:10.2971208Z ##[error]internal/controller/heliosapp_controller.go:44:1: File is not properly formatted (gci)
+2025-10-16T14:59:10.2972071Z 
+2025-10-16T14:59:10.2972142Z ^
+2025-10-16T14:59:10.2972643Z ##[error]internal/controller/reconcile_phases.go:33:1: File is not properly formatted (gci)
+2025-10-16T14:59:10.2973499Z 
+2025-10-16T14:59:10.2973566Z ^
+2025-10-16T14:59:10.2974190Z ##[error]internal/controller/heliosapp_controller_test.go:42:3: use BeforeEach() to assign variable ctx (ginkgolinter)
+2025-10-16T14:59:10.2975062Z 		ctx := context.Background()
+2025-10-16T14:59:10.2975278Z 		^
+2025-10-16T14:59:10.2975975Z ##[error]internal/controller/heliosapp_controller_test.go:44:3: use BeforeEach() to assign variable typeNamespacedName (ginkgolinter)
+2025-10-16T14:59:10.2976932Z 		typeNamespacedName := types.NamespacedName{
+2025-10-16T14:59:10.2977191Z 		^
+2025-10-16T14:59:10.2977817Z ##[error]api/v1/heliosapp_webhook.go:374:10: elseif: can replace 'else {if cond {}}' with 'else if cond {}' (gocritic)
+2025-10-16T14:59:10.2978633Z 		} else {
+2025-10-16T14:59:10.2978815Z 		       ^
+2025-10-16T14:59:10.2980221Z ##[error]internal/common/errors.go:236:2: assignOp: replace `delay = delay + time.Duration(float64(jitter)*(2*float64(time.Now().UnixNano()%1000)/1000-1))` with `delay += time.Duration(float64(jitter)*(2*float64(time.Now().UnixNano()%1000)/1000-1))` (gocritic)
+2025-10-16T14:59:10.2981733Z 	delay = delay + time.Duration(float64(jitter)*(2*float64(time.Now().UnixNano()%1000)/1000-1))
+2025-10-16T14:59:10.2982114Z 	^
+2025-10-16T14:59:10.2983768Z ##[error]internal/controller/heliosapp_controller.go:311:1: paramTypeCombine: func(ctx context.Context, name string) (syncStatus string, healthStatus string, err error) could be replaced with func(ctx context.Context, name string) (syncStatus, healthStatus string, err error) (gocritic)
+2025-10-16T14:59:10.2985458Z func (r *HeliosAppReconciler) getArgoAppSyncStatus(ctx context.Context, name string) (syncStatus string, healthStatus string, err error) {
+2025-10-16T14:59:10.2986007Z ^
+2025-10-16T14:59:10.2986698Z ##[error]internal/controller/reconcile_phases_test.go:150:35: commentedOutCode: may want to remove commented-out code (gocritic)
+2025-10-16T14:59:10.2987658Z 			expected:   120 * time.Second, // 30 * 2^2 = 120
+2025-10-16T14:59:10.2988066Z 			                               ^
+2025-10-16T14:59:10.2990113Z ##[error]internal/controller/reconcile_phases_test.go:309:1: paramTypeCombine: func(ctx context.Context, obj client.Object, subResource client.Object, opts ...client.SubResourceCreateOption) error could be replaced with func(ctx context.Context, obj, subResource client.Object, opts ...client.SubResourceCreateOption) error (gocritic)
+2025-10-16T14:59:10.2992118Z func (m *mockStatusWriter) Create(ctx context.Context, obj client.Object, subResource client.Object, opts ...client.SubResourceCreateOption) error {
+2025-10-16T14:59:10.2992678Z ^
+2025-10-16T14:59:10.2994575Z ##[error]internal/controller/test_helpers.go:231:1: paramTypeCombine: func(ctx context.Context, name, namespace string, status string) (*unstructured.Unstructured, error) could be replaced with func(ctx context.Context, name, namespace, status string) (*unstructured.Unstructured, error) (gocritic)
+2025-10-16T14:59:10.2996356Z func (h *TestHelper) CreateMockPipelineRun(ctx context.Context, name, namespace string, status string) (*unstructured.Unstructured, error) {
+2025-10-16T14:59:10.2996904Z ^
+2025-10-16T14:59:10.2997556Z ##[error]internal/controller/test_helpers.go:342:3: appendCombine: can combine chain of 2 appends into one (gocritic)
+2025-10-16T14:59:10.2998500Z 		conditions = append(conditions, map[string]interface{}{
+2025-10-16T14:59:10.2998779Z 		^
+2025-10-16T14:59:10.2999403Z ##[error]internal/controller/test_helpers.go:351:3: appendCombine: can combine chain of 2 appends into one (gocritic)
+2025-10-16T14:59:10.3000333Z 		conditions = append(conditions, map[string]interface{}{
+2025-10-16T14:59:10.3000612Z 		^
+2025-10-16T14:59:10.3001350Z ##[error]internal/controller/test_helpers.go:360:3: appendCombine: can combine chain of 2 appends into one (gocritic)
+2025-10-16T14:59:10.3002308Z 		conditions = append(conditions, map[string]interface{}{
+2025-10-16T14:59:10.3002592Z 		^
+2025-10-16T14:59:10.3004400Z ##[error]internal/controller/test_helpers.go:381:1: paramTypeCombine: func(ctx context.Context, name, namespace string, conditionType string, timeout time.Duration) error could be replaced with func(ctx context.Context, name, namespace, conditionType string, timeout time.Duration) error (gocritic)
+2025-10-16T14:59:10.3006319Z func (h *TestHelper) WaitForHeliosAppCondition(ctx context.Context, name, namespace string, conditionType string, timeout time.Duration) error {
+2025-10-16T14:59:10.3006877Z ^
+2025-10-16T14:59:10.3007579Z ##[error]internal/health/health_test.go:60:14: httpNoBody: http.NoBody should be preferred to the nil request body (gocritic)
+2025-10-16T14:59:10.3008505Z 	req, err := http.NewRequest("GET", "/healthz", nil)
+2025-10-16T14:59:10.3008801Z 	            ^
+2025-10-16T14:59:10.3009501Z ##[error]internal/health/health_test.go:97:14: httpNoBody: http.NoBody should be preferred to the nil request body (gocritic)
+2025-10-16T14:59:10.3010410Z 	req, err := http.NewRequest("GET", "/readyz", nil)
+2025-10-16T14:59:10.3010701Z 	            ^
+2025-10-16T14:59:10.3011510Z ##[error]internal/health/health_test.go:121:14: httpNoBody: http.NoBody should be preferred to the nil request body (gocritic)
+2025-10-16T14:59:10.3012496Z 	req, err := http.NewRequestWithContext(ctx, "GET", "/readyz", nil)
+2025-10-16T14:59:10.3012831Z 	            ^
+2025-10-16T14:59:10.3013254Z ##[error]cmd/main.go:40:2: Comment should end in a period (godot)
+2025-10-16T14:59:10.3013936Z 	// Tekton imports
+2025-10-16T14:59:10.3014112Z 	^
+2025-10-16T14:59:10.3014505Z ##[error]cmd/main.go:44:2: Comment should end in a period (godot)
+2025-10-16T14:59:10.3015339Z 	// Note: ArgoCD imports will be added later when compatibility issues are resolved
+2025-10-16T14:59:10.3015688Z 	^
+2025-10-16T14:59:10.3016083Z ##[error]cmd/main.go:56:2: Comment should end in a period (godot)
+2025-10-16T14:59:10.3016840Z 	// Version information injected at build time via ldflags
+2025-10-16T14:59:10.3017119Z 	^
+2025-10-16T14:59:10.3017804Z ##[error]internal/controller/heliosapp_controller_test.go:46:27: Line contains TODO/BUG/FIXME: "TODO(user):Modify as needed" (godox)
+2025-10-16T14:59:10.3018785Z 			Namespace: "default", // TODO(user):Modify as needed
+2025-10-16T14:59:10.3019154Z 			                       ^
+2025-10-16T14:59:10.3019951Z ##[error]internal/controller/heliosapp_controller_test.go:75:5: Line contains TODO/BUG/FIXME: "TODO(user): Cleanup logic after each tes..." (godox)
+2025-10-16T14:59:10.3021063Z 			// TODO(user): Cleanup logic after each test, like removing the resource instance.
+2025-10-16T14:59:10.3021514Z 			 ^
+2025-10-16T14:59:10.3022200Z ##[error]test/e2e/e2e_suite_test.go:61:3: Line contains TODO/BUG/FIXME: "TODO(user): If you want to change the e2..." (godox)
+2025-10-16T14:59:10.3023322Z 	// TODO(user): If you want to change the e2e test vendor from Kind, ensure the image is
+2025-10-16T14:59:10.3023672Z 	 ^
+2025-10-16T14:59:10.3024212Z ##[error]internal/common/errors.go:232:44: G115: integer overflow conversion int -> uint (gosec)
+2025-10-16T14:59:10.3025072Z 	delay := baseDelay * time.Duration(1<<uint(retryCount-1))
+2025-10-16T14:59:10.3025589Z 	                                          ^
+2025-10-16T14:59:10.3026269Z ##[error]internal/controller/heliosapp_controller.go:495:26: G115: integer overflow conversion int64 -> int32 (gosec)
+2025-10-16T14:59:10.3027150Z 		desiredReplicas = int32(specReplicas)
+2025-10-16T14:59:10.3027484Z 		                       ^
+2025-10-16T14:59:10.3028103Z ##[error]internal/controller/heliosapp_controller.go:500:24: G115: integer overflow conversion int64 -> int32 (gosec)
+2025-10-16T14:59:10.3028986Z 		readyReplicas = int32(readyReplicasInt64)
+2025-10-16T14:59:10.3029314Z 		                     ^
+2025-10-16T14:59:10.3030027Z ##[error]api/v1/heliosapp_webhook.go:377:1: The line is 149 characters long, which exceeds the maximum of 140 characters. (lll)
+2025-10-16T14:59:10.3031470Z 				return fmt.Errorf("imageRepo component '%s' contains invalid characters (must be lowercase alphanumeric with '.', '-', or '_' separators)", part)
+2025-10-16T14:59:10.3032012Z ^
+2025-10-16T14:59:10.3032762Z ##[error]internal/controller/heliosapp_controller.go:66:1: The line is 153 characters long, which exceeds the maximum of 140 characters. (lll)
+2025-10-16T14:59:10.3034253Z // +kubebuilder:rbac:groups=triggers.tekton.dev,resources=eventlisteners;triggerbindings;triggertemplates,verbs=get;list;watch;create;update;patch;delete
+2025-10-16T14:59:10.3034855Z ^
+2025-10-16T14:59:10.3035607Z ##[error]internal/controller/heliosapp_controller.go:984:1: The line is 143 characters long, which exceeds the maximum of 140 characters. (lll)
+2025-10-16T14:59:10.3036935Z 		{"EventListener", name + "-eventlistener", schema.GroupVersionKind{Group: "triggers.tekton.dev", Version: "v1beta1", Kind: "EventListener"}},
+2025-10-16T14:59:10.3037476Z ^
+2025-10-16T14:59:10.3038224Z ##[error]internal/controller/heliosapp_controller.go:985:1: The line is 146 characters long, which exceeds the maximum of 140 characters. (lll)
+2025-10-16T14:59:10.3039555Z 		{"TriggerBinding", name + "-triggerbinding", schema.GroupVersionKind{Group: "triggers.tekton.dev", Version: "v1beta1", Kind: "TriggerBinding"}},
+2025-10-16T14:59:10.3040099Z ^
+2025-10-16T14:59:10.3040833Z ##[error]internal/controller/heliosapp_controller.go:986:1: The line is 149 characters long, which exceeds the maximum of 140 characters. (lll)
+2025-10-16T14:59:10.3042313Z 		{"TriggerTemplate", name + "-triggertemplate", schema.GroupVersionKind{Group: "triggers.tekton.dev", Version: "v1beta1", Kind: "TriggerTemplate"}},
+2025-10-16T14:59:10.3042867Z ^
+2025-10-16T14:59:10.3043519Z ##[error]test/e2e/e2e_test.go:356:1: The line is 158 characters long, which exceeds the maximum of 140 characters. (lll)
+2025-10-16T14:59:10.3044918Z       claimName: %s-workspace`, testAppName, time.Now().Unix(), testNamespace, testAppName, testAppName, testAppName, testGitRepo, testImageRepo, testAppName)
+2025-10-16T14:59:10.3045484Z ^
+2025-10-16T14:59:10.3046124Z ##[error]test/e2e/e2e_test.go:601:1: The line is 184 characters long, which exceeds the maximum of 140 characters. (lll)
+2025-10-16T14:59:10.3047629Z 								cmd := exec.Command("kubectl", "get", "heliosapp", fmt.Sprintf("invalid-%s", strings.ReplaceAll(tc.name, " ", "-")), "-n", testNamespace, "-o", "jsonpath={.status.conditions}")
+2025-10-16T14:59:10.3048200Z ^
+2025-10-16T14:59:10.3048797Z ##[error]test/utils/utils.go:66:21: os/exec.Command must not be called. use os/exec.CommandContext (noctx)
+2025-10-16T14:59:10.3049660Z 	cmd := exec.Command("kubectl", "create", "-f", url)
+2025-10-16T14:59:10.3049980Z 	                   ^
+2025-10-16T14:59:10.3050595Z ##[error]test/utils/utils.go:74:21: os/exec.Command must not be called. use os/exec.CommandContext (noctx)
+2025-10-16T14:59:10.3051560Z 	cmd := exec.Command("kubectl", "delete", "-f", url)
+2025-10-16T14:59:10.3051879Z 	                   ^
+2025-10-16T14:59:10.3052637Z ##[error]test/utils/utils.go:90:21: os/exec.Command must not be called. use os/exec.CommandContext (noctx)
+2025-10-16T14:59:10.3053628Z 	cmd := exec.Command("kubectl", "get", "crds", "-o", "custom-columns=NAME:.metadata.name")
+2025-10-16T14:59:10.3054038Z 	                   ^
+2025-10-16T14:59:10.3054849Z ##[error]test/utils/utils.go:208:2: directive `// nolint:gosec` should be written without leading space as `//nolint:gosec` (nolintlint)
+2025-10-16T14:59:10.3055737Z 	// nolint:gosec
+2025-10-16T14:59:10.3055909Z 	^
+2025-10-16T14:59:10.3056656Z ##[error]test/utils/utils.go:248:2: directive `// nolint:gosec` should be written without leading space as `//nolint:gosec` (nolintlint)
+2025-10-16T14:59:10.3057530Z 	// nolint:gosec
+2025-10-16T14:59:10.3057703Z 	^
+2025-10-16T14:59:10.3058420Z ##[error]api/v1/heliosapp_types_test.go:94:1: Function TestHeliosApp_IsReady missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3059328Z func TestHeliosApp_IsReady(t *testing.T) {
+2025-10-16T14:59:10.3059575Z ^
+2025-10-16T14:59:10.3060288Z ##[error]api/v1/heliosapp_types_test.go:98:1: Function TestHeliosApp_IsSynced missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3061217Z func TestHeliosApp_IsSynced(t *testing.T) {
+2025-10-16T14:59:10.3061618Z ^
+2025-10-16T14:59:10.3062590Z ##[error]api/v1/heliosapp_types_test.go:102:1: Function TestHeliosApp_IsBuildSucceeded missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3063587Z func TestHeliosApp_IsBuildSucceeded(t *testing.T) {
+2025-10-16T14:59:10.3063861Z ^
+2025-10-16T14:59:10.3064614Z ##[error]api/v1/heliosapp_types_test.go:106:1: Function TestHeliosApp_GetCondition missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3065554Z func TestHeliosApp_GetCondition(t *testing.T) {
+2025-10-16T14:59:10.3065814Z ^
+2025-10-16T14:59:10.3066721Z ##[error]api/v1/heliosapp_types_test.go:143:2: Range statement for test TestHeliosApp_GetCondition missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3067709Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3067907Z 	^
+2025-10-16T14:59:10.3068657Z ##[error]api/v1/heliosapp_types_test.go:155:1: Function TestHeliosApp_SetCondition missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3069591Z func TestHeliosApp_SetCondition(t *testing.T) {
+2025-10-16T14:59:10.3069850Z ^
+2025-10-16T14:59:10.3070750Z ##[error]api/v1/heliosapp_types_test.go:201:2: Range statement for test TestHeliosApp_SetCondition missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3071857Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3072059Z 	^
+2025-10-16T14:59:10.3073018Z ##[error]api/v1/heliosapp_types_test.go:247:2: Range statement for test TestHeliosApp_GetStatusMessage missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3074025Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3074225Z 	^
+2025-10-16T14:59:10.3075171Z ##[error]api/v1/heliosapp_types_test.go:287:2: Range statement for test TestHeliosApp_GetStatusReason missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3076165Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3076370Z 	^
+2025-10-16T14:59:10.3077095Z ##[error]api/v1/heliosapp_types_test.go:295:1: Function TestHeliosApp_DeepCopy missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3078022Z func TestHeliosApp_DeepCopy(t *testing.T) {
+2025-10-16T14:59:10.3078269Z ^
+2025-10-16T14:59:10.3079030Z ##[error]api/v1/heliosapp_types_test.go:334:1: Function TestHeliosApp_DeepCopyObject missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3079990Z func TestHeliosApp_DeepCopyObject(t *testing.T) {
+2025-10-16T14:59:10.3080253Z ^
+2025-10-16T14:59:10.3081001Z ##[error]api/v1/heliosapp_types_test.go:360:1: Function TestHeliosAppList_DeepCopy missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3082068Z func TestHeliosAppList_DeepCopy(t *testing.T) {
+2025-10-16T14:59:10.3082326Z ^
+2025-10-16T14:59:10.3083282Z ##[error]api/v1/heliosapp_types_test.go:401:1: Function TestHeliosAppList_DeepCopyObject missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3084300Z func TestHeliosAppList_DeepCopyObject(t *testing.T) {
+2025-10-16T14:59:10.3084581Z ^
+2025-10-16T14:59:10.3085315Z ##[error]api/v1/heliosapp_webhook_test.go:26:1: Function TestHeliosApp_Default missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3086235Z func TestHeliosApp_Default(t *testing.T) {
+2025-10-16T14:59:10.3086477Z ^
+2025-10-16T14:59:10.3087354Z ##[error]api/v1/heliosapp_webhook_test.go:94:2: Range statement for test TestHeliosApp_Default missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3088318Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3088521Z 	^
+2025-10-16T14:59:10.3089297Z ##[error]api/v1/heliosapp_webhook_test.go:106:1: Function TestHeliosApp_ValidateCreate missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3090250Z func TestHeliosApp_ValidateCreate(t *testing.T) {
+2025-10-16T14:59:10.3090516Z ^
+2025-10-16T14:59:10.3091565Z ##[error]api/v1/heliosapp_webhook_test.go:220:2: Range statement for test TestHeliosApp_ValidateCreate missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3092585Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3092927Z 	^
+2025-10-16T14:59:10.3093742Z ##[error]api/v1/heliosapp_webhook_test.go:239:1: Function TestHeliosApp_ValidateUpdate missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3094706Z func TestHeliosApp_ValidateUpdate(t *testing.T) {
+2025-10-16T14:59:10.3094971Z ^
+2025-10-16T14:59:10.3095905Z ##[error]api/v1/heliosapp_webhook_test.go:311:2: Range statement for test TestHeliosApp_ValidateUpdate missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3096896Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3097094Z 	^
+2025-10-16T14:59:10.3097874Z ##[error]api/v1/heliosapp_webhook_test.go:328:1: Function TestHeliosApp_ValidateDelete missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3098825Z func TestHeliosApp_ValidateDelete(t *testing.T) {
+2025-10-16T14:59:10.3099088Z ^
+2025-10-16T14:59:10.3099792Z ##[error]api/v1/heliosapp_webhook_test.go:348:1: Function TestValidateGitURL missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3100839Z func TestValidateGitURL(t *testing.T) {
+2025-10-16T14:59:10.3101078Z ^
+2025-10-16T14:59:10.3102067Z ##[error]api/v1/heliosapp_webhook_test.go:391:2: Range statement for test TestValidateGitURL missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3103046Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3103248Z 	^
+2025-10-16T14:59:10.3103988Z ##[error]api/v1/heliosapp_webhook_test.go:405:1: Function TestValidateImageRepo missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3104944Z func TestValidateImageRepo(t *testing.T) {
+2025-10-16T14:59:10.3105188Z ^
+2025-10-16T14:59:10.3106075Z ##[error]api/v1/heliosapp_webhook_test.go:448:2: Range statement for test TestValidateImageRepo missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3107051Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3107253Z 	^
+2025-10-16T14:59:10.3108007Z ##[error]api/v1/heliosapp_webhook_test.go:462:1: Function TestIsValidDNSSubdomain missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3108954Z func TestIsValidDNSSubdomain(t *testing.T) {
+2025-10-16T14:59:10.3109201Z ^
+2025-10-16T14:59:10.3110095Z ##[error]api/v1/heliosapp_webhook_test.go:510:2: Range statement for test TestIsValidDNSSubdomain missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3111080Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3111385Z 	^
+2025-10-16T14:59:10.3112123Z ##[error]api/v1/heliosapp_webhook_test.go:518:1: Function TestIsValidDNSLabel missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3113031Z func TestIsValidDNSLabel(t *testing.T) {
+2025-10-16T14:59:10.3113273Z ^
+2025-10-16T14:59:10.3114273Z ##[error]api/v1/heliosapp_webhook_test.go:561:2: Range statement for test TestIsValidDNSLabel missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3115276Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3115479Z 	^
+2025-10-16T14:59:10.3116210Z ##[error]api/v1/heliosapp_webhook_test.go:569:1: Function TestIsAlphanumeric missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3117128Z func TestIsAlphanumeric(t *testing.T) {
+2025-10-16T14:59:10.3117368Z ^
+2025-10-16T14:59:10.3118227Z ##[error]api/v1/heliosapp_webhook_test.go:602:2: Range statement for test TestIsAlphanumeric missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3119195Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3119391Z 	^
+2025-10-16T14:59:10.3120177Z ##[error]internal/common/errors_test.go:26:1: Function TestReconciliationError_Error missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3121149Z func TestReconciliationError_Error(t *testing.T) {
+2025-10-16T14:59:10.3121570Z ^
+2025-10-16T14:59:10.3122516Z ##[error]internal/common/errors_test.go:64:2: Range statement for test TestReconciliationError_Error missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3123524Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3123870Z 	^
+2025-10-16T14:59:10.3124683Z ##[error]internal/common/errors_test.go:71:1: Function TestReconciliationError_Unwrap missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3125673Z func TestReconciliationError_Unwrap(t *testing.T) {
+2025-10-16T14:59:10.3125945Z ^
+2025-10-16T14:59:10.3126712Z ##[error]internal/common/errors_test.go:85:1: Function TestNewReconciliationError missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3127670Z func TestNewReconciliationError(t *testing.T) {
+2025-10-16T14:59:10.3127927Z ^
+2025-10-16T14:59:10.3128749Z ##[error]internal/common/errors_test.go:97:1: Function TestResourceGenerationError_Error missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3129745Z func TestResourceGenerationError_Error(t *testing.T) {
+2025-10-16T14:59:10.3130026Z ^
+2025-10-16T14:59:10.3130989Z ##[error]internal/common/errors_test.go:132:2: Range statement for test TestResourceGenerationError_Error missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3132151Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3132351Z 	^
+2025-10-16T14:59:10.3133190Z ##[error]internal/common/errors_test.go:139:1: Function TestResourceGenerationError_Unwrap missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3134195Z func TestResourceGenerationError_Unwrap(t *testing.T) {
+2025-10-16T14:59:10.3134478Z ^
+2025-10-16T14:59:10.3135283Z ##[error]internal/common/errors_test.go:152:1: Function TestNewResourceGenerationError missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3136260Z func TestNewResourceGenerationError(t *testing.T) {
+2025-10-16T14:59:10.3136528Z ^
+2025-10-16T14:59:10.3137487Z ##[error]internal/common/errors_test.go:175:2: Range statement for test TestNewResourceGenerationError missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3138492Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3138692Z 	^
+2025-10-16T14:59:10.3139444Z ##[error]internal/common/errors_test.go:187:1: Function TestValidationError_Error missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3140385Z func TestValidationError_Error(t *testing.T) {
+2025-10-16T14:59:10.3140640Z ^
+2025-10-16T14:59:10.3141652Z ##[error]internal/common/errors_test.go:225:2: Range statement for test TestValidationError_Error missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3142651Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3142847Z 	^
+2025-10-16T14:59:10.3143615Z ##[error]internal/common/errors_test.go:232:1: Function TestValidationError_Unwrap missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3144681Z func TestValidationError_Unwrap(t *testing.T) {
+2025-10-16T14:59:10.3144810Z ^
+2025-10-16T14:59:10.3146153Z ##[error]internal/common/errors_test.go:260:2: Range statement for test TestValidationError_Unwrap missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3147229Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3147433Z 	^
+2025-10-16T14:59:10.3148211Z ##[error]internal/common/errors_test.go:273:1: Function TestNewValidationError missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3149141Z func TestNewValidationError(t *testing.T) {
+2025-10-16T14:59:10.3149387Z ^
+2025-10-16T14:59:10.3150283Z ##[error]internal/common/errors_test.go:299:2: Range statement for test TestNewValidationError missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3151391Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3151605Z 	^
+2025-10-16T14:59:10.3152405Z ##[error]internal/common/errors_test.go:312:1: Function TestStatusUpdateError_Error missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3153388Z func TestStatusUpdateError_Error(t *testing.T) {
+2025-10-16T14:59:10.3153650Z ^
+2025-10-16T14:59:10.3154570Z ##[error]internal/common/errors_test.go:338:2: Range statement for test TestStatusUpdateError_Error missing the call to method parallel in test Run (paralleltest)
+2025-10-16T14:59:10.3155774Z 	for _, tt := range tests {
+2025-10-16T14:59:10.3155972Z 	^
+2025-10-16T14:59:10.3156764Z ##[error]internal/common/errors_test.go:345:1: Function TestStatusUpdateError_Unwrap missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3157730Z func TestStatusUpdateError_Unwrap(t *testing.T) {
+2025-10-16T14:59:10.3157995Z ^
+2025-10-16T14:59:10.3158753Z ##[error]internal/common/errors_test.go:358:1: Function TestNewStatusUpdateError missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3159703Z func TestNewStatusUpdateError(t *testing.T) {
+2025-10-16T14:59:10.3159960Z ^
+2025-10-16T14:59:10.3160655Z ##[error]internal/common/errors_test.go:370:1: Function TestErrorWrapping missing the call to method parallel (paralleltest)
+2025-10-16T14:59:10.3161727Z func TestErrorWrapping(t *testing.T) {
+2025-10-16T14:59:10.3161967Z ^
+2025-10-16T14:59:10.3162614Z ##[error]api/v1/heliosapp_webhook.go:221:10: error-format: fmt.Errorf can be replaced with errors.New (perfsprint)
+2025-10-16T14:59:10.3163591Z 		return fmt.Errorf("serviceAccount must be a valid DNS subdomain")
+2025-10-16T14:59:10.3163927Z 		       ^
+2025-10-16T14:59:10.3164561Z ##[error]api/v1/heliosapp_webhook.go:237:10: error-format: fmt.Errorf can be replaced with errors.New (perfsprint)
+2025-10-16T14:59:10.3165517Z 		return fmt.Errorf("webhookSecret must be a valid DNS subdomain")
+2025-10-16T14:59:10.3165846Z 		       ^
+2025-10-16T14:59:10.3166472Z ##[error]api/v1/heliosapp_webhook.go:253:10: error-format: fmt.Errorf can be replaced with errors.New (perfsprint)
+2025-10-16T14:59:10.3167398Z 		return fmt.Errorf("pvcName must be a valid DNS subdomain")
+2025-10-16T14:59:10.3167707Z 		       ^
+2025-10-16T14:59:10.3168447Z ##[error]internal/controller/test_helpers.go:64:20: string-format: fmt.Sprintf can be replaced with string concatenation (perfsprint)
+2025-10-16T14:59:10.3169408Z 			PVCName:        fmt.Sprintf("%s-pvc", name),
+2025-10-16T14:59:10.3169715Z 			                ^
+2025-10-16T14:59:10.3170497Z ##[error]internal/resources/pipeline.go:15:9: string-format: fmt.Sprintf can be replaced with string concatenation (perfsprint)
+2025-10-16T14:59:10.3171565Z 	return fmt.Sprintf("%s-pipeline", appName)
+2025-10-16T14:59:10.3171842Z 	       ^
+2025-10-16T14:59:10.3172574Z ##[error]test/e2e/e2e_suite_test.go:57:46: string-format: fmt.Sprintf can be replaced with string concatenation (perfsprint)
+2025-10-16T14:59:10.3173582Z 	cmd := exec.Command("make", "docker-build", fmt.Sprintf("IMG=%s", projectImage))
+2025-10-16T14:59:10.3174172Z 	                                            ^
+2025-10-16T14:59:10.3174874Z ##[error]api/v1/heliosapp_webhook.go:108:6: import-shadowing: The name 'errors' shadows an import name (revive)
+2025-10-16T14:59:10.3175877Z 	var errors []string
+2025-10-16T14:59:10.3176089Z 	    ^
+2025-10-16T14:59:10.3176728Z ##[error]api/v1/heliosapp_webhook.go:130:6: import-shadowing: The name 'errors' shadows an import name (revive)
+2025-10-16T14:59:10.3177567Z 	var errors []string
+2025-10-16T14:59:10.3177760Z 	    ^
+2025-10-16T14:59:10.3178375Z ##[error]api/v1/heliosapp_webhook.go:154:6: import-shadowing: The name 'errors' shadows an import name (revive)
+2025-10-16T14:59:10.3179193Z 	var errors []string
+2025-10-16T14:59:10.3179387Z 	    ^
+2025-10-16T14:59:10.3179951Z ##[error]api/v1/heliosapp_webhook.go:162:43: empty-block: this block is empty, you can remove it (revive)
+2025-10-16T14:59:10.3180788Z 	if r.Spec.Port > 0 && r.Spec.Port < 1024 {
+2025-10-16T14:59:10.3181134Z 		// This is still valid but might need special permissions
+2025-10-16T14:59:10.3181629Z 		// We'll allow it but could add a warning in the future
+2025-10-16T14:59:10.3181887Z 	}
+2025-10-16T14:59:10.3182478Z ##[error]internal/common/constants.go:17:1: package-comments: should have a package comment (revive)
+2025-10-16T14:59:10.3183289Z package common
+2025-10-16T14:59:10.3183464Z ^
+2025-10-16T14:59:10.3183989Z ##[error]internal/common/errors_test.go:17:9: var-naming: avoid meaningless package names (revive)
+2025-10-16T14:59:10.3184761Z package common
+2025-10-16T14:59:10.3185106Z         ^
+2025-10-16T14:59:10.3185677Z ##[error]internal/config/config.go:17:1: package-comments: should have a package comment (revive)
+2025-10-16T14:59:10.3186471Z package config
+2025-10-16T14:59:10.3186641Z ^
+2025-10-16T14:59:10.3187341Z ##[error]internal/controller/heliosapp_controller.go:978:2: import-shadowing: The name 'resources' shadows an import name (revive)
+2025-10-16T14:59:10.3188256Z 	resources := []struct {
+2025-10-16T14:59:10.3188455Z 	^
+2025-10-16T14:59:10.3189095Z ##[error]internal/controller/test_helpers.go:42:20: import-shadowing: The name 'client' shadows an import name (revive)
+2025-10-16T14:59:10.3190095Z func NewTestHelper(client client.Client, scheme *runtime.Scheme) *TestHelper {
+2025-10-16T14:59:10.3190503Z                    ^
+2025-10-16T14:59:10.3191133Z ##[error]internal/health/health.go:42:17: import-shadowing: The name 'client' shadows an import name (revive)
+2025-10-16T14:59:10.3192130Z func NewChecker(client client.Client) *Checker {
+2025-10-16T14:59:10.3192437Z                 ^
+2025-10-16T14:59:10.3192998Z ##[error]test/utils/utils.go:17:1: package-comments: should have a package comment (revive)
+2025-10-16T14:59:10.3193749Z package utils
+2025-10-16T14:59:10.3193925Z ^
+2025-10-16T14:59:10.3194539Z ##[error]internal/controller/helper_functions_test.go:469:8: QF1003: could use tagged switch on condStatus (staticcheck)
+2025-10-16T14:59:10.3195451Z 							if condStatus == "True" {
+2025-10-16T14:59:10.3195676Z 							^
+2025-10-16T14:59:10.3196292Z ##[error]internal/controller/reconcile_phases.go:376:3: QF1003: could use tagged switch on buildStatus (staticcheck)
+2025-10-16T14:59:10.3197160Z 		if buildStatus == "Succeeded" {
+2025-10-16T14:59:10.3197383Z 		^
+2025-10-16T14:59:10.3197993Z ##[error]internal/controller/reconcile_phases.go:403:3: QF1003: could use tagged switch on deployHealth (staticcheck)
+2025-10-16T14:59:10.3198869Z 		if deployHealth == "Healthy" {
+2025-10-16T14:59:10.3199081Z 		^
+2025-10-16T14:59:10.3199623Z ##[error]api/v1/heliosapp_types.go:166:20: json(camel): got 'webhookURL' want 'webhookUrl' (tagliatelle)
+2025-10-16T14:59:10.3200481Z 	WebhookURL string `json:"webhookURL,omitempty"`
+2025-10-16T14:59:10.3200803Z 	                  ^
+2025-10-16T14:59:10.3202100Z ##[error]api/v1/heliosapp_types_test.go:17:9: package should be `v1_test` instead of `v1` (testpackage)
+2025-10-16T14:59:10.3203079Z package v1
+2025-10-16T14:59:10.3203269Z         ^
+2025-10-16T14:59:10.3204112Z ##[error]api/v1/heliosapp_webhook_test.go:17:9: package should be `v1_test` instead of `v1` (testpackage)
+2025-10-16T14:59:10.3204940Z package v1
+2025-10-16T14:59:10.3205122Z         ^
+2025-10-16T14:59:10.3205917Z ##[error]internal/config/config_test.go:17:9: package should be `config_test` instead of `config` (testpackage)
+2025-10-16T14:59:10.3206764Z package config
+2025-10-16T14:59:10.3206960Z         ^
+2025-10-16T14:59:10.3207704Z ##[error]internal/controller/heliosapp_controller_test.go:17:9: package should be `controller_test` instead of `controller` (testpackage)
+2025-10-16T14:59:10.3208631Z package controller
+2025-10-16T14:59:10.3208825Z         ^
+2025-10-16T14:59:10.3209523Z ##[error]internal/controller/helper_functions_test.go:17:9: package should be `controller_test` instead of `controller` (testpackage)
+2025-10-16T14:59:10.3210415Z package controller
+2025-10-16T14:59:10.3210612Z         ^
+2025-10-16T14:59:10.3211436Z ##[error]internal/controller/reconcile_phases_test.go:19:9: package should be `controller_test` instead of `controller` (testpackage)
+2025-10-16T14:59:10.3212353Z package controller
+2025-10-16T14:59:10.3212547Z         ^
+2025-10-16T14:59:10.3213167Z ##[error]internal/health/health_test.go:17:9: package should be `health_test` instead of `health` (testpackage)
+2025-10-16T14:59:10.3213995Z package health
+2025-10-16T14:59:10.3214184Z         ^
+2025-10-16T14:59:10.3214838Z ##[error]internal/resources/argocd_test.go:17:9: package should be `resources_test` instead of `resources` (testpackage)
+2025-10-16T14:59:10.3215685Z package resources
+2025-10-16T14:59:10.3215879Z         ^
+2025-10-16T14:59:10.3216695Z ##[error]internal/resources/pipeline_test.go:17:9: package should be `resources_test` instead of `resources` (testpackage)
+2025-10-16T14:59:10.3217564Z package resources
+2025-10-16T14:59:10.3217754Z         ^
+2025-10-16T14:59:10.3218405Z ##[error]internal/resources/tekton_test.go:17:9: package should be `resources_test` instead of `resources` (testpackage)
+2025-10-16T14:59:10.3219242Z package resources
+2025-10-16T14:59:10.3219438Z         ^
+2025-10-16T14:59:10.3219977Z ##[error]test/e2e/e2e_suite_test.go:17:9: package should be `e2e_test` instead of `e2e` (testpackage)
+2025-10-16T14:59:10.3220746Z package e2e
+2025-10-16T14:59:10.3220923Z         ^
+2025-10-16T14:59:10.3221556Z ##[error]test/e2e/e2e_test.go:17:9: package should be `e2e_test` instead of `e2e` (testpackage)
+2025-10-16T14:59:10.3222314Z package e2e
+2025-10-16T14:59:10.3222490Z         ^
+2025-10-16T14:59:10.3223054Z ##[error]api/v1/heliosapp_types_test.go:27:6: test helper function should start from t.Helper() (thelper)
+2025-10-16T14:59:10.3224031Z func testConditionHelper(t *testing.T, conditionType string, method func(*HeliosApp) bool) {
+2025-10-16T14:59:10.3224429Z      ^
+2025-10-16T14:59:10.3225452Z ##[error]api/v1/heliosapp_webhook.go:65:42: (*HeliosApp).validateHeliosApp - result 0 (sigs.k8s.io/controller-runtime/pkg/webhook/admission.Warnings) is always nil (unparam)
+2025-10-16T14:59:10.3226568Z func (r *HeliosApp) validateHeliosApp() (admission.Warnings, error) {
+2025-10-16T14:59:10.3227092Z                                          ^
+2025-10-16T14:59:10.3228241Z ##[error]api/v1/heliosapp_webhook.go:489:48: (*HeliosApp).validateHeliosAppDelete - result 0 (sigs.k8s.io/controller-runtime/pkg/webhook/admission.Warnings) is always nil (unparam)
+2025-10-16T14:59:10.3229411Z func (r *HeliosApp) validateHeliosAppDelete() (admission.Warnings, error) {
+2025-10-16T14:59:10.3230014Z                                                ^
+2025-10-16T14:59:10.3230676Z ##[error]api/v1/heliosapp_types.go:357:6: variable name 'i' is too short for the scope of its usage (varnamelen)
+2025-10-16T14:59:10.3231639Z 	for i, c := range h.Status.Conditions {
+2025-10-16T14:59:10.3231894Z 	    ^
+2025-10-16T14:59:10.3232534Z ##[error]internal/resources/argocd_test.go:171:4: variable name 'ok' is too short for the scope of its usage (varnamelen)
+2025-10-16T14:59:10.3233442Z 			specMap, ok := spec.(map[string]interface{})
+2025-10-16T14:59:10.3233695Z 			^
+2025-10-16T14:59:10.3234334Z ##[error]internal/resources/pipeline_test.go:128:4: variable name 'ok' is too short for the scope of its usage (varnamelen)
+2025-10-16T14:59:10.3235244Z 			specMap, ok := spec.(map[string]interface{})
+2025-10-16T14:59:10.3235489Z 			^
+2025-10-16T14:59:10.3236201Z ##[error]test/e2e/e2e_test.go:309:36: parameter name 'g' is too short for the scope of its usage (varnamelen)
+2025-10-16T14:59:10.3237095Z 				verifyTriggerResources := func(g Gomega) {
+2025-10-16T14:59:10.3237506Z 				                               ^
+2025-10-16T14:59:10.3238151Z ##[error]test/e2e/e2e_test.go:390:34: parameter name 'g' is too short for the scope of its usage (varnamelen)
+2025-10-16T14:59:10.3239010Z 				verifyResourceLabels := func(g Gomega) {
+2025-10-16T14:59:10.3239392Z 				                             ^
+2025-10-16T14:59:10.3240015Z ##[error]test/e2e/e2e_test.go:584:9: variable name 'tc' is too short for the scope of its usage (varnamelen)
+2025-10-16T14:59:10.3240832Z 				for _, tc := range testCases {
+2025-10-16T14:59:10.3241062Z 				    ^
+2025-10-16T14:59:10.3241756Z ##[error]test/e2e/e2e_test.go:700:30: parameter name 'g' is too short for the scope of its usage (varnamelen)
+2025-10-16T14:59:10.3242587Z 	verifyTokenCreation := func(g Gomega) {
+2025-10-16T14:59:10.3242949Z 	                            ^
+2025-10-16T14:59:10.3244294Z ##[error]api/v1/heliosapp_webhook.go:608:9: error returned from external package is unwrapped: sig: func (*sigs.k8s.io/controller-runtime/pkg/builder.WebhookBuilder).Complete() error (wrapcheck)
+2025-10-16T14:59:10.3245697Z 	return ctrl.NewWebhookManagedBy(mgr).
+2025-10-16T14:59:10.3246229Z 	       ^
+2025-10-16T14:59:10.3248764Z ##[error]internal/controller/heliosapp_controller.go:80:15: error returned from external package is unwrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.Reader).Get(ctx context.Context, key sigs.k8s.io/controller-runtime/pkg/client.ObjectKey, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.GetOption) error (wrapcheck)
+2025-10-16T14:59:10.3250730Z 		return nil, err
+2025-10-16T14:59:10.3251047Z 		            ^
+2025-10-16T14:59:10.3253641Z ##[error]internal/controller/heliosapp_controller.go:164:27: error returned from external package is unwrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.Writer).Update(ctx context.Context, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.UpdateOption) error (wrapcheck)
+2025-10-16T14:59:10.3255855Z 				return ctrl.Result{}, err
+2025-10-16T14:59:10.3256377Z 				                      ^
+2025-10-16T14:59:10.3258647Z ##[error]internal/controller/heliosapp_controller.go:176:26: error returned from external package is unwrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.Writer).Update(ctx context.Context, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.UpdateOption) error (wrapcheck)
+2025-10-16T14:59:10.3260516Z 			return ctrl.Result{}, err
+2025-10-16T14:59:10.3260879Z 			                      ^
+2025-10-16T14:59:10.3263550Z ##[error]internal/controller/heliosapp_controller.go:307:9: error returned from interface method should be wrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.SubResourceWriter).Update(ctx context.Context, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.SubResourceUpdateOption) error (wrapcheck)
+2025-10-16T14:59:10.3265416Z 	return r.Status().Update(ctx, heliosApp)
+2025-10-16T14:59:10.3265851Z 	       ^
+2025-10-16T14:59:10.3268398Z ##[error]internal/controller/heliosapp_controller.go:321:18: error returned from external package is unwrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.Reader).Get(ctx context.Context, key sigs.k8s.io/controller-runtime/pkg/client.ObjectKey, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.GetOption) error (wrapcheck)
+2025-10-16T14:59:10.3294066Z 		return "", "", err
+2025-10-16T14:59:10.3294363Z 		               ^
+2025-10-16T14:59:10.3297095Z ##[error]internal/controller/heliosapp_controller.go:928:9: error returned from external package is unwrapped: sig: func (*sigs.k8s.io/controller-runtime/pkg/builder.TypedBuilder[sigs.k8s.io/controller-runtime/pkg/reconcile.Request]).Complete(r sigs.k8s.io/controller-runtime/pkg/reconcile.TypedReconciler[sigs.k8s.io/controller-runtime/pkg/reconcile.Request]) error (wrapcheck)
+2025-10-16T14:59:10.3298963Z 	return ctrl.NewControllerManagedBy(mgr).
+2025-10-16T14:59:10.3299249Z 	       ^
+2025-10-16T14:59:10.3301455Z ##[error]internal/controller/heliosapp_controller.go:1000:12: error returned from external package is unwrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.Writer).Delete(ctx context.Context, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.DeleteOption) error (wrapcheck)
+2025-10-16T14:59:10.3303039Z 				return err
+2025-10-16T14:59:10.3303238Z 				       ^
+2025-10-16T14:59:10.3305277Z ##[error]internal/controller/heliosapp_controller.go:1033:11: error returned from external package is unwrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.Writer).Delete(ctx context.Context, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.DeleteOption) error (wrapcheck)
+2025-10-16T14:59:10.3306845Z 			return err
+2025-10-16T14:59:10.3307043Z 			       ^
+2025-10-16T14:59:10.3311188Z ##[error]internal/controller/test_helpers.go:69:15: error returned from interface method should be wrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.Writer).Create(ctx context.Context, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.CreateOption) error (wrapcheck)
+2025-10-16T14:59:10.3313442Z 		return nil, err
+2025-10-16T14:59:10.3313668Z 		            ^
+2025-10-16T14:59:10.3315797Z ##[error]internal/controller/test_helpers.go:99:15: error returned from interface method should be wrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.Writer).Create(ctx context.Context, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.CreateOption) error (wrapcheck)
+2025-10-16T14:59:10.3317368Z 		return nil, err
+2025-10-16T14:59:10.3317585Z 		            ^
+2025-10-16T14:59:10.3319593Z ##[error]internal/controller/test_helpers.go:127:15: error returned from interface method should be wrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.Writer).Create(ctx context.Context, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.CreateOption) error (wrapcheck)
+2025-10-16T14:59:10.3321099Z 		return nil, err
+2025-10-16T14:59:10.3321565Z 		            ^
+2025-10-16T14:59:10.3323934Z ##[error]internal/controller/test_helpers.go:392:12: error returned from interface method should be wrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.Reader).Get(ctx context.Context, key sigs.k8s.io/controller-runtime/pkg/client.ObjectKey, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.GetOption) error (wrapcheck)
+2025-10-16T14:59:10.3325623Z 				return err
+2025-10-16T14:59:10.3325826Z 				       ^
+2025-10-16T14:59:10.3328135Z ##[error]internal/controller/test_helpers.go:410:15: error returned from interface method should be wrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.Reader).Get(ctx context.Context, key sigs.k8s.io/controller-runtime/pkg/client.ObjectKey, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.GetOption) error (wrapcheck)
+2025-10-16T14:59:10.3329797Z 		return nil, err
+2025-10-16T14:59:10.3330005Z 		            ^
+2025-10-16T14:59:10.3332124Z ##[error]internal/controller/test_helpers.go:423:9: error returned from interface method should be wrapped: sig: func (sigs.k8s.io/controller-runtime/pkg/client.Writer).Delete(ctx context.Context, obj sigs.k8s.io/controller-runtime/pkg/client.Object, opts ...sigs.k8s.io/controller-runtime/pkg/client.DeleteOption) error (wrapcheck)
+2025-10-16T14:59:10.3333689Z 	return h.Client.Delete(ctx, heliosApp)
+2025-10-16T14:59:10.3333951Z 	       ^
+2025-10-16T14:59:10.3335323Z ##[error]test/e2e/e2e_test.go:281:13: error returned from external package is unwrapped: sig: func github.com/hoangphuc841/helios-operator/test/utils.Run(cmd *os/exec.Cmd) (string, error) (wrapcheck)
+2025-10-16T14:59:10.3336465Z 					return err
+2025-10-16T14:59:10.3336665Z 					       ^
+2025-10-16T14:59:10.3337861Z ##[error]test/e2e/e2e_test.go:647:13: error returned from external package is unwrapped: sig: func github.com/hoangphuc841/helios-operator/test/utils.Run(cmd *os/exec.Cmd) (string, error) (wrapcheck)
+2025-10-16T14:59:10.3338955Z 					return err
+2025-10-16T14:59:10.3339152Z 					       ^
+2025-10-16T14:59:10.3340333Z ##[error]test/e2e/e2e_test.go:658:13: error returned from external package is unwrapped: sig: func github.com/hoangphuc841/helios-operator/test/utils.Run(cmd *os/exec.Cmd) (string, error) (wrapcheck)
+2025-10-16T14:59:10.3341547Z 					return err
+2025-10-16T14:59:10.3341741Z 					       ^
+2025-10-16T14:59:10.3342741Z ##[error]test/e2e/e2e_test.go:696:14: error returned from external package is unwrapped: sig: func os.WriteFile(name string, data []byte, perm os.FileMode) error (wrapcheck)
+2025-10-16T14:59:10.3343725Z 		return "", err
+2025-10-16T14:59:10.3343930Z 		           ^
+2025-10-16T14:59:10.3344898Z ##[error]test/e2e/e2e_test.go:720:14: error returned from external package is unwrapped: sig: func os.WriteFile(name string, data []byte, perm os.FileMode) error (wrapcheck)
+2025-10-16T14:59:10.3346034Z 	return out, err
+2025-10-16T14:59:10.3346241Z 	            ^
+2025-10-16T14:59:10.3346855Z ##[error]api/v1/heliosapp_webhook.go:75:2: missing whitespace above this line (never cuddle decl) (wsl_v5)
+2025-10-16T14:59:10.3347685Z 	var warnings admission.Warnings
+2025-10-16T14:59:10.3347907Z 	^
+2025-10-16T14:59:10.3348580Z ##[error]api/v1/heliosapp_webhook.go:277:2: missing whitespace above this line (no shared variables above range) (wsl_v5)
+2025-10-16T14:59:10.3349467Z 	for _, scheme := range validSchemes {
+2025-10-16T14:59:10.3349700Z 	^
+2025-10-16T14:59:10.3350365Z ##[error]api/v1/heliosapp_webhook.go:366:2: missing whitespace above this line (no shared variables above range) (wsl_v5)
+2025-10-16T14:59:10.3351465Z 	for i, part := range pathParts {
+2025-10-16T14:59:10.3351804Z 	^
+2025-10-16T14:59:10.3352475Z ##[error]api/v1/heliosapp_webhook.go:442:2: missing whitespace above this line (never cuddle decl) (wsl_v5)
+2025-10-16T14:59:10.3353372Z 	var warnings admission.Warnings
+2025-10-16T14:59:10.3353602Z 	^
+2025-10-16T14:59:10.3354214Z ##[error]cmd/main.go:91:2: missing whitespace above this line (no shared variables above expr) (wsl_v5)
+2025-10-16T14:59:10.3355008Z 	flag.Parse()
+2025-10-16T14:59:10.3355182Z 	^
+2025-10-16T14:59:10.3355780Z ##[error]cmd/main.go:115:3: missing whitespace above this line (invalid statement above assign) (wsl_v5)
+2025-10-16T14:59:10.3356622Z 		webhookCertWatcher, err = certwatcher.New(
+2025-10-16T14:59:10.3356868Z 		^
+2025-10-16T14:59:10.3357455Z ##[error]cmd/main.go:142:3: missing whitespace above this line (invalid statement above assign) (wsl_v5)
+2025-10-16T14:59:10.3358291Z 		metricsCertWatcher, err = certwatcher.New(
+2025-10-16T14:59:10.3358537Z 		^
+2025-10-16T14:59:10.3359104Z ##[error]cmd/main.go:199:3: missing whitespace above this line (invalid statement above if) (wsl_v5)
+2025-10-16T14:59:10.3359936Z 		if err := mgr.Add(metricsCertWatcher); err != nil {
+2025-10-16T14:59:10.3360191Z 		^
+2025-10-16T14:59:10.3360756Z ##[error]cmd/main.go:207:3: missing whitespace above this line (invalid statement above if) (wsl_v5)
+2025-10-16T14:59:10.3361855Z 		if err := mgr.Add(webhookCertWatcher); err != nil {
+2025-10-16T14:59:10.3362110Z 		^
+2025-10-16T14:59:10.3362705Z ##[error]cmd/main.go:235:2: missing whitespace above this line (invalid statement above if) (wsl_v5)
+2025-10-16T14:59:10.3363570Z 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+2025-10-16T14:59:10.3363849Z 	^
+2025-10-16T14:59:10.3364436Z ##[error]cmd/main.go:290:3: missing whitespace above this line (invalid statement above assign) (wsl_v5)
+2025-10-16T14:59:10.3365250Z 		c.NextProtos = []string{"http/1.1"}
+2025-10-16T14:59:10.3365475Z 		^
+2025-10-16T14:59:10.3366296Z ##[error]internal/config/config_test.go:31:2: missing whitespace above this line (no shared variables above defer) (wsl_v5)
+2025-10-16T14:59:10.3367185Z 	defer func() {
+2025-10-16T14:59:10.3367358Z 	^
+2025-10-16T14:59:10.3368034Z ##[error]internal/config/config_test.go:33:3: missing whitespace above this line (invalid statement above range) (wsl_v5)
+2025-10-16T14:59:10.3368903Z 		for _, env := range origEnv {
+2025-10-16T14:59:10.3369107Z 		^
+2025-10-16T14:59:10.3369838Z ##[error]internal/controller/heliosapp_controller.go:114:2: missing whitespace above this line (no shared variables above defer) (wsl_v5)
+2025-10-16T14:59:10.3370747Z 	defer func() {
+2025-10-16T14:59:10.3370916Z 	^
+2025-10-16T14:59:10.3371748Z ##[error]internal/controller/heliosapp_controller.go:136:3: missing whitespace above this line (invalid statement above expr) (wsl_v5)
+2025-10-16T14:59:10.3372755Z 		logger.Error(err, "Failed to fetch HeliosApp resource")
+2025-10-16T14:59:10.3373030Z 		^
+2025-10-16T14:59:10.3373766Z ##[error]internal/controller/heliosapp_controller.go:138:3: missing whitespace above this line (no shared variables above expr) (wsl_v5)
+2025-10-16T14:59:10.3374885Z 		ReconciliationErrorsTotal.WithLabelValues(req.Namespace, req.Name, "fetch").Inc()
+2025-10-16T14:59:10.3375270Z 		^
+2025-10-16T14:59:10.3375977Z ##[error]internal/controller/heliosapp_controller.go:166:4: missing whitespace above this line (invalid statement above expr) (wsl_v5)
+2025-10-16T14:59:10.3377127Z 			logger.Info("Finalizer removed, deletion complete")
+2025-10-16T14:59:10.3377396Z 			^
+2025-10-16T14:59:10.3378139Z ##[error]internal/controller/heliosapp_controller.go:221:2: missing whitespace above this line (no shared variables above expr) (wsl_v5)
+2025-10-16T14:59:10.3379082Z 	triggersPhase.ObserveDuration()
+2025-10-16T14:59:10.3379306Z 	^
+2025-10-16T14:59:10.3380034Z ##[error]internal/controller/heliosapp_controller.go:296:2: missing whitespace above this line (no shared variables above range) (wsl_v5)
+2025-10-16T14:59:10.3381049Z 	for i, existingCondition := range heliosApp.Status.Conditions {
+2025-10-16T14:59:10.3381474Z 	^
+2025-10-16T14:59:10.3382187Z ##[error]internal/controller/heliosapp_controller.go:300:4: missing whitespace above this line (too many lines above branch) (wsl_v5)
+2025-10-16T14:59:10.3383099Z 			break
+2025-10-16T14:59:10.3383265Z 			^
+2025-10-16T14:59:10.3383995Z ##[error]internal/controller/heliosapp_controller.go:363:2: missing whitespace above this line (too many statements above range) (wsl_v5)
+2025-10-16T14:59:10.3384943Z 	for i := range pipelineRunList.Items {
+2025-10-16T14:59:10.3385183Z 	^
+2025-10-16T14:59:10.3385774Z ##[error]internal/controller/heliosapp_controller.go:569:1: unnecessary whitespace (leading-whitespace) (wsl_v5)
+2025-10-16T14:59:10.3386528Z 
+2025-10-16T14:59:10.3386600Z ^
+2025-10-16T14:59:10.3387244Z ##[error]internal/controller/heliosapp_controller.go:613:2: missing whitespace above this line (never cuddle decl) (wsl_v5)
+2025-10-16T14:59:10.3388133Z 	var heliosAppNamespace string
+2025-10-16T14:59:10.3388350Z 	^
+2025-10-16T14:59:10.3389062Z ##[error]internal/controller/heliosapp_controller.go:887:3: missing whitespace above this line (invalid statement above expr) (wsl_v5)
+2025-10-16T14:59:10.3390065Z 		resourceLogger.V(1).Info("Resource updated successfully")
+2025-10-16T14:59:10.3390363Z 		^
+2025-10-16T14:59:10.3390959Z ##[error]internal/controller/reconcile_phases_test.go:318:1: unnecessary whitespace (leading-whitespace) (wsl_v5)
+2025-10-16T14:59:10.3392047Z 
+2025-10-16T14:59:10.3392123Z ^
+2025-10-16T14:59:10.3392878Z ##[error]internal/controller/test_helpers.go:249:2: missing whitespace above this line (no shared variables above switch) (wsl_v5)
+2025-10-16T14:59:10.3393761Z 	switch status {
+2025-10-16T14:59:10.3393941Z 	^
+2025-10-16T14:59:10.3394607Z ##[error]internal/health/health_test.go:255:2: missing whitespace above this line (no shared variables above for) (wsl_v5)
+2025-10-16T14:59:10.3395475Z 	for i := 0; i < 10; i++ {
+2025-10-16T14:59:10.3395666Z 	^
+2025-10-16T14:59:10.3396491Z ##[error]internal/health/health_test.go:259:4: missing whitespace above this line (no shared variables above send) (wsl_v5)
+2025-10-16T14:59:10.3397402Z 			done <- true
+2025-10-16T14:59:10.3397576Z 			^
+2025-10-16T14:59:10.3398273Z ##[error]internal/resources/tekton.go:121:2: missing whitespace above this line (no shared variables above if) (wsl_v5)
+2025-10-16T14:59:10.3399293Z 	if pvc, ok := workspace["persistentVolumeClaim"].(map[string]interface{}); ok {
+2025-10-16T14:59:10.3399632Z 	^
+2025-10-16T14:59:10.3400256Z ##[error]test/utils/utils.go:55:2: missing whitespace above this line (too many statements above if) (wsl_v5)
+2025-10-16T14:59:10.3401099Z 	output, err := cmd.CombinedOutput()
+2025-10-16T14:59:10.3401584Z 	^
+2025-10-16T14:59:10.3402262Z ##[error]test/utils/utils.go:68:2: missing whitespace above this line (too many lines above return) (wsl_v5)
+2025-10-16T14:59:10.3403109Z 	return err
+2025-10-16T14:59:10.3403270Z 	^
+2025-10-16T14:59:10.3403891Z ##[error]test/utils/utils.go:91:2: missing whitespace above this line (too many statements above if) (wsl_v5)
+2025-10-16T14:59:10.3404713Z 	output, err := Run(cmd)
+2025-10-16T14:59:10.3404906Z 	^
+2025-10-16T14:59:10.3405520Z ##[error]test/utils/utils.go:132:2: missing whitespace above this line (too many lines above return) (wsl_v5)
+2025-10-16T14:59:10.3406321Z 	return err
+2025-10-16T14:59:10.3406637Z 	^
+2025-10-16T14:59:10.3407274Z ##[error]test/utils/utils.go:150:2: missing whitespace above this line (too many statements above if) (wsl_v5)
+2025-10-16T14:59:10.3408161Z 	output, err := Run(cmd)
+2025-10-16T14:59:10.3408351Z 	^
+2025-10-16T14:59:10.3408955Z ##[error]test/utils/utils.go:177:2: missing whitespace above this line (too many lines above return) (wsl_v5)
+2025-10-16T14:59:10.3409752Z 	return err
+2025-10-16T14:59:10.3409916Z 	^
+2025-10-16T14:59:10.3410513Z ##[error]test/utils/utils.go:230:2: missing whitespace above this line (invalid statement above for) (wsl_v5)
+2025-10-16T14:59:10.3411448Z 	for {
+2025-10-16T14:59:10.3411603Z 	^
+2025-10-16T14:59:10.3411764Z 337 issues:
+2025-10-16T14:59:10.3411926Z * cyclop: 6
+2025-10-16T14:59:10.3412091Z * depguard: 50
+2025-10-16T14:59:10.3412261Z * dupl: 10
+2025-10-16T14:59:10.3412425Z * errcheck: 32
+2025-10-16T14:59:10.3412592Z * errorlint: 1
+2025-10-16T14:59:10.3412764Z * exhaustruct: 50
+2025-10-16T14:59:10.3412939Z * gci: 3
+2025-10-16T14:59:10.3413115Z * ginkgolinter: 2
+2025-10-16T14:59:10.3413287Z * gocritic: 13
+2025-10-16T14:59:10.3413454Z * godot: 3
+2025-10-16T14:59:10.3413607Z * godox: 3
+2025-10-16T14:59:10.3413767Z * gosec: 3
+2025-10-16T14:59:10.3413926Z * lll: 7
+2025-10-16T14:59:10.3414076Z * noctx: 3
+2025-10-16T14:59:10.3414236Z * nolintlint: 2
+2025-10-16T14:59:10.3414421Z * paralleltest: 50
+2025-10-16T14:59:10.3414612Z * perfsprint: 6
+2025-10-16T14:59:10.3414783Z * revive: 11
+2025-10-16T14:59:10.3414955Z * staticcheck: 3
+2025-10-16T14:59:10.3415128Z * tagliatelle: 1
+2025-10-16T14:59:10.3415311Z * testpackage: 12
+2025-10-16T14:59:10.3415485Z * thelper: 1
+2025-10-16T14:59:10.3415654Z * unparam: 2
+2025-10-16T14:59:10.3415821Z * varnamelen: 7
+2025-10-16T14:59:10.3415996Z * wrapcheck: 20
+2025-10-16T14:59:10.3416166Z * wsl_v5: 36
+2025-10-16T14:59:10.3416262Z 
+2025-10-16T14:59:10.3425060Z ##[error]issues found
+2025-10-16T14:59:10.3425834Z Ran golangci-lint in 49518ms
+2025-10-16T14:59:10.3426240Z ##[endgroup]
+2025-10-16T14:59:10.3499240Z ##[group]Run github/codeql-action/upload-sarif@v4
+2025-10-16T14:59:10.3499554Z with:
+2025-10-16T14:59:10.3499727Z   sarif_file: gosec.sarif
+2025-10-16T14:59:10.3500025Z   checkout_path: /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:59:10.3500450Z   token: ***
+2025-10-16T14:59:10.3500625Z   matrix: null
+2025-10-16T14:59:10.3500807Z   wait-for-processing: true
+2025-10-16T14:59:10.3501021Z env:
+2025-10-16T14:59:10.3501175Z   GO_VERSION: 1.25.3
+2025-10-16T14:59:10.3501546Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:59:10.3501761Z   GOTOOLCHAIN: local
+2025-10-16T14:59:10.3501936Z ##[endgroup]
+2025-10-16T14:59:11.1187770Z ##[error]Path does not exist: gosec.sarif
+2025-10-16T14:59:11.2712125Z Post job cleanup.
+2025-10-16T14:59:11.4669892Z (node:16423) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2025-10-16T14:59:11.4670577Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2025-10-16T14:59:11.4675427Z ##[group]Uploading combined SARIF debug artifact
+2025-10-16T14:59:11.4676491Z ##[endgroup]
+2025-10-16T14:59:11.4819218Z Post job cleanup.
+2025-10-16T14:59:11.6836636Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/helios-operator/helios-operator --files-from manifest.txt --use-compress-program zstdmt
+2025-10-16T14:59:12.1687586Z Sent 2018442 of 2018442 (100.0%), 20.9 MBs/sec
+2025-10-16T14:59:12.2685090Z Saved cache for golangci-lint from paths '/home/runner/.cache/golangci-lint' in 610ms
+2025-10-16T14:59:12.2839529Z Post job cleanup.
+2025-10-16T14:59:12.3600760Z [command]/usr/bin/git version
+2025-10-16T14:59:12.3636110Z git version 2.51.0
+2025-10-16T14:59:12.3675210Z Temporarily overriding HOME='/home/runner/work/_temp/cfba06c4-ad85-4e41-b261-e15ea0c5187b' before making global git config changes
+2025-10-16T14:59:12.3676541Z Adding repository directory to the temporary git global config as a safe directory
+2025-10-16T14:59:12.3681049Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:59:12.3714945Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-10-16T14:59:12.3747051Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-10-16T14:59:12.3978221Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-10-16T14:59:12.3999370Z http.https://github.com/.extraheader
+2025-10-16T14:59:12.4009189Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-10-16T14:59:12.4040626Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-10-16T14:59:12.4357957Z Cleaning up orphan processes

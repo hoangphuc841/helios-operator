@@ -1,593 +1,822 @@
-# 🚀 Getting Started with Helios Operator
+# Getting Started with Helios Operator
 
-This guide will help you deploy your first application with Helios Operator in under 15 minutes. While this guide focuses on **local deployment** using Minikube, Kind, or K3s, Helios Operator is also fully compatible with cloud environments like **Google Kubernetes Engine (GKE)**, **Amazon Elastic Kubernetes Service (EKS)**, **Azure Kubernetes Service (AKS)**, and other managed Kubernetes services.
+Welcome to Helios Operator, a comprehensive GitOps-based application lifecycle management solution for Kubernetes. This guide will walk you through the complete workflow from source code to production deployment.
 
-## 📋 **Prerequisites**
+> **🚧 PoC Project**: This is currently a Proof of Concept (PoC) project. The operator is not yet published to official package repositories. You need to clone the repository and install locally.
 
-### **Step 1: Install Kubernetes Cluster**
+## 🚀 What is Helios Operator?
 
-You need a Kubernetes cluster to run Helios Operator. Choose one of the following options:
+Helios Operator automates the entire application lifecycle by:
 
-#### **Option A: Minikube (Recommended for Beginners)**
+- **Building** your application from source code using Tekton Pipelines
+- **Deploying** your application using ArgoCD GitOps
+- **Monitoring** your application health and performance
+- **Managing** the complete CI/CD pipeline through Kubernetes custom resources
 
-```bash
-# Install Minikube
-# On macOS:
-brew install minikube
+## 📋 Complete Workflow Overview
 
-# On Linux:
-curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-sudo install minikube-linux-amd64 /usr/local/bin/minikube
-
-# On Windows (with Chocolatey):
-choco install minikube
-
-# Start cluster
-minikube start --memory=4096 --cpus=2
-
-# Check cluster status
-minikube status
+```mermaid
+graph LR
+    A[Source Code] --> B[Git Push]
+    B --> C[Tekton Pipeline]
+    C --> D[Build Image]
+    D --> E[Push to Registry]
+    E --> F[Update GitOps Repo]
+    F --> G[ArgoCD Sync]
+    G --> H[Deploy to K8s]
+    H --> I[Monitor & Alert]
 ```
 
-#### **Option B: Kind (Kubernetes in Docker)**
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Complete Workflow Walkthrough](#complete-workflow-walkthrough)
+- [Verification & Monitoring](#verification--monitoring)
+- [Troubleshooting](#troubleshooting)
+- [Next Steps](#next-steps)
+
+## Prerequisites
+
+Before installing Helios Operator, ensure you have the following prerequisites:
+
+> **📋 Important**: Since this is a PoC project, you must clone the repository locally before installation.
+
+### Kubernetes Cluster
+
+- **Kubernetes version**: 1.25 or later
+- **Cluster access**: kubectl configured to access your cluster
+- **Permissions**: Cluster admin or sufficient RBAC permissions
+
+### Required Components
+
+The following components must be installed in your cluster:
+
+1. **ArgoCD**
 
 ```bash
-# Install Kind
-# On macOS:
-brew install kind
-
-# On Linux:
-curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.30.0/kind-linux-amd64
-chmod +x ./kind
-sudo mv ./kind /usr/local/bin/kind
-
-# Create cluster
-kind create cluster --name helios-cluster --config - <<EOF
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-- role: control-plane
-  kubeadmConfigPatches:
-  - |
-    kind: InitConfiguration
-    nodeRegistration:
-      kubeletExtraArgs:
-        system-reserved: memory=1Gi
-  extraPortMappings:
-  - containerPort: 30000
-    hostPort: 30000
-    protocol: TCP
-- role: worker
-- role: worker
-EOF
-```
-
-#### **Option C: K3s (Lightweight Kubernetes)**
-
-```bash
-# Install K3s
-curl -sfL https://get.k3s.io | sh -
-
-# Configure kubectl
-sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
-sudo chown $(id -u):$(id -g) ~/.kube/config
-```
-
-### **Step 2: Install kubectl**
-
-```bash
-# On macOS:
-brew install kubectl
-
-# On Linux:
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-chmod +x kubectl
-sudo mv kubectl /usr/local/bin/
-
-# On Windows (with Chocolatey):
-choco install kubernetes-cli
-
-# Verify installation
-kubectl version --client
-```
-
-### **Step 3: Install Helm**
-
-```bash
-# On macOS:
-brew install helm
-
-# On Linux:
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
-# On Windows (with Chocolatey):
-choco install kubernetes-helm
-
-# Verify installation
-helm version
-```
-
-### **Step 4: Prepare Repositories**
-
-You need to prepare 2 GitHub repositories:
-
-1. **Source Code Repository** (contains your application code)
-2. **GitOps Repository** (empty, Helios will automatically create manifests)
-
-### **Step 5: Container Registry**
-
-Create an account at one of these container registries:
-
-- Docker Hub
-- GitHub Container Registry
-- Google Container Registry
-- Amazon ECR
-
-## ☁️ **Cloud Deployment Options**
-
-While this guide focuses on local development, Helios Operator works seamlessly on cloud platforms:
-
-### **Google Kubernetes Engine (GKE)**
-
-```bash
-# Create GKE cluster
-gcloud container clusters create helios-cluster \
-  --zone=us-central1-a \
-  --num-nodes=3 \
-  --machine-type=e2-medium
-
-# Get credentials
-gcloud container clusters get-credentials helios-cluster --zone=us-central1-a
-```
-
-### **Amazon Elastic Kubernetes Service (EKS)**
-
-```bash
-# Create EKS cluster
-eksctl create cluster \
-  --name helios-cluster \
-  --region us-west-2 \
-  --nodegroup-name workers \
-  --node-type t3.medium \
-  --nodes 3
-```
-
-### **Azure Kubernetes Service (AKS)**
-
-```bash
-# Create AKS cluster
-az aks create \
-  --resource-group myResourceGroup \
-  --name helios-cluster \
-  --node-count 3 \
-  --node-vm-size Standard_B2s
-
-# Get credentials
-az aks get-credentials --resource-group myResourceGroup --name helios-cluster
-```
-
-**Note:** For cloud deployments, ensure your cluster has:
-
-- Minimum 2 CPU cores and 4GB RAM per node
-- LoadBalancer service support (for webhooks)
-- Container registry access permissions
-- Sufficient storage for PVCs
-
-## 🏗️ **Step 2: Install Dependencies**
-
-### **Install Tekton Pipelines**
-
-Tekton will handle building and pushing Docker images:
-
-```bash
-# Install Tekton Pipelines
-kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
-
-# Install Tekton Triggers (to handle webhooks)
-kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
-
-# Wait for Tekton to be ready
-kubectl wait --for=condition=ready pod -l app=tekton-pipelines-controller -n tekton-pipelines --timeout=300s
-```
-
-### **Install ArgoCD**
-
-ArgoCD will automatically deploy applications from the GitOps repository:
-
-```bash
-# Add ArgoCD Helm repository
-helm repo add argo https://argoproj.github.io/argo-helm
-helm repo update
-
-# Create namespace for ArgoCD
 kubectl create namespace argocd
-
-# Install ArgoCD
-helm install argocd argo/argo-cd --namespace argocd
-
-# Wait for ArgoCD to be ready
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-### **Verify All Dependencies**
+2. **Tekton Pipelines, Tekton Triggers**
 
 ```bash
-# Check Tekton
-kubectl get pods -n tekton-pipelines
-
-# Check ArgoCD
-kubectl get pods -n argocd
-
-# Check overall cluster
-kubectl get nodes
+kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
 ```
 
-## 🎯 **Step 3: Install Helios Operator**
+### Optional Components
 
-### **Install via Helm**
+- **cert-manager**: For webhook certificate management
+- **Prometheus**: For metrics collection
+- **Grafana**: For monitoring dashboards
+
+## Installation
+
+### Method 1: Using Helm (Recommended)
+
+1. **Clone the repository**:
 
 ```bash
-# Add Helios Operator Helm repository
-helm repo add helios-operator https://hoangphuc841.github.io/helios-operator
-helm repo update
-
-# Install Helios Operator
-helm install helios-operator helios-operator/helios-operator
-
-# Check operator is running
-kubectl get pods -l app.kubernetes.io/name=helios-operator
-
-# Verify CRD is installed
-kubectl get crd heliosapps.platform.helios.io
+git clone https://github.com/hoangphuc841/helios-operator.git
+cd helios-operator
 ```
 
-### **Verify Installation**
+2. **Install using Helm**:
 
 ```bash
-# Check operator pod
-kubectl get pods -l app.kubernetes.io/name=helios-operator
-
-# Check operator logs
-kubectl logs -l app.kubernetes.io/name=helios-operator
-
-# Check CRD
-kubectl get crd | grep helios
+helm install helios-operator ./helm/helios-operator \
+  --namespace helios-system \
+  --create-namespace \
+  --set config.watchNamespace="" \
+  --set config.enableMetrics=true \
+  --set config.enableWebhooks=true
 ```
 
-## 📝 **Step 4: Prepare Your Application**
+### Method 2: Using Kustomize
 
-### **Create Application Namespace**
+1. **Clone the repository**:
 
 ```bash
-# Create namespace for your application
-kubectl create namespace my-apps
-
-# Verify namespace was created
-kubectl get namespace my-apps
+git clone https://github.com/hoangphuc841/helios-operator.git
+cd helios-operator
 ```
 
-### **Create PVC for Build Workspace**
-
-Tekton needs storage space to build your application:
+2. **Install the operator**:
 
 ```bash
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: my-app-pvc
-  namespace: my-apps
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 2Gi
-EOF
+kubectl apply -k config/default
 ```
 
-### **Create Service Account and Secrets**
+## Complete Workflow Walkthrough
 
-```bash
-# Create Service Account for pipeline
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: pipeline-sa
-  namespace: my-apps
-EOF
+Let's walk through the complete workflow from source code to production deployment using a real example.
 
-# Create secret for GitHub (to clone code)
-kubectl create secret generic github-secret \
-  --from-literal=username=your-github-username \
-  --from-literal=password=your-github-token \
-  -n my-apps
+### Prerequisites Setup
 
-# Create secret for Docker registry (to push image)
-kubectl create secret docker-registry docker-secret \
-  --docker-server=docker.io \
-  --docker-username=your-docker-username \
-  --docker-password=your-docker-password \
-  --docker-email=your-email@example.com \
-  -n my-apps
+Before we start, ensure you have:
 
-# Attach secrets to service account
-kubectl patch serviceaccount pipeline-sa -n my-apps -p '{"imagePullSecrets": [{"name": "docker-secret"}]}'
+1. **Two GitHub repositories**:
+
+   - Source code repository (your application)
+   - GitOps repository (Kubernetes manifests)
+
+2. **Container registry access** (Docker Hub, GitHub Container Registry, etc.)
+
+3. **Webhook access** to your source repository
+
+### Step 1: Prepare Your Repositories
+
+#### Source Code Repository Structure
+
+Your application repository should have:
+
+```mermaid
+graph TD
+    Root[my-app/]
+    Root --> Src[src/<br/>Application source code]
+    Root --> Dockerfile[Dockerfile<br/>Container build instructions]
+    Root --> Gitignore[.gitignore]
+    Root --> Readme[README.md]
+
+    style Root fill:#e3f2fd
+    style Src fill:#c8e6c9
+    style Dockerfile fill:#fff9c4
+    style Gitignore fill:#ffcdd2
+    style Readme fill:#ffcdd2
 ```
 
-## 🚀 **Step 5: Deploy Your First Application**
+#### GitOps Repository Structure
 
-### **Create HeliosApp Resource**
+Your GitOps repository can start **empty** or with basic manifests. The operator will work with whatever manifests you provide.
 
-This is the most important step - creating the HeliosApp resource to activate the entire CI/CD flow:
+**Option 1: Start with Empty Repository**
 
-```bash
-kubectl apply -f - <<EOF
-apiVersion: platform.helios.io/v1
-kind: HeliosApp
-metadata:
-  name: my-first-app
-  namespace: my-apps
-spec:
-  # Source code repository (contains your application code)
-  gitRepo: "https://github.com/your-username/your-app.git"
-  gitBranch: "main"
-
-  # GitOps repository (empty, Helios will automatically create manifests)
-  gitopsRepo: "https://github.com/your-username/your-gitops.git"
-  gitopsPath: "my-first-app"  # Directory in GitOps repo
-  gitopsBranch: "main"
-
-  # Container image configuration
-  imageRepo: "docker.io/your-username/my-first-app"
-  port: 80
-  replicas: 1
-
-  # Pipeline configuration
-  serviceAccount: "pipeline-sa"
-  webhookSecret: "github-webhook-secret"
-  pvcName: "my-app-pvc"
-
-  # Build configuration
-  buildContext: "."
-  dockerfilePath: "Dockerfile"
-
-  # GitOps configuration
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-    - CreateNamespace=true
-EOF
+```
+my-app-manifests/
+└── (empty - operator will work with manifests you add later)
 ```
 
-### **Parameter Explanation**
+**Option 2: Pre-populated Structure (Recommended)**
 
-- **`gitRepo`**: URL of the repository containing your source code
-- **`gitopsRepo`**: URL of the GitOps repository (empty, Helios will automatically create manifests)
-- **`imageRepo`**: Name of the Docker image that will be built and pushed
-- **`webhookSecret`**: Secret to authenticate webhooks from GitHub
-- **`syncPolicy`**: ArgoCD configuration for automatic sync and healing
+```mermaid
+graph TD
+    Root[my-app-manifests/]
+    Root --> Apps[apps/]
+    Apps --> MyApp[my-app/]
+    MyApp --> Base[base/]
+    MyApp --> Overlays[overlays/]
+    Base --> Deployment[deployment.yaml]
+    Base --> Service[service.yaml]
+    Base --> Kustomization[kustomization.yaml]
+    Overlays --> Dev[dev/]
+    Overlays --> Prod[prod/]
+    Root --> Readme[README.md]
 
-### **Watch the Magic Happen ✨**
-
-After creating the HeliosApp, the operator will automatically create all necessary resources:
-
-```bash
-# Watch HeliosApp status
-kubectl get heliosapp my-first-app -n my-apps -w
-
-# Check Tekton resources created
-kubectl get pipelines,eventlisteners,triggerbindings,triggertemplates -n my-apps
-
-# Check ArgoCD Application created
-kubectl get applications -n argocd
-
-# View detailed status
-kubectl describe heliosapp my-first-app -n my-apps
+    style Root fill:#e3f2fd
+    style Apps fill:#c8e6c9
+    style MyApp fill:#fff9c4
+    style Base fill:#e8f5e8
+    style Overlays fill:#e8f5e8
+    style Deployment fill:#ffcdd2
+    style Service fill:#ffcdd2
+    style Kustomization fill:#ffcdd2
+    style Dev fill:#ffcdd2
+    style Prod fill:#ffcdd2
+    style Readme fill:#ffcdd2
 ```
 
-### **Configure GitHub Webhook**
+> **💡 Note**: If your GitOps repository is empty, you'll need to create basic manifests (deployment.yaml, service.yaml) manually. The operator will then automatically update image tags when new builds are available.
 
-To activate the automatic CI/CD flow when pushing code:
+### Step 2: Create Basic GitOps Manifests (if needed)
 
-#### **For Local Deployment (Minikube/Kind/K3s):**
+If your GitOps repository is empty, create basic manifests:
 
-```bash
-# Get cluster IP (for Minikube)
-minikube ip
-
-# Or get EventListener service IP
-kubectl get svc -n my-apps | grep el-
-
-# Port forward to test webhook (if needed)
-kubectl port-forward svc/el-my-first-app-el -n my-apps 8080:8080
-```
-
-#### **For Cloud Deployment (GKE/EKS/AKS):**
-
-```bash
-# Get LoadBalancer external IP
-kubectl get svc -n my-apps el-my-first-app-el
-
-# Or expose via Ingress (recommended for production)
-kubectl expose service el-my-first-app-el -n my-apps --type=LoadBalancer --name=webhook-external
-```
-
-**Configure on GitHub:**
-
-1. Go to your source code repository
-2. Settings → Webhooks → Add webhook
-3. **Payload URL**:
-   - Local: `http://your-cluster-ip:8080`
-   - Cloud: `http://your-loadbalancer-ip:8080` or `https://your-domain.com/webhook`
-4. **Content type**: `application/json`
-5. **Secret**: `github-webhook-secret`
-6. **Events**: Select "Just the push event"
-7. **Active**: ✅
-
-## 🎉 **Step 6: Verify Your Deployment**
-
-### **Check Application Status**
-
-```bash
-# Get detailed status
-kubectl describe heliosapp my-first-app -n my-apps
-
-# Check ArgoCD Application
-kubectl describe application my-first-app-argocd -n argocd
-```
-
-### **Access ArgoCD UI (Optional)**
-
-```bash
-# Port forward to ArgoCD UI
-kubectl port-forward svc/argocd-server -n argocd 8080:443
-
-# Get admin password
-kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d && echo
-
-# Access: https://localhost:8080
-# Username: admin
-# Password: (from above command)
-```
-
-## 🔄 **Step 7: Test the Complete Flow**
-
-### **Push Code to Trigger Build**
-
-```bash
-# Make changes to your source code
-echo "print('Hello from updated app!')" > src/main.py
-
-# Commit and push
-git add .
-git commit -m "Update application"
-git push origin main
-```
-
-### **Monitor the Complete Workflow**
-
-```bash
-# 1. Check webhook was triggered
-kubectl logs -n my-apps -l app=el-my-first-app-el
-
-# 2. Watch PipelineRun
-kubectl get pipelinerun -n my-apps -w
-
-# 3. View build logs
-kubectl logs -n my-apps -l tekton.dev/pipelineRun=my-first-app-pipelinerun-xxx
-
-# 4. Check GitOps repo was updated
-git clone https://github.com/your-username/your-gitops-repo.git
-cd your-gitops-repo
-ls -la my-first-app/  # You'll see deployment.yaml, service.yaml
-
-# 5. Watch ArgoCD sync
-kubectl get application my-first-app-argocd -n argocd -w
-
-# 6. Check deployment
-kubectl get pods -n my-apps -l app=my-first-app
-```
-
-## 🎯 **What Happened?**
-
-When you created the `HeliosApp`, the operator automatically:
-
-1. ✅ **Generated Tekton Pipeline** (`my-first-app-pipeline`) from template
-2. ✅ **Created Tekton Triggers** (EventListener, TriggerBinding, TriggerTemplate)
-3. ✅ **Created ArgoCD Application** (`my-first-app-argocd`) for GitOps deployment
-4. ✅ **Set up Webhook Integration** for automatic builds on Git pushes
-5. ✅ **Configured Real-time Monitoring** with Kubernetes Watches
-
-When you pushed code:
-
-1. ✅ **GitHub Webhook** triggered Tekton EventListener
-2. ✅ **Tekton Pipeline** built Docker image and pushed to registry
-3. ✅ **Tekton Pipeline** automatically created/updated manifests in GitOps repo
-4. ✅ **ArgoCD** detected changes and synced to Kubernetes
-5. ✅ **Application** was deployed with the new image
-
-## 🔧 **Next Steps**
-
-### **Configure Webhooks (Optional)**
-
-To enable automatic builds on Git pushes:
-
-1. Go to your GitHub repository settings
-2. Navigate to "Webhooks"
-3. Add webhook URL: `http://your-cluster-ip:8080/`
-4. Set secret to match `webhookSecret` in your HeliosApp
-
-### **Set up GitOps Repository**
-
-The GitOps repository will be automatically populated with deployment manifests:
+#### Create `deployment.yaml`:
 
 ```yaml
-# your-gitops-repo/my-first-app/deployment.yaml (auto-generated)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-first-app
+  name: my-sample-app
   labels:
-    app: my-first-app
+    app: my-sample-app
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: my-first-app
+      app: my-sample-app
   template:
     metadata:
       labels:
-        app: my-first-app
+        app: my-sample-app
     spec:
       containers:
         - name: app
-          image: docker.io/your-username/my-first-app:latest
+          image: your-registry.com/my-app:latest # This will be updated by operator
           ports:
-            - containerPort: 80
----
-# your-gitops-repo/my-first-app/service.yaml (auto-generated)
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+```
+
+#### Create `service.yaml`:
+
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: my-first-app-service
+  name: my-sample-app-service
+  labels:
+    app: my-sample-app
 spec:
   selector:
-    app: my-first-app
+    app: my-sample-app
   ports:
-    - port: 80
-      targetPort: 80
-  type: LoadBalancer
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  type: ClusterIP
 ```
 
-## 🆘 **Troubleshooting**
+#### Create `kustomization.yaml`:
 
-### **Common Issues**
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml
+  - service.yaml
+
+commonLabels:
+  app.kubernetes.io/name: my-sample-app
+  app.kubernetes.io/managed-by: helios-operator
+```
+
+### Step 3: Create Your First HeliosApp
+
+Create a file named `my-app.yaml`:
+
+```yaml
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: my-sample-app
+  namespace: default
+spec:
+  # Source repository
+  gitRepo: "https://github.com/your-username/my-app"
+
+  # Container image repository
+  imageRepo: "your-registry.com/my-app"
+
+  # Application port
+  port: 8080
+
+  # Webhook secret
+  webhookSecret: "my-webhook-secret"
+
+  # GitOps repository
+  gitopsRepo: "https://github.com/your-username/my-app-manifests"
+  gitopsPath: "apps/my-app"
+```
+
+### Step 4: Create Required Secrets
+
+#### Webhook Secret
 
 ```bash
-# Check webhook logs
-kubectl logs -n my-apps -l app=el-my-first-app-el
-
-# Check pipeline status
-kubectl describe pipelinerun -n my-apps
-
-# Check ArgoCD status
-kubectl describe application my-first-app-argocd -n argocd
-
-# Check deployment status
-kubectl get pods -n my-apps
-kubectl describe pod -n my-apps -l app=my-first-app
+# Create webhook secret for Git triggers
+kubectl create secret generic my-webhook-secret \
+  --from-literal=webhook-secret-key="your-webhook-secret-here" \
+  --namespace=default
 ```
 
-### **Need Help?**
+#### Container Registry Secret (if using private registry)
 
-- **Issues**: Check our [Troubleshooting Guide](03-troubleshooting.md)
-- **Configuration**: See [HeliosApp Specification](02-helios-app-spec.md)
-- **Support**: Open an [issue on GitHub](https://github.com/hoangphuc841/helios-operator/issues)
+```bash
+# Create registry secret
+kubectl create secret docker-registry regcred \
+  --docker-server=your-registry.com \
+  --docker-username=your-username \
+  --docker-password=your-password \
+  --docker-email=your-email@example.com \
+  --namespace=default
+```
+
+### Step 5: Apply the HeliosApp Configuration
+
+```bash
+# Apply the HeliosApp resource
+kubectl apply -f my-app.yaml
+
+# Verify the resource was created
+kubectl get heliosapps
+kubectl describe heliosapp my-sample-app
+```
+
+### Step 6: Monitor the Initial Reconciliation
+
+```bash
+# Watch the HeliosApp status
+kubectl get heliosapps -w
+
+# Check detailed status and conditions
+kubectl describe heliosapp my-sample-app
+
+# View events related to your app
+kubectl get events --field-selector involvedObject.name=my-sample-app --sort-by='.lastTimestamp'
+
+# Check operator logs for reconciliation details
+kubectl logs -n helios-system deployment/helios-operator-manager -f
+```
+
+### Step 7: Verify Created Resources
+
+The operator will create several resources automatically:
+
+#### Tekton Resources
+
+```bash
+# Check EventListener (Git webhook receiver)
+kubectl get eventlisteners
+kubectl describe eventlistener helios-my-sample-app
+
+# Check TriggerBinding and TriggerTemplate
+kubectl get triggerbindings,triggertemplates
+
+# Check for any PipelineRuns (will appear after Git push)
+kubectl get pipelineruns
+```
+
+#### ArgoCD Resources
+
+```bash
+# Check ArgoCD Application
+kubectl get applications -n argocd
+kubectl describe application my-sample-app -n argocd
+
+# Check ArgoCD sync status
+kubectl get applications -n argocd my-sample-app -o jsonpath='{.status.sync.status}'
+```
+
+### Step 8: Trigger the Complete Workflow
+
+Now let's trigger the complete CI/CD pipeline:
+
+#### Make a Change to Your Source Code
+
+```bash
+# Clone your source repository
+git clone https://github.com/your-username/my-app.git
+cd my-app
+
+# Make a change (e.g., update README)
+echo "Updated via Helios Operator" >> README.md
+
+# Commit and push the change
+git add README.md
+git commit -m "Trigger Helios Operator pipeline"
+git push origin main
+```
+
+#### Monitor the Pipeline Execution
+
+```bash
+# Watch for new PipelineRun creation
+kubectl get pipelineruns -w
+
+# Check the latest PipelineRun status
+kubectl get pipelineruns --sort-by='.metadata.creationTimestamp' | tail -1
+
+# Get detailed PipelineRun information
+kubectl describe pipelinerun <pipeline-run-name>
+
+# Watch PipelineRun logs
+kubectl logs -l tekton.dev/pipelineRun=<pipeline-run-name> --all-containers=true -f
+```
+
+### Step 9: Verify Deployment
+
+#### Check Image Build and Push
+
+```bash
+# Verify the image was built and pushed to registry
+# (Check your container registry for the new image)
+
+# Check PipelineRun completion
+kubectl get pipelineruns -l app.kubernetes.io/name=my-sample-app
+
+# The operator automatically updates the image tag in your GitOps repository
+# Check your GitOps repo for the updated deployment.yaml with new image tag
+```
+
+#### Check ArgoCD Sync
+
+```bash
+# Verify ArgoCD detected the changes
+kubectl get applications -n argocd my-sample-app -o jsonpath='{.status.sync.status}'
+
+# Force sync if needed
+argocd app sync my-sample-app --server argocd.your-domain.com
+
+# Check application health
+kubectl get applications -n argocd my-sample-app -o jsonpath='{.status.health.status}'
+```
+
+#### Check Application Deployment
+
+```bash
+# Verify pods are running
+kubectl get pods -l app=my-sample-app
+
+# Check service
+kubectl get svc -l app=my-sample-app
+
+# Check ingress (if configured)
+kubectl get ingress -l app=my-sample-app
+
+# Test application access
+kubectl port-forward svc/my-sample-app-service 8080:8080
+curl http://localhost:8080
+```
+
+### Step 10: Monitor Application Health
+
+```bash
+# Check application logs
+kubectl logs -l app=my-sample-app -f
+
+# Monitor resource usage
+kubectl top pods -l app=my-sample-app
+
+# Check for any issues
+kubectl describe pods -l app=my-sample-app
+```
+
+## Verification & Monitoring
+
+### 🔍 Complete Health Check
+
+#### 1. Operator Health Verification
+
+```bash
+# Check operator pod status
+kubectl get pods -n helios-system -l app.kubernetes.io/name=helios-operator
+
+# Verify operator is ready
+kubectl get pods -n helios-system -l app.kubernetes.io/name=helios-operator -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}'
+
+# Check operator logs for any errors
+kubectl logs -n helios-system deployment/helios-operator-manager --tail=50
+
+# Verify CRD is installed and accessible
+kubectl get crd heliosapps.platform.helios.io -o yaml
+```
+
+#### 2. HeliosApp Resource Status
+
+```bash
+# Check all HeliosApps and their status
+kubectl get heliosapps -o wide
+
+# Get detailed status with conditions
+kubectl get heliosapps my-sample-app -o yaml | grep -A 10 "status:"
+
+# Check reconciliation status
+kubectl describe heliosapp my-sample-app | grep -A 5 "Status:"
+```
+
+#### 3. Tekton Pipeline Health
+
+```bash
+# Check EventListener status (Git webhook receiver)
+kubectl get eventlisteners -o wide
+kubectl describe eventlistener helios-my-sample-app
+
+# Check TriggerBindings and TriggerTemplates
+kubectl get triggerbindings,triggertemplates -l app.kubernetes.io/name=my-sample-app
+
+# Check recent PipelineRuns
+kubectl get pipelineruns -l app.kubernetes.io/name=my-sample-app --sort-by='.metadata.creationTimestamp'
+
+# Check PipelineRun success rate
+kubectl get pipelineruns -l app.kubernetes.io/name=my-sample-app -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.conditions[0].reason}{"\n"}{end}'
+```
+
+#### 4. ArgoCD Application Health
+
+```bash
+# Check ArgoCD Application status
+kubectl get applications -n argocd my-sample-app -o yaml | grep -A 5 "status:"
+
+# Check sync status
+kubectl get applications -n argocd my-sample-app -o jsonpath='{.status.sync.status}'
+
+# Check health status
+kubectl get applications -n argocd my-sample-app -o jsonpath='{.status.health.status}'
+
+# Check last sync time
+kubectl get applications -n argocd my-sample-app -o jsonpath='{.status.sync.lastSyncedAt}'
+```
+
+#### 5. Application Deployment Health
+
+```bash
+# Check pod status and readiness
+kubectl get pods -l app=my-sample-app -o wide
+
+# Check service endpoints
+kubectl get endpoints -l app=my-sample-app
+
+# Check ingress status (if configured)
+kubectl get ingress -l app=my-sample-app
+
+# Verify application is responding
+kubectl port-forward svc/my-sample-app-service 8080:8080 &
+curl -f http://localhost:8080/health || echo "Health check failed"
+kill %1
+```
+
+### 📊 Monitoring Dashboard
+
+#### Prometheus Metrics
+
+```bash
+# Port forward to access metrics
+kubectl port-forward -n helios-system svc/helios-operator-metrics 8080:8080
+
+# Check operator metrics
+curl http://localhost:8080/metrics | grep helios_operator
+
+# Check reconciliation metrics
+curl http://localhost:8080/metrics | grep reconciliation
+```
+
+#### Grafana Dashboard
+
+If you have Grafana installed:
+
+```bash
+# Access Grafana (adjust URL based on your setup)
+kubectl port-forward -n monitoring svc/grafana 3000:80
+
+# Open http://localhost:3000 in your browser
+# Import the Helios Operator dashboard from config/base/monitoring/grafana-dashboard.json
+```
+
+### 🚨 Health Check Script
+
+Create a comprehensive health check script:
+
+```bash
+#!/bin/bash
+# save as health-check.sh
+
+echo "🔍 Helios Operator Health Check"
+echo "================================"
+
+# Check operator
+echo "1. Checking Operator Health..."
+if kubectl get pods -n helios-system -l app.kubernetes.io/name=helios-operator | grep -q "Running"; then
+    echo "✅ Operator is running"
+else
+    echo "❌ Operator is not running"
+fi
+
+# Check CRD
+echo "2. Checking CRD Installation..."
+if kubectl get crd heliosapps.platform.helios.io > /dev/null 2>&1; then
+    echo "✅ CRD is installed"
+else
+    echo "❌ CRD is not installed"
+fi
+
+# Check HeliosApps
+echo "3. Checking HeliosApps..."
+helios_count=$(kubectl get heliosapps --no-headers | wc -l)
+echo "📊 Found $helios_count HeliosApp(s)"
+
+# Check ArgoCD Applications
+echo "4. Checking ArgoCD Applications..."
+argocd_count=$(kubectl get applications -n argocd --no-headers | wc -l)
+echo "📊 Found $argocd_count ArgoCD Application(s)"
+
+# Check Tekton EventListeners
+echo "5. Checking Tekton EventListeners..."
+tekton_count=$(kubectl get eventlisteners --no-headers | wc -l)
+echo "📊 Found $tekton_count EventListener(s)"
+
+echo "================================"
+echo "Health check complete!"
+```
+
+Make it executable and run:
+
+```bash
+chmod +x health-check.sh
+./health-check.sh
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. Operator Pod Not Starting
+
+**Symptoms**: Operator pod is in CrashLoopBackOff or Pending state.
+
+**Solutions**:
+
+- Check resource quotas: `kubectl describe quota -n helios-system`
+- Verify RBAC permissions: `kubectl auth can-i create heliosapps --as=system:serviceaccount:helios-system:helios-operator-manager`
+- Check logs: `kubectl logs -n helios-system deployment/helios-operator-manager`
+
+#### 2. ArgoCD Application Not Created
+
+**Symptoms**: HeliosApp shows "ArgoCD Application not found" in status.
+
+**Solutions**:
+
+- Verify ArgoCD is running: `kubectl get pods -n argocd`
+- Check ArgoCD namespace configuration
+- Verify GitOps repository access permissions
+
+#### 3. Tekton Pipeline Not Triggering
+
+**Symptoms**: No PipelineRuns created after Git push.
+
+**Solutions**:
+
+- Check EventListener status: `kubectl get eventlisteners`
+- Verify webhook secret configuration
+- Check Tekton Triggers logs: `kubectl logs -n tekton-pipelines deployment/tekton-triggers-controller`
+
+#### 4. Build Failures
+
+**Symptoms**: PipelineRuns fail with build errors.
+
+**Solutions**:
+
+- Verify container registry credentials
+- Check Dockerfile in source repository
+- Review PipelineRun logs: `kubectl logs -l tekton.dev/pipelineRun=<pipeline-run-name>`
+
+### Debug Commands
+
+```bash
+# Get detailed HeliosApp information
+kubectl get heliosapp <app-name> -o yaml
+
+# Check operator metrics (if enabled)
+kubectl port-forward -n helios-system svc/helios-operator-metrics 8080:8080
+
+# View all events
+kubectl get events --sort-by='.lastTimestamp'
+
+# Check resource usage
+kubectl top pods -n helios-system
+```
+
+## Next Steps
+
+Congratulations! You've successfully set up Helios Operator and deployed your first application. Here's what you can do next:
+
+### 🚀 Immediate Next Steps
+
+1. **Verify Your Deployment**: Run the health check script to ensure everything is working correctly
+2. **Test the Complete Workflow**: Make another change to your source code and watch the pipeline execute
+3. **Monitor Your Application**: Set up monitoring dashboards and alerts
+
+### 📚 Learning Path
+
+#### Beginner Level
+
+1. **[Configuration Guide](02-configuration.md)** - Master all configuration options
+2. **[Examples](../examples/)** - Explore ready-to-use examples
+3. **[HeliosApp Specification](03-helios-app-spec.md)** - Understand the complete API reference
+
+#### Intermediate Level
+
+4. **[Troubleshooting Guide](04-troubleshooting.md)** - Learn to diagnose and fix issues
+5. **[Examples Guide](05-examples.md)** - Advanced scenarios and real-world configurations
+6. **[Monitoring Guide](06-monitoring.md)** - Set up comprehensive observability
+
+#### Advanced Level
+
+7. **Multi-Environment Setup** - Deploy across dev/staging/production
+8. **Security Hardening** - Implement RBAC, network policies, and security scanning
+9. **Custom Pipelines** - Create custom Tekton pipelines for specific needs
+10. **GitOps Best Practices** - Implement proper GitOps workflows
+
+### 🏗️ Production Readiness Checklist
+
+- [ ] **Security**: Configure RBAC, network policies, and image scanning
+- [ ] **Monitoring**: Set up Prometheus, Grafana, and alerting rules
+- [ ] **Backup**: Configure backup for ArgoCD and Tekton resources
+- [ ] **Multi-Environment**: Set up separate environments (dev/staging/prod)
+- [ ] **CI/CD Pipeline**: Integrate with your existing CI/CD tools
+- [ ] **Resource Management**: Configure resource limits and requests
+- [ ] **High Availability**: Set up multiple replicas and leader election
+- [ ] **Disaster Recovery**: Plan for cluster failures and data recovery
+
+### 🔧 Advanced Workflows
+
+#### Multi-Environment Deployment
+
+```yaml
+# Example: Deploy to multiple environments
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: my-app-dev
+spec:
+  # ... configuration ...
+  gitopsPath: "apps/my-app/overlays/dev"
+
+---
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: my-app-prod
+spec:
+  # ... configuration ...
+  gitopsPath: "apps/my-app/overlays/prod"
+  replicas: 3 # Higher replicas for production
+```
+
+#### Custom Pipeline Configuration
+
+```yaml
+spec:
+  pipeline:
+    enabled: true
+    buildArgs:
+      - "BUILD_ENV=production"
+      - "NODE_ENV=production"
+    context: "./src"
+    dockerfile: "./Dockerfile.prod"
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+```
+
+### 📖 Additional Resources
+
+#### Documentation
+
+- **[Configuration Guide](02-configuration.md)** - Complete configuration reference
+- **[HeliosApp Specification](03-helios-app-spec.md)** - API reference and field descriptions
+- **[Troubleshooting Guide](04-troubleshooting.md)** - Common issues and solutions
+- **[Examples Guide](05-examples.md)** - Advanced examples and scenarios
+- **[Monitoring Guide](06-monitoring.md)** - Observability and metrics
+
+#### External Resources
+
+- **[ArgoCD Documentation](https://argo-cd.readthedocs.io/)** - GitOps deployment tool
+- **[Tekton Documentation](https://tekton.dev/)** - CI/CD pipeline framework
+- **[Kubernetes Documentation](https://kubernetes.io/docs/)** - Container orchestration platform
+
+### 🆘 Support & Community
+
+#### Getting Help
+
+1. **Check the Documentation**: Review the guides above for detailed information
+2. **Search Issues**: Look through existing [GitHub issues](https://github.com/hoangphuc841/helios-operator/issues)
+3. **Create an Issue**: Report bugs or request features with detailed information
+4. **Community Discussions**: Join discussions in GitHub Discussions
+
+#### Contributing
+
+- **Bug Reports**: Help us improve by reporting issues
+- **Feature Requests**: Suggest new features and improvements
+- **Code Contributions**: Contribute to the codebase
+- **Documentation**: Help improve the documentation
+
+#### Enterprise Support
+
+> **Note**: This is a PoC project. For enterprise support, advanced features, or consulting services, please contact the Helios team or contribute to the project development.
 
 ---
 
-**🎉 Congratulations!** You've successfully deployed your first application with Helios Operator. The system will now automatically build and deploy your application whenever you push code to your source repository. Ready to deploy more? Check out the [HeliosApp Specification](02-helios-app-spec.md) for advanced configuration options.
+## 🎉 Congratulations!
+
+You've successfully:
+
+- ✅ Installed and configured Helios Operator
+- ✅ Deployed your first application using GitOps
+- ✅ Set up automated CI/CD pipelines
+- ✅ Monitored your application health
+
+You're now ready to leverage the full power of GitOps-based application lifecycle management with Helios Operator!

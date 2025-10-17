@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package config provides configuration management for the Helios operator,
+// including environment variable parsing and validation.
 package config
 
 import (
@@ -23,7 +25,7 @@ import (
 	"time"
 )
 
-// OperatorConfig holds all operator configuration
+// OperatorConfig holds all operator configuration.
 type OperatorConfig struct {
 	// Reconciliation settings
 	ReconcileInterval       time.Duration
@@ -51,7 +53,7 @@ type OperatorConfig struct {
 	WatchNamespace string // Empty string means all namespaces
 }
 
-// Default returns a default operator configuration
+// Default returns a default operator configuration.
 func Default() *OperatorConfig {
 	return &OperatorConfig{
 		ReconcileInterval:       5 * time.Minute,
@@ -70,15 +72,43 @@ func Default() *OperatorConfig {
 	}
 }
 
-// LoadFromEnv loads configuration from environment variables
+// LoadFromEnv loads configuration from environment variables.
 func LoadFromEnv() (*OperatorConfig, error) {
 	cfg := Default()
 
-	// Reconciliation settings
+	if err := loadReconciliationSettings(cfg); err != nil {
+		return nil, err
+	}
+
+	if err := loadResourceDefaults(cfg); err != nil {
+		return nil, err
+	}
+
+	if err := loadRetrySettings(cfg); err != nil {
+		return nil, err
+	}
+
+	if err := loadFeatureFlags(cfg); err != nil {
+		return nil, err
+	}
+
+	if err := loadTimeoutSettings(cfg); err != nil {
+		return nil, err
+	}
+
+	if err := loadNamespaceSettings(cfg); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+// loadReconciliationSettings loads reconciliation-related configuration.
+func loadReconciliationSettings(cfg *OperatorConfig) error {
 	if val := os.Getenv("RECONCILE_INTERVAL"); val != "" {
 		duration, err := time.ParseDuration(val)
 		if err != nil {
-			return nil, fmt.Errorf("invalid RECONCILE_INTERVAL: %w", err)
+			return fmt.Errorf("invalid RECONCILE_INTERVAL: %w", err)
 		}
 		cfg.ReconcileInterval = duration
 	}
@@ -86,22 +116,26 @@ func LoadFromEnv() (*OperatorConfig, error) {
 	if val := os.Getenv("MAX_CONCURRENT_RECONCILES"); val != "" {
 		num, err := strconv.Atoi(val)
 		if err != nil {
-			return nil, fmt.Errorf("invalid MAX_CONCURRENT_RECONCILES: %w", err)
+			return fmt.Errorf("invalid MAX_CONCURRENT_RECONCILES: %w", err)
 		}
 		if num < 1 {
-			return nil, fmt.Errorf("MAX_CONCURRENT_RECONCILES must be >= 1, got %d", num)
+			return fmt.Errorf("MAX_CONCURRENT_RECONCILES must be >= 1, got %d", num)
 		}
 		cfg.MaxConcurrentReconciles = num
 	}
 
-	// Resource defaults
+	return nil
+}
+
+// loadResourceDefaults loads resource default configuration.
+func loadResourceDefaults(cfg *OperatorConfig) error {
 	if val := os.Getenv("DEFAULT_REPLICAS"); val != "" {
 		num, err := strconv.ParseInt(val, 10, 32)
 		if err != nil {
-			return nil, fmt.Errorf("invalid DEFAULT_REPLICAS: %w", err)
+			return fmt.Errorf("invalid DEFAULT_REPLICAS: %w", err)
 		}
 		if num < 0 {
-			return nil, fmt.Errorf("DEFAULT_REPLICAS must be >= 0, got %d", num)
+			return fmt.Errorf("DEFAULT_REPLICAS must be >= 0, got %d", num)
 		}
 		cfg.DefaultReplicas = int32(num)
 	}
@@ -109,10 +143,10 @@ func LoadFromEnv() (*OperatorConfig, error) {
 	if val := os.Getenv("DEFAULT_PORT"); val != "" {
 		num, err := strconv.ParseInt(val, 10, 32)
 		if err != nil {
-			return nil, fmt.Errorf("invalid DEFAULT_PORT: %w", err)
+			return fmt.Errorf("invalid DEFAULT_PORT: %w", err)
 		}
 		if num < 1 || num > 65535 {
-			return nil, fmt.Errorf("DEFAULT_PORT must be between 1 and 65535, got %d", num)
+			return fmt.Errorf("DEFAULT_PORT must be between 1 and 65535, got %d", num)
 		}
 		cfg.DefaultPort = int32(num)
 	}
@@ -121,14 +155,18 @@ func LoadFromEnv() (*OperatorConfig, error) {
 		cfg.DefaultServiceAccount = val
 	}
 
-	// Retry settings
+	return nil
+}
+
+// loadRetrySettings loads retry-related configuration.
+func loadRetrySettings(cfg *OperatorConfig) error {
 	if val := os.Getenv("MAX_RETRIES"); val != "" {
 		num, err := strconv.Atoi(val)
 		if err != nil {
-			return nil, fmt.Errorf("invalid MAX_RETRIES: %w", err)
+			return fmt.Errorf("invalid MAX_RETRIES: %w", err)
 		}
 		if num < 0 {
-			return nil, fmt.Errorf("MAX_RETRIES must be >= 0, got %d", num)
+			return fmt.Errorf("MAX_RETRIES must be >= 0, got %d", num)
 		}
 		cfg.MaxRetries = num
 	}
@@ -136,16 +174,20 @@ func LoadFromEnv() (*OperatorConfig, error) {
 	if val := os.Getenv("RETRY_BACKOFF"); val != "" {
 		duration, err := time.ParseDuration(val)
 		if err != nil {
-			return nil, fmt.Errorf("invalid RETRY_BACKOFF: %w", err)
+			return fmt.Errorf("invalid RETRY_BACKOFF: %w", err)
 		}
 		cfg.RetryBackoff = duration
 	}
 
-	// Feature flags
+	return nil
+}
+
+// loadFeatureFlags loads feature flag configuration.
+func loadFeatureFlags(cfg *OperatorConfig) error {
 	if val := os.Getenv("ENABLE_METRICS"); val != "" {
 		enabled, err := strconv.ParseBool(val)
 		if err != nil {
-			return nil, fmt.Errorf("invalid ENABLE_METRICS: %w", err)
+			return fmt.Errorf("invalid ENABLE_METRICS: %w", err)
 		}
 		cfg.EnableMetrics = enabled
 	}
@@ -153,7 +195,7 @@ func LoadFromEnv() (*OperatorConfig, error) {
 	if val := os.Getenv("ENABLE_WEBHOOKS"); val != "" {
 		enabled, err := strconv.ParseBool(val)
 		if err != nil {
-			return nil, fmt.Errorf("invalid ENABLE_WEBHOOKS: %w", err)
+			return fmt.Errorf("invalid ENABLE_WEBHOOKS: %w", err)
 		}
 		cfg.EnableWebhooks = enabled
 	}
@@ -161,16 +203,20 @@ func LoadFromEnv() (*OperatorConfig, error) {
 	if val := os.Getenv("ENABLE_LEADER_ELECTION"); val != "" {
 		enabled, err := strconv.ParseBool(val)
 		if err != nil {
-			return nil, fmt.Errorf("invalid ENABLE_LEADER_ELECTION: %w", err)
+			return fmt.Errorf("invalid ENABLE_LEADER_ELECTION: %w", err)
 		}
 		cfg.EnableLeaderElection = enabled
 	}
 
-	// Timeouts
+	return nil
+}
+
+// loadTimeoutSettings loads timeout-related configuration.
+func loadTimeoutSettings(cfg *OperatorConfig) error {
 	if val := os.Getenv("RECONCILE_TIMEOUT"); val != "" {
 		duration, err := time.ParseDuration(val)
 		if err != nil {
-			return nil, fmt.Errorf("invalid RECONCILE_TIMEOUT: %w", err)
+			return fmt.Errorf("invalid RECONCILE_TIMEOUT: %w", err)
 		}
 		cfg.ReconcileTimeout = duration
 	}
@@ -178,20 +224,24 @@ func LoadFromEnv() (*OperatorConfig, error) {
 	if val := os.Getenv("API_CALL_TIMEOUT"); val != "" {
 		duration, err := time.ParseDuration(val)
 		if err != nil {
-			return nil, fmt.Errorf("invalid API_CALL_TIMEOUT: %w", err)
+			return fmt.Errorf("invalid API_CALL_TIMEOUT: %w", err)
 		}
 		cfg.APICallTimeout = duration
 	}
 
-	// Namespace watching
+	return nil
+}
+
+// loadNamespaceSettings loads namespace-related configuration.
+func loadNamespaceSettings(cfg *OperatorConfig) error {
 	if val := os.Getenv("WATCH_NAMESPACE"); val != "" {
 		cfg.WatchNamespace = val
 	}
 
-	return cfg, nil
+	return nil
 }
 
-// Validate validates the configuration
+// Validate validates the configuration.
 func (c *OperatorConfig) Validate() error {
 	if c.ReconcileInterval < 1*time.Second {
 		return fmt.Errorf("ReconcileInterval must be >= 1s, got %v", c.ReconcileInterval)
@@ -228,7 +278,7 @@ func (c *OperatorConfig) Validate() error {
 	return nil
 }
 
-// String returns a string representation of the configuration
+// String returns a string representation of the configuration.
 func (c *OperatorConfig) String() string {
 	return fmt.Sprintf(
 		"OperatorConfig{ReconcileInterval: %v, MaxConcurrentReconciles: %d, DefaultReplicas: %d, "+

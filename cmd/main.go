@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package main provides the entry point for the Helios operator.
+// It initializes the Kubernetes client, sets up logging, and starts the controller manager.
 package main
 
 import (
@@ -37,11 +39,11 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	// Tekton imports
+	// Tekton imports.
 	tektonv1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	triggersv1beta1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
 
-	// Note: ArgoCD imports will be added later when compatibility issues are resolved
+	// Note: ArgoCD imports will be added later when compatibility issues are resolved.
 
 	heliosappv1 "github.com/hoangphuc841/helios-operator/api/v1"
 	"github.com/hoangphuc841/helios-operator/internal/controller"
@@ -53,7 +55,7 @@ var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
 
-	// Version information injected at build time via ldflags
+	// Version information injected at build time via ldflags.
 	version = "dev"
 	commit  = "unknown"
 	date    = "unknown"
@@ -129,6 +131,7 @@ func main() {
 	webhookServer := webhook.NewServer(webhook.Options{
 		TLSOpts: webhookTLSOpts,
 	})
+	setupLog.Info("Webhook server created", "port", "9443")
 
 	// Setup metrics server
 	metricsServerOptions := setupMetricsServer(config, tlsOpts)
@@ -186,11 +189,19 @@ func main() {
 	}
 
 	// Setup webhooks
-	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+	setupLog.Info("Checking if webhooks are enabled...")
+	enableWebhooks := os.Getenv("ENABLE_WEBHOOKS")
+	setupLog.Info("ENABLE_WEBHOOKS environment variable", "value", enableWebhooks)
+
+	if enableWebhooks != "false" {
+		setupLog.Info("Webhooks are ENABLED. Setting up webhook with manager...")
 		if err = (&heliosappv1.HeliosApp{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "HeliosApp")
 			os.Exit(1)
 		}
+		setupLog.Info("Successfully called SetupWebhookWithManager for HeliosApp webhook")
+	} else {
+		setupLog.Info("Webhooks are DISABLED by environment variable")
 	}
 	// +kubebuilder:scaffold:builder
 
@@ -231,7 +242,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	setupLog.Info("starting manager")
+	setupLog.Info("Starting manager with webhook server", "webhook-port", "9443", "metrics-port", config.metricsAddr, "health-port", config.probeAddr)
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)

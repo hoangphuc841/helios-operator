@@ -1,0 +1,1248 @@
+﻿2025-10-16T14:56:24.0866773Z Current runner version: '2.328.0'
+2025-10-16T14:56:24.0890273Z ##[group]Runner Image Provisioner
+2025-10-16T14:56:24.0891185Z Hosted Compute Agent
+2025-10-16T14:56:24.0891704Z Version: 20250912.392
+2025-10-16T14:56:24.0892582Z Commit: d921fda672a98b64f4f82364647e2f10b2267d0b
+2025-10-16T14:56:24.0893322Z Build Date: 2025-09-12T15:23:14Z
+2025-10-16T14:56:24.0893979Z ##[endgroup]
+2025-10-16T14:56:24.0894474Z ##[group]Operating System
+2025-10-16T14:56:24.0895076Z Ubuntu
+2025-10-16T14:56:24.0895548Z 24.04.3
+2025-10-16T14:56:24.0896053Z LTS
+2025-10-16T14:56:24.0896569Z ##[endgroup]
+2025-10-16T14:56:24.0897044Z ##[group]Runner Image
+2025-10-16T14:56:24.0897591Z Image: ubuntu-24.04
+2025-10-16T14:56:24.0898043Z Version: 20250929.60.1
+2025-10-16T14:56:24.0899142Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250929.60/images/ubuntu/Ubuntu2404-Readme.md
+2025-10-16T14:56:24.0900687Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250929.60
+2025-10-16T14:56:24.0901761Z ##[endgroup]
+2025-10-16T14:56:24.0903136Z ##[group]GITHUB_TOKEN Permissions
+2025-10-16T14:56:24.0905033Z Contents: read
+2025-10-16T14:56:24.0905585Z Metadata: read
+2025-10-16T14:56:24.0906057Z Packages: read
+2025-10-16T14:56:24.0906680Z ##[endgroup]
+2025-10-16T14:56:24.0909019Z Secret source: Actions
+2025-10-16T14:56:24.0909712Z Prepare workflow directory
+2025-10-16T14:56:24.1309170Z Prepare all required actions
+2025-10-16T14:56:24.1346552Z Getting action download info
+2025-10-16T14:56:24.5668343Z Download action repository 'actions/checkout@v5' (SHA:08c6903cd8c0fde910a37f88322edcfb5dd907a8)
+2025-10-16T14:56:24.7626681Z Download action repository 'actions/setup-go@v6' (SHA:44694675825211faa026b3c33043df3e48a5fa00)
+2025-10-16T14:56:25.8262045Z Download action repository 'actions/cache@v4' (SHA:0057852bfaa89a56745cba8c7296529d2fc39830)
+2025-10-16T14:56:25.9929820Z Download action repository 'codecov/codecov-action@v5' (SHA:5a1091511ad55cbe89839c7260b706298ca349f7)
+2025-10-16T14:56:26.7038613Z Getting action download info
+2025-10-16T14:56:26.8721063Z Download action repository 'actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea' (SHA:60a0d83039c74a4aee543508d2ffcb1c3799cdea)
+2025-10-16T14:56:27.6779336Z Complete job name: Unit Tests
+2025-10-16T14:56:27.7417859Z ##[group]Run actions/checkout@v5
+2025-10-16T14:56:27.7418452Z with:
+2025-10-16T14:56:27.7418694Z   repository: hoangphuc841/helios-operator
+2025-10-16T14:56:27.7419157Z   token: ***
+2025-10-16T14:56:27.7419390Z   ssh-strict: true
+2025-10-16T14:56:27.7419595Z   ssh-user: git
+2025-10-16T14:56:27.7419826Z   persist-credentials: true
+2025-10-16T14:56:27.7420091Z   clean: true
+2025-10-16T14:56:27.7420312Z   sparse-checkout-cone-mode: true
+2025-10-16T14:56:27.7420574Z   fetch-depth: 1
+2025-10-16T14:56:27.7420772Z   fetch-tags: false
+2025-10-16T14:56:27.7420988Z   show-progress: true
+2025-10-16T14:56:27.7421196Z   lfs: false
+2025-10-16T14:56:27.7421383Z   submodules: false
+2025-10-16T14:56:27.7421582Z   set-safe-directory: true
+2025-10-16T14:56:27.7422021Z env:
+2025-10-16T14:56:27.7422383Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:27.7422612Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:27.7422858Z ##[endgroup]
+2025-10-16T14:56:27.8326899Z Syncing repository: hoangphuc841/helios-operator
+2025-10-16T14:56:27.8328661Z ##[group]Getting Git version info
+2025-10-16T14:56:27.8329190Z Working directory is '/home/runner/work/helios-operator/helios-operator'
+2025-10-16T14:56:27.8329943Z [command]/usr/bin/git version
+2025-10-16T14:56:27.8435714Z git version 2.51.0
+2025-10-16T14:56:27.8457764Z ##[endgroup]
+2025-10-16T14:56:27.8473056Z Temporarily overriding HOME='/home/runner/work/_temp/41329785-619c-466b-a9b3-f0f1ef3a331d' before making global git config changes
+2025-10-16T14:56:27.8474152Z Adding repository directory to the temporary git global config as a safe directory
+2025-10-16T14:56:27.8478560Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:56:27.8517353Z Deleting the contents of '/home/runner/work/helios-operator/helios-operator'
+2025-10-16T14:56:27.8520745Z ##[group]Initializing the repository
+2025-10-16T14:56:27.8525741Z [command]/usr/bin/git init /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:56:27.8656843Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-10-16T14:56:27.8657891Z hint: is subject to change. To configure the initial branch name to use in all
+2025-10-16T14:56:27.8658533Z hint: of your new repositories, which will suppress this warning, call:
+2025-10-16T14:56:27.8658983Z hint:
+2025-10-16T14:56:27.8659308Z hint: 	git config --global init.defaultBranch <name>
+2025-10-16T14:56:27.8659646Z hint:
+2025-10-16T14:56:27.8660138Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-10-16T14:56:27.8661101Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-10-16T14:56:27.8661760Z hint:
+2025-10-16T14:56:27.8662275Z hint: 	git branch -m <name>
+2025-10-16T14:56:27.8662726Z hint:
+2025-10-16T14:56:27.8663365Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2025-10-16T14:56:27.8664569Z Initialized empty Git repository in /home/runner/work/helios-operator/helios-operator/.git/
+2025-10-16T14:56:27.8674917Z [command]/usr/bin/git remote add origin https://github.com/hoangphuc841/helios-operator
+2025-10-16T14:56:27.8717126Z ##[endgroup]
+2025-10-16T14:56:27.8717801Z ##[group]Disabling automatic garbage collection
+2025-10-16T14:56:27.8721764Z [command]/usr/bin/git config --local gc.auto 0
+2025-10-16T14:56:27.8753903Z ##[endgroup]
+2025-10-16T14:56:27.8754674Z ##[group]Setting up auth
+2025-10-16T14:56:27.8761513Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-10-16T14:56:27.8793518Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-10-16T14:56:27.9145925Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-10-16T14:56:27.9176911Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-10-16T14:56:27.9401843Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-10-16T14:56:27.9437963Z ##[endgroup]
+2025-10-16T14:56:27.9438720Z ##[group]Fetching the repository
+2025-10-16T14:56:27.9448305Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1:refs/remotes/pull/1/merge
+2025-10-16T14:56:28.5581552Z From https://github.com/hoangphuc841/helios-operator
+2025-10-16T14:56:28.5582557Z  * [new ref]         e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1 -> pull/1/merge
+2025-10-16T14:56:28.5614274Z ##[endgroup]
+2025-10-16T14:56:28.5615022Z ##[group]Determining the checkout info
+2025-10-16T14:56:28.5617864Z ##[endgroup]
+2025-10-16T14:56:28.5623422Z [command]/usr/bin/git sparse-checkout disable
+2025-10-16T14:56:28.5666684Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-10-16T14:56:28.5692553Z ##[group]Checking out the ref
+2025-10-16T14:56:28.5696874Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/1/merge
+2025-10-16T14:56:28.5820984Z Note: switching to 'refs/remotes/pull/1/merge'.
+2025-10-16T14:56:28.5821407Z 
+2025-10-16T14:56:28.5821797Z You are in 'detached HEAD' state. You can look around, make experimental
+2025-10-16T14:56:28.5822896Z changes and commit them, and you can discard any commits you make in this
+2025-10-16T14:56:28.5823768Z state without impacting any branches by switching back to a branch.
+2025-10-16T14:56:28.5824206Z 
+2025-10-16T14:56:28.5824445Z If you want to create a new branch to retain commits you create, you may
+2025-10-16T14:56:28.5825207Z do so (now or later) by using -c with the switch command. Example:
+2025-10-16T14:56:28.5826078Z 
+2025-10-16T14:56:28.5826310Z   git switch -c <new-branch-name>
+2025-10-16T14:56:28.5826678Z 
+2025-10-16T14:56:28.5826890Z Or undo this operation with:
+2025-10-16T14:56:28.5827221Z 
+2025-10-16T14:56:28.5827375Z   git switch -
+2025-10-16T14:56:28.5827664Z 
+2025-10-16T14:56:28.5828091Z Turn off this advice by setting config variable advice.detachedHead to false
+2025-10-16T14:56:28.5828682Z 
+2025-10-16T14:56:28.5829363Z HEAD is now at e1ff28e Merge ff6f498efdf5599219b5f62fbf20e6c98a1c02df into ed87fb28aec8054c283f32b91578ac0ec021d6ef
+2025-10-16T14:56:28.5831320Z ##[endgroup]
+2025-10-16T14:56:28.5866395Z [command]/usr/bin/git log -1 --format=%H
+2025-10-16T14:56:28.5889165Z e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1
+2025-10-16T14:56:28.6101505Z ##[group]Run actions/setup-go@v6
+2025-10-16T14:56:28.6101803Z with:
+2025-10-16T14:56:28.6102000Z   go-version: 1.25.3
+2025-10-16T14:56:28.6102386Z   check-latest: false
+2025-10-16T14:56:28.6102732Z   token: ***
+2025-10-16T14:56:28.6102951Z   cache: true
+2025-10-16T14:56:28.6103138Z env:
+2025-10-16T14:56:28.6103319Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:28.6103541Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:28.6103787Z ##[endgroup]
+2025-10-16T14:56:28.7730731Z Setup go version spec 1.25.3
+2025-10-16T14:56:28.7753604Z Attempting to download 1.25.3...
+2025-10-16T14:56:29.7836182Z matching 1.25.3...
+2025-10-16T14:56:29.7862027Z Acquiring 1.25.3 from https://github.com/actions/go-versions/releases/download/1.25.3-18483679098/go-1.25.3-linux-x64.tar.gz
+2025-10-16T14:56:30.4387910Z Extracting Go...
+2025-10-16T14:56:30.4514095Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/c18e84f1-8661-4f83-b9b0-6b26ef24aa64 -f /home/runner/work/_temp/2cd1befc-88bc-46ae-8024-bd1ed4e9677a
+2025-10-16T14:56:31.8958810Z Successfully extracted go to /home/runner/work/_temp/c18e84f1-8661-4f83-b9b0-6b26ef24aa64
+2025-10-16T14:56:31.8959359Z Adding to the cache ...
+2025-10-16T14:56:36.6985488Z Successfully cached go to /opt/hostedtoolcache/go/1.25.3/x64
+2025-10-16T14:56:36.6988023Z Added go to the path
+2025-10-16T14:56:36.6990936Z Successfully set up Go version 1.25.3
+2025-10-16T14:56:36.7232726Z [command]/opt/hostedtoolcache/go/1.25.3/x64/bin/go env GOMODCACHE
+2025-10-16T14:56:36.7263512Z [command]/opt/hostedtoolcache/go/1.25.3/x64/bin/go env GOCACHE
+2025-10-16T14:56:36.7295183Z /home/runner/go/pkg/mod
+2025-10-16T14:56:36.7312633Z /home/runner/.cache/go-build
+2025-10-16T14:56:36.9617338Z Cache is not found
+2025-10-16T14:56:36.9640045Z go version go1.25.3 linux/amd64
+2025-10-16T14:56:36.9640299Z 
+2025-10-16T14:56:36.9640671Z ##[group]go env
+2025-10-16T14:56:37.1051615Z AR='ar'
+2025-10-16T14:56:37.1051935Z CC='gcc'
+2025-10-16T14:56:37.1052426Z CGO_CFLAGS='-O2 -g'
+2025-10-16T14:56:37.1052743Z CGO_CPPFLAGS=''
+2025-10-16T14:56:37.1053002Z CGO_CXXFLAGS='-O2 -g'
+2025-10-16T14:56:37.1053295Z CGO_ENABLED='1'
+2025-10-16T14:56:37.1053539Z CGO_FFLAGS='-O2 -g'
+2025-10-16T14:56:37.1053795Z CGO_LDFLAGS='-O2 -g'
+2025-10-16T14:56:37.1054058Z CXX='g++'
+2025-10-16T14:56:37.1054282Z GCCGO='gccgo'
+2025-10-16T14:56:37.1054523Z GO111MODULE=''
+2025-10-16T14:56:37.1054752Z GOAMD64='v1'
+2025-10-16T14:56:37.1055038Z GOARCH='amd64'
+2025-10-16T14:56:37.1055291Z GOAUTH='netrc'
+2025-10-16T14:56:37.1055556Z GOBIN=''
+2025-10-16T14:56:37.1055803Z GOCACHE='/home/runner/.cache/go-build'
+2025-10-16T14:56:37.1056114Z GOCACHEPROG=''
+2025-10-16T14:56:37.1056326Z GODEBUG=''
+2025-10-16T14:56:37.1056562Z GOENV='/home/runner/.config/go/env'
+2025-10-16T14:56:37.1056844Z GOEXE=''
+2025-10-16T14:56:37.1057045Z GOEXPERIMENT=''
+2025-10-16T14:56:37.1057273Z GOFIPS140='off'
+2025-10-16T14:56:37.1057497Z GOFLAGS=''
+2025-10-16T14:56:37.1058245Z GOGCCFLAGS='-fPIC -m64 -pthread -Wl,--no-gc-sections -fmessage-length=0 -ffile-prefix-map=/tmp/go-build1143785127=/tmp/go-build -gno-record-gcc-switches'
+2025-10-16T14:56:37.1059006Z GOHOSTARCH='amd64'
+2025-10-16T14:56:37.1059250Z GOHOSTOS='linux'
+2025-10-16T14:56:37.1059481Z GOINSECURE=''
+2025-10-16T14:56:37.1060091Z GOMOD='/home/runner/work/helios-operator/helios-operator/go.mod'
+2025-10-16T14:56:37.1060531Z GOMODCACHE='/home/runner/go/pkg/mod'
+2025-10-16T14:56:37.1060824Z GONOPROXY=''
+2025-10-16T14:56:37.1061041Z GONOSUMDB=''
+2025-10-16T14:56:37.1061247Z GOOS='linux'
+2025-10-16T14:56:37.1061473Z GOPATH='/home/runner/go'
+2025-10-16T14:56:37.1061716Z GOPRIVATE=''
+2025-10-16T14:56:37.1062003Z GOPROXY='https://proxy.golang.org,direct'
+2025-10-16T14:56:37.1062613Z GOROOT='/opt/hostedtoolcache/go/1.25.3/x64'
+2025-10-16T14:56:37.1062949Z GOSUMDB='sum.golang.org'
+2025-10-16T14:56:37.1063206Z GOTELEMETRY='local'
+2025-10-16T14:56:37.1063498Z GOTELEMETRYDIR='/home/runner/.config/go/telemetry'
+2025-10-16T14:56:37.1063839Z GOTMPDIR=''
+2025-10-16T14:56:37.1064059Z GOTOOLCHAIN='local'
+2025-10-16T14:56:37.1064643Z GOTOOLDIR='/opt/hostedtoolcache/go/1.25.3/x64/pkg/tool/linux_amd64'
+2025-10-16T14:56:37.1065055Z GOVCS=''
+2025-10-16T14:56:37.1065270Z GOVERSION='go1.25.3'
+2025-10-16T14:56:37.1065496Z GOWORK=''
+2025-10-16T14:56:37.1065722Z PKG_CONFIG='pkg-config'
+2025-10-16T14:56:37.1065864Z 
+2025-10-16T14:56:37.1066228Z ##[endgroup]
+2025-10-16T14:56:37.2023954Z ##[group]Run actions/cache@v4
+2025-10-16T14:56:37.2024259Z with:
+2025-10-16T14:56:37.2024451Z   path: ~/go/pkg/mod
+2025-10-16T14:56:37.2024827Z   key: Linux-go-b40a5f9e954b0d6208dfe5b6ec68af2fcbc427be3d6f48b944dad59040b800eb
+2025-10-16T14:56:37.2025249Z   restore-keys: Linux-go-
+
+2025-10-16T14:56:37.2025498Z   enableCrossOsArchive: false
+2025-10-16T14:56:37.2025735Z   fail-on-cache-miss: false
+2025-10-16T14:56:37.2026021Z   lookup-only: false
+2025-10-16T14:56:37.2026223Z   save-always: false
+2025-10-16T14:56:37.2026425Z env:
+2025-10-16T14:56:37.2026609Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:37.2026813Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:37.2027051Z   GOTOOLCHAIN: local
+2025-10-16T14:56:37.2027247Z ##[endgroup]
+2025-10-16T14:56:37.5905519Z Cache not found for input keys: Linux-go-b40a5f9e954b0d6208dfe5b6ec68af2fcbc427be3d6f48b944dad59040b800eb, Linux-go-
+2025-10-16T14:56:37.5993574Z ##[group]Run go mod download
+2025-10-16T14:56:37.5993913Z [36;1mgo mod download[0m
+2025-10-16T14:56:37.6028991Z shell: /usr/bin/bash -e {0}
+2025-10-16T14:56:37.6029245Z env:
+2025-10-16T14:56:37.6029440Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:37.6029662Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:37.6029905Z   GOTOOLCHAIN: local
+2025-10-16T14:56:37.6030099Z ##[endgroup]
+2025-10-16T14:56:45.2573564Z ##[group]Run make test
+2025-10-16T14:56:45.2573871Z [36;1mmake test[0m
+2025-10-16T14:56:45.2605555Z shell: /usr/bin/bash -e {0}
+2025-10-16T14:56:45.2605793Z env:
+2025-10-16T14:56:45.2605969Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:45.2606203Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:45.2606435Z   GOTOOLCHAIN: local
+2025-10-16T14:56:45.2606638Z ##[endgroup]
+2025-10-16T14:56:45.2979031Z 📦 Installing sigs.k8s.io/controller-tools/cmd/controller-gen@v0.19.0
+2025-10-16T14:56:45.3566951Z go: downloading sigs.k8s.io/controller-tools v0.19.0
+2025-10-16T14:56:45.5330067Z go: downloading github.com/spf13/cobra v1.9.1
+2025-10-16T14:56:45.5342878Z go: downloading golang.org/x/tools v0.36.0
+2025-10-16T14:56:45.5468804Z go: downloading k8s.io/apimachinery v0.34.0
+2025-10-16T14:56:45.6217606Z go: downloading k8s.io/code-generator v0.34.0
+2025-10-16T14:56:45.8070196Z go: downloading k8s.io/gengo/v2 v2.0.0-20250604051438-85fd79dbfd9f
+2025-10-16T14:56:45.8845405Z go: downloading github.com/gobuffalo/flect v1.0.3
+2025-10-16T14:56:45.8849789Z go: downloading k8s.io/apiextensions-apiserver v0.34.0
+2025-10-16T14:56:46.0510245Z go: downloading k8s.io/utils v0.0.0-20250604170112-4c0f3b243397
+2025-10-16T14:56:46.0523441Z go: downloading github.com/fatih/color v1.18.0
+2025-10-16T14:56:46.0721134Z go: downloading k8s.io/api v0.34.0
+2025-10-16T14:56:46.1944245Z go: downloading github.com/spf13/pflag v1.0.7
+2025-10-16T14:56:46.2948942Z go: downloading go.yaml.in/yaml/v2 v2.4.2
+2025-10-16T14:56:46.3943134Z go: downloading k8s.io/kube-openapi v0.0.0-20250710124328-f3f2b991d03b
+2025-10-16T14:56:46.6318429Z go: downloading golang.org/x/sync v0.16.0
+2025-10-16T14:56:46.6339900Z go: downloading github.com/mattn/go-colorable v0.1.13
+2025-10-16T14:56:46.6562756Z go: downloading github.com/mattn/go-isatty v0.0.20
+2025-10-16T14:56:46.6928022Z go: downloading google.golang.org/protobuf v1.36.7
+2025-10-16T14:56:46.7441605Z go: downloading github.com/go-openapi/jsonreference v0.20.2
+2025-10-16T14:56:46.7947146Z go: downloading github.com/go-openapi/swag v0.23.0
+2025-10-16T14:56:46.8667675Z go: downloading sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8
+2025-10-16T14:56:46.9440478Z go: downloading golang.org/x/mod v0.27.0
+2025-10-16T14:56:46.9452042Z go: downloading golang.org/x/sys v0.35.0
+2025-10-16T14:56:46.9746273Z go: downloading github.com/go-openapi/jsonpointer v0.21.0
+2025-10-16T14:56:47.0084230Z go: downloading github.com/mailru/easyjson v0.7.7
+2025-10-16T14:56:47.0453892Z go: downloading golang.org/x/net v0.43.0
+2025-10-16T14:56:47.1041372Z go: downloading github.com/josharian/intern v1.0.0
+2025-10-16T14:56:47.2722620Z go: downloading golang.org/x/text v0.28.0
+2025-10-16T14:57:15.6927424Z Generating manifests...
+2025-10-16T14:57:16.2312989Z Generating code...
+2025-10-16T14:57:16.6364630Z GOBIN=/home/runner/work/helios-operator/helios-operator/bin go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+2025-10-16T14:57:17.1976127Z go: downloading sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251014082336-b8f11375258f
+2025-10-16T14:57:17.2267481Z go: downloading github.com/spf13/afero v1.12.0
+2025-10-16T14:57:17.2268193Z go: downloading github.com/spf13/pflag v1.0.9
+2025-10-16T14:57:17.2714301Z go: downloading go.uber.org/multierr v1.10.0
+2025-10-16T14:57:18.8461276Z 📦 Installing envtest Kubernetes binaries...
+2025-10-16T14:57:20.5068300Z Envtest binaries installed at: /home/runner/work/helios-operator/helios-operator/bin/k8s/k8s/1.34.1-linux-amd64
+2025-10-16T14:57:20.5076007Z Running tests...
+2025-10-16T14:58:41.6406218Z === RUN   TestHeliosApp_IsReady
+2025-10-16T14:58:41.6407040Z === RUN   TestHeliosApp_IsReady/Ready_condition_is_true
+2025-10-16T14:58:41.6408961Z === RUN   TestHeliosApp_IsReady/Ready_condition_is_false
+2025-10-16T14:58:41.6409769Z === RUN   TestHeliosApp_IsReady/Ready_condition_is_unknown
+2025-10-16T14:58:41.6411623Z === RUN   TestHeliosApp_IsReady/no_Ready_condition
+2025-10-16T14:58:41.6412605Z --- PASS: TestHeliosApp_IsReady (0.00s)
+2025-10-16T14:58:41.6416211Z     --- PASS: TestHeliosApp_IsReady/Ready_condition_is_true (0.00s)
+2025-10-16T14:58:41.6417090Z     --- PASS: TestHeliosApp_IsReady/Ready_condition_is_false (0.00s)
+2025-10-16T14:58:41.6417948Z     --- PASS: TestHeliosApp_IsReady/Ready_condition_is_unknown (0.00s)
+2025-10-16T14:58:41.6418746Z     --- PASS: TestHeliosApp_IsReady/no_Ready_condition (0.00s)
+2025-10-16T14:58:41.6419317Z === RUN   TestHeliosApp_IsSynced
+2025-10-16T14:58:41.6419824Z === RUN   TestHeliosApp_IsSynced/Synced_condition_is_true
+2025-10-16T14:58:41.6420442Z === RUN   TestHeliosApp_IsSynced/Synced_condition_is_false
+2025-10-16T14:58:41.6421046Z === RUN   TestHeliosApp_IsSynced/Synced_condition_is_unknown
+2025-10-16T14:58:41.6421664Z === RUN   TestHeliosApp_IsSynced/no_Synced_condition
+2025-10-16T14:58:41.6422388Z --- PASS: TestHeliosApp_IsSynced (0.00s)
+2025-10-16T14:58:41.6423131Z     --- PASS: TestHeliosApp_IsSynced/Synced_condition_is_true (0.00s)
+2025-10-16T14:58:41.6423983Z     --- PASS: TestHeliosApp_IsSynced/Synced_condition_is_false (0.00s)
+2025-10-16T14:58:41.6424828Z     --- PASS: TestHeliosApp_IsSynced/Synced_condition_is_unknown (0.00s)
+2025-10-16T14:58:41.6425628Z     --- PASS: TestHeliosApp_IsSynced/no_Synced_condition (0.00s)
+2025-10-16T14:58:41.6426193Z === RUN   TestHeliosApp_IsBuildSucceeded
+2025-10-16T14:58:41.6426846Z === RUN   TestHeliosApp_IsBuildSucceeded/BuildSucceeded_condition_is_true
+2025-10-16T14:58:41.6427677Z === RUN   TestHeliosApp_IsBuildSucceeded/BuildSucceeded_condition_is_false
+2025-10-16T14:58:41.6428525Z === RUN   TestHeliosApp_IsBuildSucceeded/BuildSucceeded_condition_is_unknown
+2025-10-16T14:58:41.6429354Z === RUN   TestHeliosApp_IsBuildSucceeded/no_BuildSucceeded_condition
+2025-10-16T14:58:41.6430337Z --- PASS: TestHeliosApp_IsBuildSucceeded (0.00s)
+2025-10-16T14:58:41.6431256Z     --- PASS: TestHeliosApp_IsBuildSucceeded/BuildSucceeded_condition_is_true (0.00s)
+2025-10-16T14:58:41.6432572Z     --- PASS: TestHeliosApp_IsBuildSucceeded/BuildSucceeded_condition_is_false (0.00s)
+2025-10-16T14:58:41.6433716Z     --- PASS: TestHeliosApp_IsBuildSucceeded/BuildSucceeded_condition_is_unknown (0.00s)
+2025-10-16T14:58:41.6434791Z     --- PASS: TestHeliosApp_IsBuildSucceeded/no_BuildSucceeded_condition (0.00s)
+2025-10-16T14:58:41.6435469Z === RUN   TestHeliosApp_GetCondition
+2025-10-16T14:58:41.6435983Z === RUN   TestHeliosApp_GetCondition/condition_exists
+2025-10-16T14:58:41.6436585Z === RUN   TestHeliosApp_GetCondition/condition_does_not_exist
+2025-10-16T14:58:41.6437180Z --- PASS: TestHeliosApp_GetCondition (0.00s)
+2025-10-16T14:58:41.6437888Z     --- PASS: TestHeliosApp_GetCondition/condition_exists (0.00s)
+2025-10-16T14:58:41.6438758Z     --- PASS: TestHeliosApp_GetCondition/condition_does_not_exist (0.00s)
+2025-10-16T14:58:41.6439384Z === RUN   TestHeliosApp_SetCondition
+2025-10-16T14:58:41.6439902Z === RUN   TestHeliosApp_SetCondition/add_new_condition
+2025-10-16T14:58:41.6440538Z === RUN   TestHeliosApp_SetCondition/update_existing_condition
+2025-10-16T14:58:41.6441127Z --- PASS: TestHeliosApp_SetCondition (0.00s)
+2025-10-16T14:58:41.6441848Z     --- PASS: TestHeliosApp_SetCondition/add_new_condition (0.00s)
+2025-10-16T14:58:41.6442996Z     --- PASS: TestHeliosApp_SetCondition/update_existing_condition (0.00s)
+2025-10-16T14:58:41.6443658Z === RUN   TestHeliosApp_GetStatusMessage
+2025-10-16T14:58:41.6444233Z === RUN   TestHeliosApp_GetStatusMessage/with_ready_condition
+2025-10-16T14:58:41.6444888Z === RUN   TestHeliosApp_GetStatusMessage/no_ready_condition
+2025-10-16T14:58:41.6445486Z --- PASS: TestHeliosApp_GetStatusMessage (0.00s)
+2025-10-16T14:58:41.6446301Z     --- PASS: TestHeliosApp_GetStatusMessage/with_ready_condition (0.00s)
+2025-10-16T14:58:41.6447237Z     --- PASS: TestHeliosApp_GetStatusMessage/no_ready_condition (0.00s)
+2025-10-16T14:58:41.6447866Z === RUN   TestHeliosApp_GetStatusReason
+2025-10-16T14:58:41.6448429Z === RUN   TestHeliosApp_GetStatusReason/with_ready_condition
+2025-10-16T14:58:41.6449051Z === RUN   TestHeliosApp_GetStatusReason/no_ready_condition
+2025-10-16T14:58:41.6449891Z --- PASS: TestHeliosApp_GetStatusReason (0.00s)
+2025-10-16T14:58:41.6450698Z     --- PASS: TestHeliosApp_GetStatusReason/with_ready_condition (0.00s)
+2025-10-16T14:58:41.6451588Z     --- PASS: TestHeliosApp_GetStatusReason/no_ready_condition (0.00s)
+2025-10-16T14:58:41.6452485Z === RUN   TestHeliosApp_DeepCopy
+2025-10-16T14:58:41.6452948Z --- PASS: TestHeliosApp_DeepCopy (0.00s)
+2025-10-16T14:58:41.6453443Z === RUN   TestHeliosApp_DeepCopyObject
+2025-10-16T14:58:41.6454084Z --- PASS: TestHeliosApp_DeepCopyObject (0.00s)
+2025-10-16T14:58:41.6454602Z === RUN   TestHeliosAppList_DeepCopy
+2025-10-16T14:58:41.6455083Z --- PASS: TestHeliosAppList_DeepCopy (0.00s)
+2025-10-16T14:58:41.6455613Z === RUN   TestHeliosAppList_DeepCopyObject
+2025-10-16T14:58:41.6456151Z --- PASS: TestHeliosAppList_DeepCopyObject (0.00s)
+2025-10-16T14:58:41.6456669Z === RUN   TestHeliosApp_Default
+2025-10-16T14:58:41.6457176Z === RUN   TestHeliosApp_Default/should_set_default_values
+2025-10-16T14:58:41.6457850Z === RUN   TestHeliosApp_Default/should_not_override_existing_values
+2025-10-16T14:58:41.6458529Z --- PASS: TestHeliosApp_Default (0.00s)
+2025-10-16T14:58:41.6459286Z     --- PASS: TestHeliosApp_Default/should_set_default_values (0.00s)
+2025-10-16T14:58:41.6460203Z     --- PASS: TestHeliosApp_Default/should_not_override_existing_values (0.00s)
+2025-10-16T14:58:41.6460877Z === RUN   TestHeliosApp_ValidateCreate
+2025-10-16T14:58:41.6461395Z === RUN   TestHeliosApp_ValidateCreate/valid_helios_app
+2025-10-16T14:58:41.6461993Z === RUN   TestHeliosApp_ValidateCreate/invalid_git_repo_URL
+2025-10-16T14:58:41.6463195Z === RUN   TestHeliosApp_ValidateCreate/invalid_image_repo_format
+2025-10-16T14:58:41.6464090Z === RUN   TestHeliosApp_ValidateCreate/invalid_port_range
+2025-10-16T14:58:41.6464775Z === RUN   TestHeliosApp_ValidateCreate/optional_service_account
+2025-10-16T14:58:41.6465452Z === RUN   TestHeliosApp_ValidateCreate/optional_webhook_secret
+2025-10-16T14:58:41.6466065Z --- PASS: TestHeliosApp_ValidateCreate (0.00s)
+2025-10-16T14:58:41.6466819Z     --- PASS: TestHeliosApp_ValidateCreate/valid_helios_app (0.00s)
+2025-10-16T14:58:41.6467687Z     --- PASS: TestHeliosApp_ValidateCreate/invalid_git_repo_URL (0.00s)
+2025-10-16T14:58:41.6468602Z     --- PASS: TestHeliosApp_ValidateCreate/invalid_image_repo_format (0.00s)
+2025-10-16T14:58:41.6469484Z     --- PASS: TestHeliosApp_ValidateCreate/invalid_port_range (0.00s)
+2025-10-16T14:58:41.6470388Z     --- PASS: TestHeliosApp_ValidateCreate/optional_service_account (0.00s)
+2025-10-16T14:58:41.6471304Z     --- PASS: TestHeliosApp_ValidateCreate/optional_webhook_secret (0.00s)
+2025-10-16T14:58:41.6471955Z === RUN   TestHeliosApp_ValidateUpdate
+2025-10-16T14:58:41.6472695Z === RUN   TestHeliosApp_ValidateUpdate/valid_update
+2025-10-16T14:58:41.6473356Z === RUN   TestHeliosApp_ValidateUpdate/invalid_update_-_invalid_port
+2025-10-16T14:58:41.6473983Z --- PASS: TestHeliosApp_ValidateUpdate (0.00s)
+2025-10-16T14:58:41.6474677Z     --- PASS: TestHeliosApp_ValidateUpdate/valid_update (0.00s)
+2025-10-16T14:58:41.6475595Z     --- PASS: TestHeliosApp_ValidateUpdate/invalid_update_-_invalid_port (0.00s)
+2025-10-16T14:58:41.6476265Z === RUN   TestHeliosApp_ValidateDelete
+2025-10-16T14:58:41.6476754Z --- PASS: TestHeliosApp_ValidateDelete (0.00s)
+2025-10-16T14:58:41.6477224Z === RUN   TestValidateGitURL
+2025-10-16T14:58:41.6477661Z === RUN   TestValidateGitURL/valid_HTTPS_URL
+2025-10-16T14:58:41.6478151Z === RUN   TestValidateGitURL/valid_HTTP_URL
+2025-10-16T14:58:41.6478652Z === RUN   TestValidateGitURL/invalid_URL_scheme
+2025-10-16T14:58:41.6479159Z === RUN   TestValidateGitURL/invalid_URL_format
+2025-10-16T14:58:41.6479695Z === RUN   TestValidateGitURL/empty_URL
+2025-10-16T14:58:41.6480166Z --- PASS: TestValidateGitURL (0.00s)
+2025-10-16T14:58:41.6480761Z     --- PASS: TestValidateGitURL/valid_HTTPS_URL (0.00s)
+2025-10-16T14:58:41.6481422Z     --- PASS: TestValidateGitURL/valid_HTTP_URL (0.00s)
+2025-10-16T14:58:41.6482097Z     --- PASS: TestValidateGitURL/invalid_URL_scheme (0.00s)
+2025-10-16T14:58:41.6483233Z     --- PASS: TestValidateGitURL/invalid_URL_format (0.00s)
+2025-10-16T14:58:41.6483897Z     --- PASS: TestValidateGitURL/empty_URL (0.00s)
+2025-10-16T14:58:41.6484389Z === RUN   TestValidateImageRepo
+2025-10-16T14:58:41.6484900Z === RUN   TestValidateImageRepo/valid_image_repo_without_tag
+2025-10-16T14:58:41.6485509Z === RUN   TestValidateImageRepo/valid_image_repo_with_tag
+2025-10-16T14:58:41.6486149Z === RUN   TestValidateImageRepo/invalid_format_-_too_many_colons
+2025-10-16T14:58:41.6486754Z === RUN   TestValidateImageRepo/empty_image_name
+2025-10-16T14:58:41.6487294Z === RUN   TestValidateImageRepo/empty_tag_with_colon
+2025-10-16T14:58:41.6487850Z === RUN   TestValidateImageRepo/tag_with_whitespace
+2025-10-16T14:58:41.6488374Z --- PASS: TestValidateImageRepo (0.00s)
+2025-10-16T14:58:41.6489121Z     --- PASS: TestValidateImageRepo/valid_image_repo_without_tag (0.00s)
+2025-10-16T14:58:41.6490002Z     --- PASS: TestValidateImageRepo/valid_image_repo_with_tag (0.00s)
+2025-10-16T14:58:41.6490970Z     --- PASS: TestValidateImageRepo/invalid_format_-_too_many_colons (0.00s)
+2025-10-16T14:58:41.6491836Z     --- PASS: TestValidateImageRepo/empty_image_name (0.00s)
+2025-10-16T14:58:41.6492824Z     --- PASS: TestValidateImageRepo/empty_tag_with_colon (0.00s)
+2025-10-16T14:58:41.6493587Z     --- PASS: TestValidateImageRepo/tag_with_whitespace (0.00s)
+2025-10-16T14:58:41.6494158Z === RUN   TestIsValidDNSSubdomain
+2025-10-16T14:58:41.6494663Z === RUN   TestIsValidDNSSubdomain/valid_single_label
+2025-10-16T14:58:41.6495237Z === RUN   TestIsValidDNSSubdomain/valid_multi-label
+2025-10-16T14:58:41.6495802Z === RUN   TestIsValidDNSSubdomain/valid_with_hyphens
+2025-10-16T14:58:41.6496577Z === RUN   TestIsValidDNSSubdomain/empty_string
+2025-10-16T14:58:41.6497087Z === RUN   TestIsValidDNSSubdomain/too_long
+2025-10-16T14:58:41.6497599Z === RUN   TestIsValidDNSSubdomain/invalid_characters
+2025-10-16T14:58:41.6498166Z === RUN   TestIsValidDNSSubdomain/starts_with_hyphen
+2025-10-16T14:58:41.6498722Z === RUN   TestIsValidDNSSubdomain/ends_with_hyphen
+2025-10-16T14:58:41.6499255Z --- PASS: TestIsValidDNSSubdomain (0.00s)
+2025-10-16T14:58:41.6499944Z     --- PASS: TestIsValidDNSSubdomain/valid_single_label (0.00s)
+2025-10-16T14:58:41.6500694Z     --- PASS: TestIsValidDNSSubdomain/valid_multi-label (0.00s)
+2025-10-16T14:58:41.6501448Z     --- PASS: TestIsValidDNSSubdomain/valid_with_hyphens (0.00s)
+2025-10-16T14:58:41.6502364Z     --- PASS: TestIsValidDNSSubdomain/empty_string (0.00s)
+2025-10-16T14:58:41.6503083Z     --- PASS: TestIsValidDNSSubdomain/too_long (0.00s)
+2025-10-16T14:58:41.6503833Z     --- PASS: TestIsValidDNSSubdomain/invalid_characters (0.00s)
+2025-10-16T14:58:41.6504629Z     --- PASS: TestIsValidDNSSubdomain/starts_with_hyphen (0.00s)
+2025-10-16T14:58:41.6505426Z     --- PASS: TestIsValidDNSSubdomain/ends_with_hyphen (0.00s)
+2025-10-16T14:58:41.6505988Z === RUN   TestIsValidDNSLabel
+2025-10-16T14:58:41.6506424Z === RUN   TestIsValidDNSLabel/valid_label
+2025-10-16T14:58:41.6506940Z === RUN   TestIsValidDNSLabel/valid_with_hyphens
+2025-10-16T14:58:41.6507484Z === RUN   TestIsValidDNSLabel/empty_string
+2025-10-16T14:58:41.6507969Z === RUN   TestIsValidDNSLabel/too_long
+2025-10-16T14:58:41.6508483Z === RUN   TestIsValidDNSLabel/invalid_characters
+2025-10-16T14:58:41.6509024Z === RUN   TestIsValidDNSLabel/starts_with_hyphen
+2025-10-16T14:58:41.6509544Z === RUN   TestIsValidDNSLabel/ends_with_hyphen
+2025-10-16T14:58:41.6510040Z --- PASS: TestIsValidDNSLabel (0.00s)
+2025-10-16T14:58:41.6510625Z     --- PASS: TestIsValidDNSLabel/valid_label (0.00s)
+2025-10-16T14:58:41.6511310Z     --- PASS: TestIsValidDNSLabel/valid_with_hyphens (0.00s)
+2025-10-16T14:58:41.6511976Z     --- PASS: TestIsValidDNSLabel/empty_string (0.00s)
+2025-10-16T14:58:41.6512814Z     --- PASS: TestIsValidDNSLabel/too_long (0.00s)
+2025-10-16T14:58:41.6513510Z     --- PASS: TestIsValidDNSLabel/invalid_characters (0.00s)
+2025-10-16T14:58:41.6514208Z     --- PASS: TestIsValidDNSLabel/starts_with_hyphen (0.00s)
+2025-10-16T14:58:41.6515120Z     --- PASS: TestIsValidDNSLabel/ends_with_hyphen (0.00s)
+2025-10-16T14:58:41.6515650Z === RUN   TestIsAlphanumeric
+2025-10-16T14:58:41.6516093Z === RUN   TestIsAlphanumeric/lowercase_letter
+2025-10-16T14:58:41.6516594Z === RUN   TestIsAlphanumeric/uppercase_letter
+2025-10-16T14:58:41.6517082Z === RUN   TestIsAlphanumeric/digit
+2025-10-16T14:58:41.6517523Z === RUN   TestIsAlphanumeric/hyphen
+2025-10-16T14:58:41.6517997Z === RUN   TestIsAlphanumeric/special_character
+2025-10-16T14:58:41.6518492Z --- PASS: TestIsAlphanumeric (0.00s)
+2025-10-16T14:58:41.6519095Z     --- PASS: TestIsAlphanumeric/lowercase_letter (0.00s)
+2025-10-16T14:58:41.6519783Z     --- PASS: TestIsAlphanumeric/uppercase_letter (0.00s)
+2025-10-16T14:58:41.6520427Z     --- PASS: TestIsAlphanumeric/digit (0.00s)
+2025-10-16T14:58:41.6521025Z     --- PASS: TestIsAlphanumeric/hyphen (0.00s)
+2025-10-16T14:58:41.6521663Z     --- PASS: TestIsAlphanumeric/special_character (0.00s)
+2025-10-16T14:58:41.6522326Z PASS
+2025-10-16T14:58:41.6522768Z ok  	github.com/hoangphuc841/helios-operator/api/v1	1.131s
+2025-10-16T14:59:00.4400359Z ?   	github.com/hoangphuc841/helios-operator/cmd	[no test files]
+2025-10-16T14:59:01.6985952Z === RUN   TestReconciliationError_Error
+2025-10-16T14:59:01.6986898Z === RUN   TestReconciliationError_Error/basic_error
+2025-10-16T14:59:01.6989048Z === RUN   TestReconciliationError_Error/get_operation
+2025-10-16T14:59:01.6990948Z === RUN   TestReconciliationError_Error/delete_operation
+2025-10-16T14:59:01.6991577Z --- PASS: TestReconciliationError_Error (0.00s)
+2025-10-16T14:59:01.6992522Z     --- PASS: TestReconciliationError_Error/basic_error (0.00s)
+2025-10-16T14:59:01.6993344Z     --- PASS: TestReconciliationError_Error/get_operation (0.00s)
+2025-10-16T14:59:01.6997582Z     --- PASS: TestReconciliationError_Error/delete_operation (0.00s)
+2025-10-16T14:59:01.6998217Z === RUN   TestReconciliationError_Unwrap
+2025-10-16T14:59:01.6998742Z --- PASS: TestReconciliationError_Unwrap (0.00s)
+2025-10-16T14:59:01.6999274Z === RUN   TestNewReconciliationError
+2025-10-16T14:59:01.6999774Z --- PASS: TestNewReconciliationError (0.00s)
+2025-10-16T14:59:01.7000287Z === RUN   TestResourceGenerationError_Error
+2025-10-16T14:59:01.7000847Z === RUN   TestResourceGenerationError_Error/with_reason
+2025-10-16T14:59:01.7001613Z === RUN   TestResourceGenerationError_Error/without_reason
+2025-10-16T14:59:01.7002538Z === RUN   TestResourceGenerationError_Error/application_generation
+2025-10-16T14:59:01.7003206Z --- PASS: TestResourceGenerationError_Error (0.00s)
+2025-10-16T14:59:01.7003980Z     --- PASS: TestResourceGenerationError_Error/with_reason (0.00s)
+2025-10-16T14:59:01.7004815Z     --- PASS: TestResourceGenerationError_Error/without_reason (0.00s)
+2025-10-16T14:59:01.7005754Z     --- PASS: TestResourceGenerationError_Error/application_generation (0.00s)
+2025-10-16T14:59:01.7006461Z === RUN   TestResourceGenerationError_Unwrap
+2025-10-16T14:59:01.7007008Z --- PASS: TestResourceGenerationError_Unwrap (0.00s)
+2025-10-16T14:59:01.7007553Z === RUN   TestNewResourceGenerationError
+2025-10-16T14:59:01.7008099Z === RUN   TestNewResourceGenerationError/with_reason
+2025-10-16T14:59:01.7008696Z === RUN   TestNewResourceGenerationError/without_reason
+2025-10-16T14:59:01.7009284Z --- PASS: TestNewResourceGenerationError (0.00s)
+2025-10-16T14:59:01.7009995Z     --- PASS: TestNewResourceGenerationError/with_reason (0.00s)
+2025-10-16T14:59:01.7010817Z     --- PASS: TestNewResourceGenerationError/without_reason (0.00s)
+2025-10-16T14:59:01.7011391Z === RUN   TestValidationError_Error
+2025-10-16T14:59:01.7011912Z === RUN   TestValidationError_Error/with_underlying_error
+2025-10-16T14:59:01.7013693Z === RUN   TestValidationError_Error/without_underlying_error
+2025-10-16T14:59:01.7014572Z === RUN   TestValidationError_Error/replicas_validation
+2025-10-16T14:59:01.7015113Z --- PASS: TestValidationError_Error (0.00s)
+2025-10-16T14:59:01.7015843Z     --- PASS: TestValidationError_Error/with_underlying_error (0.00s)
+2025-10-16T14:59:01.7016705Z     --- PASS: TestValidationError_Error/without_underlying_error (0.00s)
+2025-10-16T14:59:01.7017813Z     --- PASS: TestValidationError_Error/replicas_validation (0.00s)
+2025-10-16T14:59:01.7018444Z === RUN   TestValidationError_Unwrap
+2025-10-16T14:59:01.7018980Z === RUN   TestValidationError_Unwrap/with_underlying_error
+2025-10-16T14:59:01.7019623Z === RUN   TestValidationError_Unwrap/without_underlying_error
+2025-10-16T14:59:01.7020203Z --- PASS: TestValidationError_Unwrap (0.00s)
+2025-10-16T14:59:01.7020952Z     --- PASS: TestValidationError_Unwrap/with_underlying_error (0.00s)
+2025-10-16T14:59:01.7021825Z     --- PASS: TestValidationError_Unwrap/without_underlying_error (0.00s)
+2025-10-16T14:59:01.7022646Z === RUN   TestNewValidationError
+2025-10-16T14:59:01.7023103Z === RUN   TestNewValidationError/with_error
+2025-10-16T14:59:01.7023635Z === RUN   TestNewValidationError/without_error
+2025-10-16T14:59:01.7024144Z --- PASS: TestNewValidationError (0.00s)
+2025-10-16T14:59:01.7024762Z     --- PASS: TestNewValidationError/with_error (0.00s)
+2025-10-16T14:59:01.7025462Z     --- PASS: TestNewValidationError/without_error (0.00s)
+2025-10-16T14:59:01.7026236Z === RUN   TestStatusUpdateError_Error
+2025-10-16T14:59:01.7026784Z === RUN   TestStatusUpdateError_Error/pipeline_status_update
+2025-10-16T14:59:01.7027497Z === RUN   TestStatusUpdateError_Error/application_status_update
+2025-10-16T14:59:01.7028098Z --- PASS: TestStatusUpdateError_Error (0.00s)
+2025-10-16T14:59:01.7028974Z     --- PASS: TestStatusUpdateError_Error/pipeline_status_update (0.00s)
+2025-10-16T14:59:01.7029895Z     --- PASS: TestStatusUpdateError_Error/application_status_update (0.00s)
+2025-10-16T14:59:01.7030558Z === RUN   TestStatusUpdateError_Unwrap
+2025-10-16T14:59:01.7031296Z --- PASS: TestStatusUpdateError_Unwrap (0.00s)
+2025-10-16T14:59:01.7031782Z === RUN   TestNewStatusUpdateError
+2025-10-16T14:59:01.7032420Z --- PASS: TestNewStatusUpdateError (0.00s)
+2025-10-16T14:59:01.7032880Z === RUN   TestErrorWrapping
+2025-10-16T14:59:01.7033361Z === RUN   TestErrorWrapping/ReconciliationError_wrapping
+2025-10-16T14:59:01.7033988Z === RUN   TestErrorWrapping/ResourceGenerationError_wrapping
+2025-10-16T14:59:01.7034593Z === RUN   TestErrorWrapping/ValidationError_wrapping
+2025-10-16T14:59:01.7035260Z === RUN   TestErrorWrapping/StatusUpdateError_wrapping
+2025-10-16T14:59:01.7036121Z --- PASS: TestErrorWrapping (0.00s)
+2025-10-16T14:59:01.7036842Z     --- PASS: TestErrorWrapping/ReconciliationError_wrapping (0.00s)
+2025-10-16T14:59:01.7037730Z     --- PASS: TestErrorWrapping/ResourceGenerationError_wrapping (0.00s)
+2025-10-16T14:59:01.7038583Z     --- PASS: TestErrorWrapping/ValidationError_wrapping (0.00s)
+2025-10-16T14:59:01.7039391Z     --- PASS: TestErrorWrapping/StatusUpdateError_wrapping (0.00s)
+2025-10-16T14:59:01.7039937Z PASS
+2025-10-16T14:59:01.7040406Z ok  	github.com/hoangphuc841/helios-operator/internal/common	1.023s
+2025-10-16T14:59:01.8843250Z === RUN   TestLoadFromEnv
+2025-10-16T14:59:01.8844248Z === RUN   TestLoadFromEnv/load_with_default_values
+2025-10-16T14:59:01.8844914Z === RUN   TestLoadFromEnv/load_with_custom_values
+2025-10-16T14:59:01.8845616Z === RUN   TestLoadFromEnv/invalid_reconcile_interval
+2025-10-16T14:59:01.8846319Z === RUN   TestLoadFromEnv/invalid_max_concurrent_reconciles
+2025-10-16T14:59:01.8847068Z === RUN   TestLoadFromEnv/max_concurrent_reconciles_too_low
+2025-10-16T14:59:01.8847794Z === RUN   TestLoadFromEnv/invalid_default_replicas
+2025-10-16T14:59:01.8848457Z === RUN   TestLoadFromEnv/invalid_default_port
+2025-10-16T14:59:01.8849061Z === RUN   TestLoadFromEnv/invalid_max_retries
+2025-10-16T14:59:01.8849639Z === RUN   TestLoadFromEnv/invalid_retry_backoff
+2025-10-16T14:59:01.8850328Z === RUN   TestLoadFromEnv/invalid_enable_metrics
+2025-10-16T14:59:01.8851137Z === RUN   TestLoadFromEnv/invalid_reconcile_timeout
+2025-10-16T14:59:01.8851799Z --- PASS: TestLoadFromEnv (0.00s)
+2025-10-16T14:59:01.8852797Z     --- PASS: TestLoadFromEnv/load_with_default_values (0.00s)
+2025-10-16T14:59:01.8853776Z     --- PASS: TestLoadFromEnv/load_with_custom_values (0.00s)
+2025-10-16T14:59:01.8855062Z     --- PASS: TestLoadFromEnv/invalid_reconcile_interval (0.00s)
+2025-10-16T14:59:01.8856192Z     --- PASS: TestLoadFromEnv/invalid_max_concurrent_reconciles (0.00s)
+2025-10-16T14:59:01.8857256Z     --- PASS: TestLoadFromEnv/max_concurrent_reconciles_too_low (0.00s)
+2025-10-16T14:59:01.8858237Z     --- PASS: TestLoadFromEnv/invalid_default_replicas (0.00s)
+2025-10-16T14:59:01.8859122Z     --- PASS: TestLoadFromEnv/invalid_default_port (0.00s)
+2025-10-16T14:59:01.8859928Z     --- PASS: TestLoadFromEnv/invalid_max_retries (0.00s)
+2025-10-16T14:59:01.8860758Z     --- PASS: TestLoadFromEnv/invalid_retry_backoff (0.00s)
+2025-10-16T14:59:01.8861505Z     --- PASS: TestLoadFromEnv/invalid_enable_metrics (0.00s)
+2025-10-16T14:59:01.8893340Z     --- PASS: TestLoadFromEnv/invalid_reconcile_timeout (0.00s)
+2025-10-16T14:59:01.8894079Z === RUN   TestDefault
+2025-10-16T14:59:01.8894470Z --- PASS: TestDefault (0.00s)
+2025-10-16T14:59:01.8894933Z === RUN   TestOperatorConfig_Validate
+2025-10-16T14:59:01.8895639Z === RUN   TestOperatorConfig_Validate/valid_config
+2025-10-16T14:59:01.8896358Z === RUN   TestOperatorConfig_Validate/invalid_reconcile_interval_-_zero
+2025-10-16T14:59:01.8897388Z === RUN   TestOperatorConfig_Validate/invalid_max_concurrent_reconciles_-_zero
+2025-10-16T14:59:01.8898363Z === RUN   TestOperatorConfig_Validate/invalid_default_replicas_-_negative
+2025-10-16T14:59:01.8899408Z === RUN   TestOperatorConfig_Validate/invalid_default_port_-_out_of_range_low
+2025-10-16T14:59:01.8900448Z === RUN   TestOperatorConfig_Validate/invalid_default_port_-_out_of_range_high
+2025-10-16T14:59:01.8901462Z === RUN   TestOperatorConfig_Validate/invalid_max_retries_-_negative
+2025-10-16T14:59:01.8902977Z === RUN   TestOperatorConfig_Validate/invalid_retry_backoff_-_negative
+2025-10-16T14:59:01.8903937Z === RUN   TestOperatorConfig_Validate/invalid_reconcile_timeout_-_zero
+2025-10-16T14:59:01.8904861Z === RUN   TestOperatorConfig_Validate/invalid_api_call_timeout_-_zero
+2025-10-16T14:59:01.8905674Z --- PASS: TestOperatorConfig_Validate (0.00s)
+2025-10-16T14:59:01.8906506Z     --- PASS: TestOperatorConfig_Validate/valid_config (0.00s)
+2025-10-16T14:59:01.8907583Z     --- PASS: TestOperatorConfig_Validate/invalid_reconcile_interval_-_zero (0.00s)
+2025-10-16T14:59:01.8908812Z     --- PASS: TestOperatorConfig_Validate/invalid_max_concurrent_reconciles_-_zero (0.00s)
+2025-10-16T14:59:01.8910053Z     --- PASS: TestOperatorConfig_Validate/invalid_default_replicas_-_negative (0.00s)
+2025-10-16T14:59:01.8911304Z     --- PASS: TestOperatorConfig_Validate/invalid_default_port_-_out_of_range_low (0.00s)
+2025-10-16T14:59:01.8912764Z     --- PASS: TestOperatorConfig_Validate/invalid_default_port_-_out_of_range_high (0.00s)
+2025-10-16T14:59:01.8914032Z     --- PASS: TestOperatorConfig_Validate/invalid_max_retries_-_negative (0.00s)
+2025-10-16T14:59:01.8915193Z     --- PASS: TestOperatorConfig_Validate/invalid_retry_backoff_-_negative (0.00s)
+2025-10-16T14:59:01.8916305Z     --- PASS: TestOperatorConfig_Validate/invalid_reconcile_timeout_-_zero (0.00s)
+2025-10-16T14:59:01.8917457Z     --- PASS: TestOperatorConfig_Validate/invalid_api_call_timeout_-_zero (0.00s)
+2025-10-16T14:59:01.8918182Z PASS
+2025-10-16T14:59:01.8918680Z ok  	github.com/hoangphuc841/helios-operator/internal/config	1.017s
+2025-10-16T14:59:19.1671134Z === RUN   TestIsHeliosArgoApp
+2025-10-16T14:59:19.1675092Z === RUN   TestIsHeliosArgoApp/valid_Helios_ArgoCD_app
+2025-10-16T14:59:19.1675756Z === RUN   TestIsHeliosArgoApp/ArgoCD_app_without_Helios_label
+2025-10-16T14:59:19.1676367Z === RUN   TestIsHeliosArgoApp/ArgoCD_app_with_no_labels
+2025-10-16T14:59:19.1676888Z --- PASS: TestIsHeliosArgoApp (0.77s)
+2025-10-16T14:59:19.1677596Z     --- PASS: TestIsHeliosArgoApp/valid_Helios_ArgoCD_app (0.00s)
+2025-10-16T14:59:19.1678444Z     --- PASS: TestIsHeliosArgoApp/ArgoCD_app_without_Helios_label (0.00s)
+2025-10-16T14:59:19.1679279Z     --- PASS: TestIsHeliosArgoApp/ArgoCD_app_with_no_labels (0.00s)
+2025-10-16T14:59:19.1679912Z === RUN   TestIsHeliosPipelineRun
+2025-10-16T14:59:19.1680708Z === RUN   TestIsHeliosPipelineRun/valid_Helios_PipelineRun
+2025-10-16T14:59:19.1681436Z === RUN   TestIsHeliosPipelineRun/PipelineRun_without_Tekton_trigger_label
+2025-10-16T14:59:19.1682353Z === RUN   TestIsHeliosPipelineRun/PipelineRun_without_Helios_label
+2025-10-16T14:59:19.1683029Z === RUN   TestIsHeliosPipelineRun/PipelineRun_with_no_labels
+2025-10-16T14:59:19.1683614Z --- PASS: TestIsHeliosPipelineRun (0.02s)
+2025-10-16T14:59:19.1684338Z     --- PASS: TestIsHeliosPipelineRun/valid_Helios_PipelineRun (0.00s)
+2025-10-16T14:59:19.1685378Z     --- PASS: TestIsHeliosPipelineRun/PipelineRun_without_Tekton_trigger_label (0.00s)
+2025-10-16T14:59:19.1686425Z     --- PASS: TestIsHeliosPipelineRun/PipelineRun_without_Helios_label (0.00s)
+2025-10-16T14:59:19.1687370Z     --- PASS: TestIsHeliosPipelineRun/PipelineRun_with_no_labels (0.00s)
+2025-10-16T14:59:19.1687978Z === RUN   TestIsHeliosDeployment
+2025-10-16T14:59:19.1688570Z === RUN   TestIsHeliosDeployment/valid_Helios_Deployment_with_ArgoCD_label
+2025-10-16T14:59:19.1689316Z === RUN   TestIsHeliosDeployment/valid_Deployment_with_app_label
+2025-10-16T14:59:19.1689978Z === RUN   TestIsHeliosDeployment/Deployment_with_empty_app_label
+2025-10-16T14:59:19.1690619Z === RUN   TestIsHeliosDeployment/Deployment_with_no_labels
+2025-10-16T14:59:19.1691158Z --- PASS: TestIsHeliosDeployment (0.02s)
+2025-10-16T14:59:19.1691987Z     --- PASS: TestIsHeliosDeployment/valid_Helios_Deployment_with_ArgoCD_label (0.00s)
+2025-10-16T14:59:19.1693112Z     --- PASS: TestIsHeliosDeployment/valid_Deployment_with_app_label (0.00s)
+2025-10-16T14:59:19.1694054Z     --- PASS: TestIsHeliosDeployment/Deployment_with_empty_app_label (0.00s)
+2025-10-16T14:59:19.1695202Z     --- PASS: TestIsHeliosDeployment/Deployment_with_no_labels (0.00s)
+2025-10-16T14:59:19.1695807Z === RUN   TestDeploymentHealthStatus
+2025-10-16T14:59:19.1696440Z === RUN   TestDeploymentHealthStatus/healthy_deployment_-_all_replicas_ready
+2025-10-16T14:59:19.1697317Z === RUN   TestDeploymentHealthStatus/progressing_deployment_-_some_replicas_ready
+2025-10-16T14:59:19.1698194Z === RUN   TestDeploymentHealthStatus/degraded_deployment_-_no_replicas_ready
+2025-10-16T14:59:19.1698984Z === RUN   TestDeploymentHealthStatus/zero_replicas_-_should_be_healthy
+2025-10-16T14:59:19.1699613Z --- PASS: TestDeploymentHealthStatus (0.00s)
+2025-10-16T14:59:19.1700497Z     --- PASS: TestDeploymentHealthStatus/healthy_deployment_-_all_replicas_ready (0.00s)
+2025-10-16T14:59:19.1701646Z     --- PASS: TestDeploymentHealthStatus/progressing_deployment_-_some_replicas_ready (0.00s)
+2025-10-16T14:59:19.1702924Z     --- PASS: TestDeploymentHealthStatus/degraded_deployment_-_no_replicas_ready (0.00s)
+2025-10-16T14:59:19.1703994Z     --- PASS: TestDeploymentHealthStatus/zero_replicas_-_should_be_healthy (0.00s)
+2025-10-16T14:59:19.1704643Z === RUN   TestPodConditions
+2025-10-16T14:59:19.1705111Z === RUN   TestPodConditions/pod_with_Ready_condition_True
+2025-10-16T14:59:19.1705696Z === RUN   TestPodConditions/pod_with_Ready_condition_False
+2025-10-16T14:59:19.1706261Z === RUN   TestPodConditions/pod_with_no_conditions
+2025-10-16T14:59:19.1706819Z === RUN   TestPodConditions/pod_with_multiple_conditions
+2025-10-16T14:59:19.1707320Z --- PASS: TestPodConditions (0.00s)
+2025-10-16T14:59:19.1708005Z     --- PASS: TestPodConditions/pod_with_Ready_condition_True (0.00s)
+2025-10-16T14:59:19.1708828Z     --- PASS: TestPodConditions/pod_with_Ready_condition_False (0.00s)
+2025-10-16T14:59:19.1709597Z     --- PASS: TestPodConditions/pod_with_no_conditions (0.00s)
+2025-10-16T14:59:19.1710357Z     --- PASS: TestPodConditions/pod_with_multiple_conditions (0.00s)
+2025-10-16T14:59:19.1710950Z === RUN   TestBuildStatusInterpretation
+2025-10-16T14:59:19.1711519Z === RUN   TestBuildStatusInterpretation/succeeded_pipeline_run
+2025-10-16T14:59:19.1712286Z === RUN   TestBuildStatusInterpretation/failed_pipeline_run
+2025-10-16T14:59:19.1712918Z === RUN   TestBuildStatusInterpretation/running_pipeline_run
+2025-10-16T14:59:19.1713511Z === RUN   TestBuildStatusInterpretation/no_conditions
+2025-10-16T14:59:19.1714242Z --- PASS: TestBuildStatusInterpretation (0.00s)
+2025-10-16T14:59:19.1715018Z     --- PASS: TestBuildStatusInterpretation/succeeded_pipeline_run (0.00s)
+2025-10-16T14:59:19.1715913Z     --- PASS: TestBuildStatusInterpretation/failed_pipeline_run (0.00s)
+2025-10-16T14:59:19.1716778Z     --- PASS: TestBuildStatusInterpretation/running_pipeline_run (0.00s)
+2025-10-16T14:59:19.1717608Z     --- PASS: TestBuildStatusInterpretation/no_conditions (0.00s)
+2025-10-16T14:59:19.1718203Z === RUN   TestArgoCDSyncStatusInterpretation
+2025-10-16T14:59:19.1718795Z === RUN   TestArgoCDSyncStatusInterpretation/synced_and_healthy
+2025-10-16T14:59:19.1719516Z === RUN   TestArgoCDSyncStatusInterpretation/out_of_sync_but_healthy
+2025-10-16T14:59:19.1720229Z === RUN   TestArgoCDSyncStatusInterpretation/synced_but_degraded
+2025-10-16T14:59:19.1720954Z === RUN   TestArgoCDSyncStatusInterpretation/out_of_sync_and_degraded
+2025-10-16T14:59:19.1721695Z === RUN   TestArgoCDSyncStatusInterpretation/synced_and_progressing
+2025-10-16T14:59:19.1722528Z === RUN   TestArgoCDSyncStatusInterpretation/unknown_status
+2025-10-16T14:59:19.1723137Z --- PASS: TestArgoCDSyncStatusInterpretation (0.00s)
+2025-10-16T14:59:19.1723952Z     --- PASS: TestArgoCDSyncStatusInterpretation/synced_and_healthy (0.00s)
+2025-10-16T14:59:19.1724937Z     --- PASS: TestArgoCDSyncStatusInterpretation/out_of_sync_but_healthy (0.00s)
+2025-10-16T14:59:19.1725896Z     --- PASS: TestArgoCDSyncStatusInterpretation/synced_but_degraded (0.00s)
+2025-10-16T14:59:19.1726889Z     --- PASS: TestArgoCDSyncStatusInterpretation/out_of_sync_and_degraded (0.00s)
+2025-10-16T14:59:19.1727889Z     --- PASS: TestArgoCDSyncStatusInterpretation/synced_and_progressing (0.00s)
+2025-10-16T14:59:19.1728996Z     --- PASS: TestArgoCDSyncStatusInterpretation/unknown_status (0.00s)
+2025-10-16T14:59:19.1729619Z === RUN   TestConditionStatusTransitions
+2025-10-16T14:59:19.1730228Z === RUN   TestConditionStatusTransitions/True_to_True_-_no_transition
+2025-10-16T14:59:19.1730966Z === RUN   TestConditionStatusTransitions/True_to_False_-_transition
+2025-10-16T14:59:19.1731673Z === RUN   TestConditionStatusTransitions/False_to_True_-_transition
+2025-10-16T14:59:19.1732539Z === RUN   TestConditionStatusTransitions/Unknown_to_True_-_transition
+2025-10-16T14:59:19.1733328Z === RUN   TestConditionStatusTransitions/Unknown_to_Unknown_-_no_transition
+2025-10-16T14:59:19.1734013Z --- PASS: TestConditionStatusTransitions (0.00s)
+2025-10-16T14:59:19.1734859Z     --- PASS: TestConditionStatusTransitions/True_to_True_-_no_transition (0.00s)
+2025-10-16T14:59:19.1735854Z     --- PASS: TestConditionStatusTransitions/True_to_False_-_transition (0.00s)
+2025-10-16T14:59:19.1736836Z     --- PASS: TestConditionStatusTransitions/False_to_True_-_transition (0.00s)
+2025-10-16T14:59:19.1737827Z     --- PASS: TestConditionStatusTransitions/Unknown_to_True_-_transition (0.00s)
+2025-10-16T14:59:19.1738880Z     --- PASS: TestConditionStatusTransitions/Unknown_to_Unknown_-_no_transition (0.00s)
+2025-10-16T14:59:19.1739571Z === RUN   TestIsTransientError
+2025-10-16T14:59:19.1739986Z === RUN   TestIsTransientError/nil_error
+2025-10-16T14:59:19.1740476Z === RUN   TestIsTransientError/conflict_error
+2025-10-16T14:59:19.1740974Z === RUN   TestIsTransientError/server_timeout_error
+2025-10-16T14:59:19.1741527Z === RUN   TestIsTransientError/service_unavailable_error
+2025-10-16T14:59:19.1742048Z === RUN   TestIsTransientError/timeout_error
+2025-10-16T14:59:19.1742716Z === RUN   TestIsTransientError/too_many_requests_error
+2025-10-16T14:59:19.1743266Z === RUN   TestIsTransientError/internal_server_error
+2025-10-16T14:59:19.1743807Z === RUN   TestIsTransientError/temporary_network_error
+2025-10-16T14:59:19.1744376Z === RUN   TestIsTransientError/connection_refused_error
+2025-10-16T14:59:19.1744933Z === RUN   TestIsTransientError/rate_limit_exceeded_error
+2025-10-16T14:59:19.1745478Z === RUN   TestIsTransientError/gateway_timeout_error
+2025-10-16T14:59:19.1745996Z === RUN   TestIsTransientError/non-transient_error
+2025-10-16T14:59:19.1746709Z === RUN   TestIsTransientError/permanent_network_error
+2025-10-16T14:59:19.1747236Z --- PASS: TestIsTransientError (0.00s)
+2025-10-16T14:59:19.1747810Z     --- PASS: TestIsTransientError/nil_error (0.00s)
+2025-10-16T14:59:19.1748460Z     --- PASS: TestIsTransientError/conflict_error (0.00s)
+2025-10-16T14:59:19.1749149Z     --- PASS: TestIsTransientError/server_timeout_error (0.00s)
+2025-10-16T14:59:19.1749921Z     --- PASS: TestIsTransientError/service_unavailable_error (0.00s)
+2025-10-16T14:59:19.1750644Z     --- PASS: TestIsTransientError/timeout_error (0.00s)
+2025-10-16T14:59:19.1751360Z     --- PASS: TestIsTransientError/too_many_requests_error (0.00s)
+2025-10-16T14:59:19.1752288Z     --- PASS: TestIsTransientError/internal_server_error (0.00s)
+2025-10-16T14:59:19.1753052Z     --- PASS: TestIsTransientError/temporary_network_error (0.00s)
+2025-10-16T14:59:19.1753834Z     --- PASS: TestIsTransientError/connection_refused_error (0.00s)
+2025-10-16T14:59:19.1754616Z     --- PASS: TestIsTransientError/rate_limit_exceeded_error (0.00s)
+2025-10-16T14:59:19.1755384Z     --- PASS: TestIsTransientError/gateway_timeout_error (0.00s)
+2025-10-16T14:59:19.1756110Z     --- PASS: TestIsTransientError/non-transient_error (0.00s)
+2025-10-16T14:59:19.1756888Z     --- PASS: TestIsTransientError/permanent_network_error (0.00s)
+2025-10-16T14:59:19.1757618Z === RUN   TestGetRequeueDelay
+2025-10-16T14:59:19.1758026Z === RUN   TestGetRequeueDelay/no_retries
+2025-10-16T14:59:19.1758481Z === RUN   TestGetRequeueDelay/first_retry
+2025-10-16T14:59:19.1758935Z === RUN   TestGetRequeueDelay/second_retry
+2025-10-16T14:59:19.1759434Z === RUN   TestGetRequeueDelay/third_retry
+2025-10-16T14:59:19.1760273Z === RUN   TestGetRequeueDelay/high_retry_count_(should_be_capped)
+2025-10-16T14:59:19.1760847Z --- PASS: TestGetRequeueDelay (0.00s)
+2025-10-16T14:59:19.1761456Z     --- PASS: TestGetRequeueDelay/no_retries (0.00s)
+2025-10-16T14:59:19.1761980Z     --- PASS: TestGetRequeueDelay/first_retry (0.00s)
+2025-10-16T14:59:19.1762726Z     --- PASS: TestGetRequeueDelay/second_retry (0.00s)
+2025-10-16T14:59:19.1763357Z     --- PASS: TestGetRequeueDelay/third_retry (0.00s)
+2025-10-16T14:59:19.1763918Z     --- PASS: TestGetRequeueDelay/high_retry_count_(should_be_capped) (0.00s)
+2025-10-16T14:59:19.1764564Z === RUN   TestReconcileResult
+2025-10-16T14:59:19.1764990Z === RUN   TestReconcileResult/success_result
+2025-10-16T14:59:19.1765539Z === RUN   TestReconcileResult/error_result_with_requeue
+2025-10-16T14:59:19.1766120Z === RUN   TestReconcileResult/error_result_without_requeue
+2025-10-16T14:59:19.1766674Z --- PASS: TestReconcileResult (0.00s)
+2025-10-16T14:59:19.1767304Z     --- PASS: TestReconcileResult/success_result (0.00s)
+2025-10-16T14:59:19.1768084Z     --- PASS: TestReconcileResult/error_result_with_requeue (0.00s)
+2025-10-16T14:59:19.1768727Z     --- PASS: TestReconcileResult/error_result_without_requeue (0.00s)
+2025-10-16T14:59:19.1769288Z === RUN   TestEnhancedReconcileLogic
+2025-10-16T14:59:19.1769880Z === RUN   TestEnhancedReconcileLogic/pipeline_reconciliation_success
+2025-10-16T14:59:19.1770648Z === RUN   TestEnhancedReconcileLogic/triggers_reconciliation_success
+2025-10-16T14:59:19.1771453Z === RUN   TestEnhancedReconcileLogic/argocd_reconciliation_success
+2025-10-16T14:59:19.1772329Z === RUN   TestEnhancedReconcileLogic/status_reconciliation_success
+2025-10-16T14:59:19.1772955Z --- PASS: TestEnhancedReconcileLogic (0.01s)
+2025-10-16T14:59:19.1773774Z     --- PASS: TestEnhancedReconcileLogic/pipeline_reconciliation_success (0.00s)
+2025-10-16T14:59:19.1774751Z     --- PASS: TestEnhancedReconcileLogic/triggers_reconciliation_success (0.00s)
+2025-10-16T14:59:19.1775751Z     --- PASS: TestEnhancedReconcileLogic/argocd_reconciliation_success (0.00s)
+2025-10-16T14:59:19.1776698Z     --- PASS: TestEnhancedReconcileLogic/status_reconciliation_success (0.00s)
+2025-10-16T14:59:19.1777425Z === RUN   TestEnhancedReconcileWithTransientErrors
+2025-10-16T14:59:19.1778163Z === RUN   TestEnhancedReconcileWithTransientErrors/transient_error_detection
+2025-10-16T14:59:19.1779249Z === RUN   TestEnhancedReconcileWithTransientErrors/permanent_error_detection
+2025-10-16T14:59:19.1780095Z --- PASS: TestEnhancedReconcileWithTransientErrors (0.00s)
+2025-10-16T14:59:19.1781081Z     --- PASS: TestEnhancedReconcileWithTransientErrors/transient_error_detection (0.00s)
+2025-10-16T14:59:19.1782380Z     --- PASS: TestEnhancedReconcileWithTransientErrors/permanent_error_detection (0.00s)
+2025-10-16T14:59:19.1783115Z === RUN   TestControllers
+2025-10-16T14:59:19.1783879Z Running Suite: Controller Suite - /home/runner/work/helios-operator/helios-operator/internal/controller
+2025-10-16T14:59:19.1784726Z =======================================================================================================
+2025-10-16T14:59:19.1785480Z Random Seed: [1m1760626751[0m
+2025-10-16T14:59:19.1785725Z 
+2025-10-16T14:59:19.1785986Z Will run [1m21[0m of [1m21[0m specs
+2025-10-16T14:59:19.1786565Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.1787541Z [38;5;9m• [FAILED] [2.090 seconds][0m
+2025-10-16T14:59:19.1789044Z [0mHeliosApp Controller [38;5;243mWhen reconciling a resource [38;5;9m[1m[It] should successfully reconcile the resource[0m
+2025-10-16T14:59:19.1790836Z [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:83[0m
+2025-10-16T14:59:19.1791821Z 
+2025-10-16T14:59:19.1792040Z   [38;5;243mTimeline >>[0m
+2025-10-16T14:59:19.1793564Z   [1mSTEP:[0m creating the custom resource for the Kind HeliosApp [38;5;243m@ 10/16/25 14:59:15.831[0m
+2025-10-16T14:59:19.1794885Z   [1mSTEP:[0m Reconciling the created resource [38;5;243m@ 10/16/25 14:59:17.914[0m
+2025-10-16T14:59:19.1796334Z   [1mSTEP:[0m Creating mock Tekton resources [38;5;243m@ 10/16/25 14:59:17.914[0m
+2025-10-16T14:59:19.1798414Z   [38;5;9m[FAILED][0m in [It] - /home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:96 [38;5;243m@ 10/16/25 14:59:17.916[0m
+2025-10-16T14:59:19.1800304Z   [1mSTEP:[0m Cleanup the specific resource instance HeliosApp [38;5;243m@ 10/16/25 14:59:17.918[0m
+2025-10-16T14:59:19.1801295Z   [38;5;243m<< Timeline[0m
+2025-10-16T14:59:19.1801665Z 
+2025-10-16T14:59:19.1802033Z   [38;5;9m[FAILED] Unexpected error:
+2025-10-16T14:59:19.1802972Z       <*meta.NoKindMatchError | 0xc000925dc0>: 
+2025-10-16T14:59:19.1803818Z       no matches for kind "Pipeline" in version "tekton.dev/v1"
+2025-10-16T14:59:19.1804699Z       {
+2025-10-16T14:59:19.1805522Z           GroupKind: {Group: "tekton.dev", Kind: "Pipeline"},
+2025-10-16T14:59:19.1806538Z           SearchedVersions: ["v1"],
+2025-10-16T14:59:19.1807210Z       }
+2025-10-16T14:59:19.1807723Z   occurred[0m
+2025-10-16T14:59:19.1809306Z   [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:96[0m [38;5;243m@ 10/16/25 14:59:17.916[0m
+2025-10-16T14:59:19.1810737Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.1811482Z [38;5;10m•[0m
+2025-10-16T14:59:19.1811884Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.1812895Z [38;5;9m• [FAILED] [0.008 seconds][0m
+2025-10-16T14:59:19.1814063Z [0mHeliosApp Controller [38;5;243mFinalizer Logic [38;5;9m[1m[It] should handle deletion with finalizer[0m
+2025-10-16T14:59:19.1815798Z [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:201[0m
+2025-10-16T14:59:19.1816652Z 
+2025-10-16T14:59:19.1838635Z   [38;5;243mTimeline >>[0m
+2025-10-16T14:59:19.1839612Z   [1mSTEP:[0m Creating HeliosApp with finalizer [38;5;243m@ 10/16/25 14:59:17.938[0m
+2025-10-16T14:59:19.1841534Z   [38;5;9m[FAILED][0m in [It] - /home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:205 [38;5;243m@ 10/16/25 14:59:17.943[0m
+2025-10-16T14:59:19.1842947Z   [38;5;243m<< Timeline[0m
+2025-10-16T14:59:19.1843115Z 
+2025-10-16T14:59:19.1843351Z   [38;5;9m[FAILED] Unexpected error:
+2025-10-16T14:59:19.1844195Z       <*errors.StatusError | 0xc0007963c0>: 
+2025-10-16T14:59:19.1845233Z       object is being deleted: heliosapps.platform.helios.io "test-app-finalizer" already exists
+2025-10-16T14:59:19.1845968Z       {
+2025-10-16T14:59:19.1846314Z           ErrStatus: {
+2025-10-16T14:59:19.1846964Z               TypeMeta: {Kind: "", APIVersion: ""},
+2025-10-16T14:59:19.1847513Z               ListMeta: {
+2025-10-16T14:59:19.1848015Z                   SelfLink: "",
+2025-10-16T14:59:19.1848603Z                   ResourceVersion: "",
+2025-10-16T14:59:19.1849188Z                   Continue: "",
+2025-10-16T14:59:19.1849813Z                   RemainingItemCount: nil,
+2025-10-16T14:59:19.1850283Z               },
+2025-10-16T14:59:19.1850688Z               Status: "Failure",
+2025-10-16T14:59:19.1852016Z               Message: "object is being deleted: heliosapps.platform.helios.io \"test-app-finalizer\" already exists",
+2025-10-16T14:59:19.1852978Z               Reason: "AlreadyExists",
+2025-10-16T14:59:19.1853507Z               Details: {
+2025-10-16T14:59:19.1854179Z                   Name: "test-app-finalizer",
+2025-10-16T14:59:19.1854921Z                   Group: "platform.helios.io",
+2025-10-16T14:59:19.1855570Z                   Kind: "heliosapps",
+2025-10-16T14:59:19.1856076Z                   UID: "",
+2025-10-16T14:59:19.1856539Z                   Causes: nil,
+2025-10-16T14:59:19.1856953Z                   RetryAfterSeconds: 0,
+2025-10-16T14:59:19.1857423Z               },
+2025-10-16T14:59:19.1858055Z               Code: 409,
+2025-10-16T14:59:19.1858436Z           },
+2025-10-16T14:59:19.1858729Z       }
+2025-10-16T14:59:19.1859112Z   occurred[0m
+2025-10-16T14:59:19.1861073Z   [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:205[0m [38;5;243m@ 10/16/25 14:59:17.943[0m
+2025-10-16T14:59:19.1862535Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.1863096Z [38;5;9m• [FAILED] [0.014 seconds][0m
+2025-10-16T14:59:19.1864240Z [0mHeliosApp Controller [38;5;243mAutomatic PVC Creation [38;5;9m[1m[It] should create PVC automatically when not specified[0m
+2025-10-16T14:59:19.1865863Z [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:280[0m
+2025-10-16T14:59:19.1866659Z 
+2025-10-16T14:59:19.1866912Z   [38;5;243mTimeline >>[0m
+2025-10-16T14:59:19.1867739Z   [1mSTEP:[0m Creating HeliosApp without PVC name [38;5;243m@ 10/16/25 14:59:17.947[0m
+2025-10-16T14:59:19.1868807Z   [1mSTEP:[0m Reconciling the resource [38;5;243m@ 10/16/25 14:59:17.95[0m
+2025-10-16T14:59:19.1869963Z   2025-10-16T14:59:17Z	DEBUG	heliosapp	Reconciliation started	{"heliosapp": "test-app-pvc", "namespace": "default"}
+2025-10-16T14:59:19.1871210Z   2025-10-16T14:59:17Z	INFO	heliosapp	Finalizer added	{"heliosapp": "test-app-pvc", "namespace": "default"}
+2025-10-16T14:59:19.1872665Z   [1mSTEP:[0m Verifying PVC is created automatically [38;5;243m@ 10/16/25 14:59:17.956[0m
+2025-10-16T14:59:19.1874552Z   [38;5;9m[FAILED][0m in [It] - /home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:299 [38;5;243m@ 10/16/25 14:59:17.958[0m
+2025-10-16T14:59:19.1875673Z   [38;5;243m<< Timeline[0m
+2025-10-16T14:59:19.1875920Z 
+2025-10-16T14:59:19.1876284Z   [38;5;9m[FAILED] Expected success, but got an error:
+2025-10-16T14:59:19.1876779Z       <*errors.StatusError | 0xc000244be0>: 
+2025-10-16T14:59:19.1877664Z       persistentvolumeclaims "test-app-pvc-workspace" not found
+2025-10-16T14:59:19.1878237Z       {
+2025-10-16T14:59:19.1878469Z           ErrStatus: {
+2025-10-16T14:59:19.1879106Z               TypeMeta: {Kind: "", APIVersion: ""},
+2025-10-16T14:59:19.1879732Z               ListMeta: {
+2025-10-16T14:59:19.1880238Z                   SelfLink: "",
+2025-10-16T14:59:19.1880793Z                   ResourceVersion: "",
+2025-10-16T14:59:19.1881137Z                   Continue: "",
+2025-10-16T14:59:19.1881769Z                   RemainingItemCount: nil,
+2025-10-16T14:59:19.1882592Z               },
+2025-10-16T14:59:19.1882941Z               Status: "Failure",
+2025-10-16T14:59:19.1884027Z               Message: "persistentvolumeclaims \"test-app-pvc-workspace\" not found",
+2025-10-16T14:59:19.1884668Z               Reason: "NotFound",
+2025-10-16T14:59:19.1885173Z               Details: {
+2025-10-16T14:59:19.1885774Z                   Name: "test-app-pvc-workspace",
+2025-10-16T14:59:19.1886311Z                   Group: "",
+2025-10-16T14:59:19.1887036Z                   Kind: "persistentvolumeclaims",
+2025-10-16T14:59:19.1887587Z                   UID: "",
+2025-10-16T14:59:19.1888093Z                   Causes: nil,
+2025-10-16T14:59:19.1888458Z                   RetryAfterSeconds: 0,
+2025-10-16T14:59:19.1888861Z               },
+2025-10-16T14:59:19.1889265Z               Code: 404,
+2025-10-16T14:59:19.1889555Z           },
+2025-10-16T14:59:19.1889797Z       }[0m
+2025-10-16T14:59:19.1891347Z   [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:299[0m [38;5;243m@ 10/16/25 14:59:17.958[0m
+2025-10-16T14:59:19.1892744Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.1893299Z [38;5;9m• [FAILED] [0.007 seconds][0m
+2025-10-16T14:59:19.1894355Z [0mHeliosApp Controller [38;5;243mAutomatic PVC Creation [38;5;9m[1m[It] should not create PVC when explicitly specified[0m
+2025-10-16T14:59:19.1895729Z [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:308[0m
+2025-10-16T14:59:19.1896494Z 
+2025-10-16T14:59:19.1896660Z   [38;5;243mTimeline >>[0m
+2025-10-16T14:59:19.1897806Z   [1mSTEP:[0m Creating HeliosApp with explicit PVC name [38;5;243m@ 10/16/25 14:59:17.963[0m
+2025-10-16T14:59:19.1899647Z   [38;5;9m[FAILED][0m in [It] - /home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:312 [38;5;243m@ 10/16/25 14:59:17.966[0m
+2025-10-16T14:59:19.1900896Z   [38;5;243m<< Timeline[0m
+2025-10-16T14:59:19.1901161Z 
+2025-10-16T14:59:19.1901429Z   [38;5;9m[FAILED] Unexpected error:
+2025-10-16T14:59:19.1901970Z       <*errors.StatusError | 0xc000a820a0>: 
+2025-10-16T14:59:19.1903068Z       object is being deleted: heliosapps.platform.helios.io "test-app-pvc" already exists
+2025-10-16T14:59:19.1903670Z       {
+2025-10-16T14:59:19.1904046Z           ErrStatus: {
+2025-10-16T14:59:19.1904658Z               TypeMeta: {Kind: "", APIVersion: ""},
+2025-10-16T14:59:19.1905214Z               ListMeta: {
+2025-10-16T14:59:19.1905709Z                   SelfLink: "",
+2025-10-16T14:59:19.1906141Z                   ResourceVersion: "",
+2025-10-16T14:59:19.1906733Z                   Continue: "",
+2025-10-16T14:59:19.1907343Z                   RemainingItemCount: nil,
+2025-10-16T14:59:19.1907810Z               },
+2025-10-16T14:59:19.1908260Z               Status: "Failure",
+2025-10-16T14:59:19.1909538Z               Message: "object is being deleted: heliosapps.platform.helios.io \"test-app-pvc\" already exists",
+2025-10-16T14:59:19.1910447Z               Reason: "AlreadyExists",
+2025-10-16T14:59:19.1910952Z               Details: {
+2025-10-16T14:59:19.1911522Z                   Name: "test-app-pvc",
+2025-10-16T14:59:19.1912407Z                   Group: "platform.helios.io",
+2025-10-16T14:59:19.1913028Z                   Kind: "heliosapps",
+2025-10-16T14:59:19.1913349Z                   UID: "",
+2025-10-16T14:59:19.1913850Z                   Causes: nil,
+2025-10-16T14:59:19.1914398Z                   RetryAfterSeconds: 0,
+2025-10-16T14:59:19.1914767Z               },
+2025-10-16T14:59:19.1915172Z               Code: 409,
+2025-10-16T14:59:19.1915483Z           },
+2025-10-16T14:59:19.1915772Z       }
+2025-10-16T14:59:19.1916059Z   occurred[0m
+2025-10-16T14:59:19.1917116Z   [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:312[0m [38;5;243m@ 10/16/25 14:59:17.966[0m
+2025-10-16T14:59:19.1918479Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.1919064Z [38;5;9m• [FAILED] [0.003 seconds][0m
+2025-10-16T14:59:19.1920210Z [0mHeliosApp Controller [38;5;243mgetPipelineRunStatus function [38;5;9m[1m[It] should return Unknown status when no PipelineRuns exist[0m
+2025-10-16T14:59:19.1921816Z [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:364[0m
+2025-10-16T14:59:19.1922721Z 
+2025-10-16T14:59:19.1922999Z   [38;5;9m[FAILED] Unexpected error:
+2025-10-16T14:59:19.1923539Z       <*fmt.wrapError | 0xc000321a60>: 
+2025-10-16T14:59:19.1924336Z       failed to list PipelineRuns: no matches for kind "PipelineRun" in version "tekton.dev/v1"
+2025-10-16T14:59:19.1925048Z       {
+2025-10-16T14:59:19.1926091Z           msg: "failed to list PipelineRuns: no matches for kind \"PipelineRun\" in version \"tekton.dev/v1\"",
+2025-10-16T14:59:19.1927120Z           err: <*meta.NoKindMatchError | 0xc000a17540>{
+2025-10-16T14:59:19.1928073Z               GroupKind: {Group: "tekton.dev", Kind: "PipelineRun"},
+2025-10-16T14:59:19.1928712Z               SearchedVersions: ["v1"],
+2025-10-16T14:59:19.1929178Z           },
+2025-10-16T14:59:19.1929466Z       }
+2025-10-16T14:59:19.1929719Z   occurred[0m
+2025-10-16T14:59:19.1931310Z   [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:367[0m [38;5;243m@ 10/16/25 14:59:17.973[0m
+2025-10-16T14:59:19.1932765Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.1933323Z [38;5;9m• [FAILED] [0.003 seconds][0m
+2025-10-16T14:59:19.1934492Z [0mHeliosApp Controller [38;5;243mgetPipelineRunStatus function [38;5;9m[1m[It] should extract status from succeeded PipelineRun[0m
+2025-10-16T14:59:19.1936216Z [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:374[0m
+2025-10-16T14:59:19.1936990Z 
+2025-10-16T14:59:19.1937252Z   [38;5;243mTimeline >>[0m
+2025-10-16T14:59:19.1938045Z   [1mSTEP:[0m Creating a succeeded PipelineRun [38;5;243m@ 10/16/25 14:59:17.974[0m
+2025-10-16T14:59:19.1939876Z   [38;5;9m[FAILED][0m in [It] - /home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:404 [38;5;243m@ 10/16/25 14:59:17.976[0m
+2025-10-16T14:59:19.1941126Z   [38;5;243m<< Timeline[0m
+2025-10-16T14:59:19.1941388Z 
+2025-10-16T14:59:19.1941679Z   [38;5;9m[FAILED] Unexpected error:
+2025-10-16T14:59:19.1942325Z       <*meta.NoKindMatchError | 0xc00012a740>: 
+2025-10-16T14:59:19.1943095Z       no matches for kind "PipelineRun" in version "tekton.dev/v1"
+2025-10-16T14:59:19.1943561Z       {
+2025-10-16T14:59:19.1944224Z           GroupKind: {Group: "tekton.dev", Kind: "PipelineRun"},
+2025-10-16T14:59:19.1944876Z           SearchedVersions: ["v1"],
+2025-10-16T14:59:19.1945155Z       }
+2025-10-16T14:59:19.1945530Z   occurred[0m
+2025-10-16T14:59:19.1947013Z   [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:404[0m [38;5;243m@ 10/16/25 14:59:17.976[0m
+2025-10-16T14:59:19.1948316Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.1948866Z [38;5;9m• [FAILED] [0.005 seconds][0m
+2025-10-16T14:59:19.1950026Z [0mHeliosApp Controller [38;5;243mgetPipelineRunStatus function [38;5;9m[1m[It] should extract status from failed PipelineRun[0m
+2025-10-16T14:59:19.1951695Z [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:419[0m
+2025-10-16T14:59:19.1952610Z 
+2025-10-16T14:59:19.1952875Z   [38;5;243mTimeline >>[0m
+2025-10-16T14:59:19.1953706Z   [1mSTEP:[0m Creating a failed PipelineRun [38;5;243m@ 10/16/25 14:59:17.977[0m
+2025-10-16T14:59:19.1955302Z   [38;5;9m[FAILED][0m in [It] - /home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:442 [38;5;243m@ 10/16/25 14:59:17.982[0m
+2025-10-16T14:59:19.1956298Z   [38;5;243m<< Timeline[0m
+2025-10-16T14:59:19.1956486Z 
+2025-10-16T14:59:19.1956941Z   [38;5;9m[FAILED] Unexpected error:
+2025-10-16T14:59:19.1957382Z       <*meta.NoKindMatchError | 0xc0002ff680>: 
+2025-10-16T14:59:19.1958084Z       no matches for kind "PipelineRun" in version "tekton.dev/v1"
+2025-10-16T14:59:19.1958744Z       {
+2025-10-16T14:59:19.1959402Z           GroupKind: {Group: "tekton.dev", Kind: "PipelineRun"},
+2025-10-16T14:59:19.1960049Z           SearchedVersions: ["v1"],
+2025-10-16T14:59:19.1960432Z       }
+2025-10-16T14:59:19.1960804Z   occurred[0m
+2025-10-16T14:59:19.1961892Z   [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:442[0m [38;5;243m@ 10/16/25 14:59:17.982[0m
+2025-10-16T14:59:19.1963305Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.1963691Z [38;5;10m•[0m
+2025-10-16T14:59:19.1964006Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.1964528Z [38;5;9m• [FAILED] [0.009 seconds][0m
+2025-10-16T14:59:19.1965380Z [0mHeliosApp Controller [38;5;243mgetDeploymentHealth function [38;5;9m[1m[It] should return Healthy status when all replicas are ready[0m
+2025-10-16T14:59:19.1966808Z [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:498[0m
+2025-10-16T14:59:19.1967536Z 
+2025-10-16T14:59:19.1967805Z   [38;5;243mTimeline >>[0m
+2025-10-16T14:59:19.1968536Z   [1mSTEP:[0m Creating a healthy Deployment [38;5;243m@ 10/16/25 14:59:17.989[0m
+2025-10-16T14:59:19.1969578Z   [1mSTEP:[0m Calling getDeploymentHealth [38;5;243m@ 10/16/25 14:59:17.993[0m
+2025-10-16T14:59:19.1971616Z   [38;5;9m[FAILED][0m in [It] - /home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:555 [38;5;243m@ 10/16/25 14:59:17.997[0m
+2025-10-16T14:59:19.1973014Z   [38;5;243m<< Timeline[0m
+2025-10-16T14:59:19.1973274Z 
+2025-10-16T14:59:19.1973517Z   [38;5;9m[FAILED] Expected
+2025-10-16T14:59:19.1973964Z       <string>: Degraded
+2025-10-16T14:59:19.1974324Z   to equal
+2025-10-16T14:59:19.1974785Z       <string>: Healthy[0m
+2025-10-16T14:59:19.1976376Z   [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:555[0m [38;5;243m@ 10/16/25 14:59:17.997[0m
+2025-10-16T14:59:19.1977608Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.1978045Z [38;5;9m• [FAILED] [0.007 seconds][0m
+2025-10-16T14:59:19.1979122Z [0mHeliosApp Controller [38;5;243mgetDeploymentHealth function [38;5;9m[1m[It] should return Progressing status when some replicas are ready[0m
+2025-10-16T14:59:19.1980419Z [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:564[0m
+2025-10-16T14:59:19.1981170Z 
+2025-10-16T14:59:19.1981332Z   [38;5;243mTimeline >>[0m
+2025-10-16T14:59:19.1982087Z   [1mSTEP:[0m Creating a progressing Deployment [38;5;243m@ 10/16/25 14:59:17.999[0m
+2025-10-16T14:59:19.1983813Z   [38;5;9m[FAILED][0m in [It] - /home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:602 [38;5;243m@ 10/16/25 14:59:18.005[0m
+2025-10-16T14:59:19.1984798Z   [38;5;243m<< Timeline[0m
+2025-10-16T14:59:19.1984992Z 
+2025-10-16T14:59:19.1985321Z   [38;5;9m[FAILED] Expected success, but got an error:
+2025-10-16T14:59:19.1985900Z       <*errors.StatusError | 0xc0002bf360>: 
+2025-10-16T14:59:19.1987489Z       Deployment.apps "test-app" is invalid: [spec.selector: Required value, spec.template.metadata.labels: Invalid value: null: `selector` does not match template `labels`, spec.template.spec.containers: Required value]
+2025-10-16T14:59:19.1988480Z       {
+2025-10-16T14:59:19.1988692Z           ErrStatus: {
+2025-10-16T14:59:19.1989098Z               TypeMeta: {Kind: "Status", APIVersion: "v1"},
+2025-10-16T14:59:19.1989454Z               ListMeta: {
+2025-10-16T14:59:19.1989935Z                   SelfLink: "",
+2025-10-16T14:59:19.1990435Z                   ResourceVersion: "",
+2025-10-16T14:59:19.1991186Z                   Continue: "",
+2025-10-16T14:59:19.1991868Z                   RemainingItemCount: nil,
+2025-10-16T14:59:19.1992495Z               },
+2025-10-16T14:59:19.1992950Z               Status: "Failure",
+2025-10-16T14:59:19.1995194Z               Message: "Deployment.apps \"test-app\" is invalid: [spec.selector: Required value, spec.template.metadata.labels: Invalid value: null: `selector` does not match template `labels`, spec.template.spec.containers: Required value]",
+2025-10-16T14:59:19.1996569Z               Reason: "Invalid",
+2025-10-16T14:59:19.1997013Z               Details: {
+2025-10-16T14:59:19.1997431Z                   Name: "test-app",
+2025-10-16T14:59:19.1997902Z                   Group: "apps",
+2025-10-16T14:59:19.1998413Z                   Kind: "Deployment",
+2025-10-16T14:59:19.1998862Z                   UID: "",
+2025-10-16T14:59:19.1999146Z                   Causes: [
+2025-10-16T14:59:19.1999479Z                       {
+2025-10-16T14:59:19.2000098Z                           Type: "FieldValueRequired",
+2025-10-16T14:59:19.2000841Z                           Message: "Required value",
+2025-10-16T14:59:19.2001551Z                           Field: "spec.selector",
+2025-10-16T14:59:19.2002291Z                       },
+2025-10-16T14:59:19.2002583Z                       {
+2025-10-16T14:59:19.2003154Z                           Type: "FieldValueInvalid",
+2025-10-16T14:59:19.2004406Z                           Message: "Invalid value: null: `selector` does not match template `labels`",
+2025-10-16T14:59:19.2005545Z                           Field: "spec.template.metadata.labels",
+2025-10-16T14:59:19.2006172Z                       },
+2025-10-16T14:59:19.2006557Z                       {
+2025-10-16T14:59:19.2007233Z                           Type: "FieldValueRequired",
+2025-10-16T14:59:19.2007814Z                           Message: "Required value",
+2025-10-16T14:59:19.2008699Z                           Field: "spec.template.spec.containers",
+2025-10-16T14:59:19.2009178Z                       },
+2025-10-16T14:59:19.2009530Z                   ],
+2025-10-16T14:59:19.2009991Z                   RetryAfterSeconds: 0,
+2025-10-16T14:59:19.2010451Z               },
+2025-10-16T14:59:19.2010707Z               Code: 422,
+2025-10-16T14:59:19.2011051Z           },
+2025-10-16T14:59:19.2011423Z       }[0m
+2025-10-16T14:59:19.2012876Z   [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:602[0m [38;5;243m@ 10/16/25 14:59:18.005[0m
+2025-10-16T14:59:19.2013909Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.2014366Z [38;5;9m• [FAILED] [0.003 seconds][0m
+2025-10-16T14:59:19.2015224Z [0mHeliosApp Controller [38;5;243mgetDeploymentHealth function [38;5;9m[1m[It] should return Degraded status when no replicas are ready[0m
+2025-10-16T14:59:19.2016704Z [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:617[0m
+2025-10-16T14:59:19.2017510Z 
+2025-10-16T14:59:19.2017777Z   [38;5;243mTimeline >>[0m
+2025-10-16T14:59:19.2018276Z   [1mSTEP:[0m Creating a degraded Deployment [38;5;243m@ 10/16/25 14:59:18.007[0m
+2025-10-16T14:59:19.2019721Z   [38;5;9m[FAILED][0m in [It] - /home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:655 [38;5;243m@ 10/16/25 14:59:18.009[0m
+2025-10-16T14:59:19.2020638Z   [38;5;243m<< Timeline[0m
+2025-10-16T14:59:19.2020898Z 
+2025-10-16T14:59:19.2021231Z   [38;5;9m[FAILED] Expected success, but got an error:
+2025-10-16T14:59:19.2021770Z       <*errors.StatusError | 0xc000796a00>: 
+2025-10-16T14:59:19.2023625Z       Deployment.apps "test-app" is invalid: [spec.selector: Required value, spec.template.metadata.labels: Invalid value: null: `selector` does not match template `labels`, spec.template.spec.containers: Required value]
+2025-10-16T14:59:19.2024928Z       {
+2025-10-16T14:59:19.2025276Z           ErrStatus: {
+2025-10-16T14:59:19.2026151Z               TypeMeta: {Kind: "Status", APIVersion: "v1"},
+2025-10-16T14:59:19.2026761Z               ListMeta: {
+2025-10-16T14:59:19.2027257Z                   SelfLink: "",
+2025-10-16T14:59:19.2027888Z                   ResourceVersion: "",
+2025-10-16T14:59:19.2028391Z                   Continue: "",
+2025-10-16T14:59:19.2029018Z                   RemainingItemCount: nil,
+2025-10-16T14:59:19.2029470Z               },
+2025-10-16T14:59:19.2029998Z               Status: "Failure",
+2025-10-16T14:59:19.2032792Z               Message: "Deployment.apps \"test-app\" is invalid: [spec.selector: Required value, spec.template.metadata.labels: Invalid value: null: `selector` does not match template `labels`, spec.template.spec.containers: Required value]",
+2025-10-16T14:59:19.2034494Z               Reason: "Invalid",
+2025-10-16T14:59:19.2034962Z               Details: {
+2025-10-16T14:59:19.2035495Z                   Name: "test-app",
+2025-10-16T14:59:19.2035940Z                   Group: "apps",
+2025-10-16T14:59:19.2036302Z                   Kind: "Deployment",
+2025-10-16T14:59:19.2036789Z                   UID: "",
+2025-10-16T14:59:19.2037222Z                   Causes: [
+2025-10-16T14:59:19.2037599Z                       {
+2025-10-16T14:59:19.2038239Z                           Type: "FieldValueRequired",
+2025-10-16T14:59:19.2039054Z                           Message: "Required value",
+2025-10-16T14:59:19.2039741Z                           Field: "spec.selector",
+2025-10-16T14:59:19.2040213Z                       },
+2025-10-16T14:59:19.2040681Z                       {
+2025-10-16T14:59:19.2041304Z                           Type: "FieldValueInvalid",
+2025-10-16T14:59:19.2042980Z                           Message: "Invalid value: null: `selector` does not match template `labels`",
+2025-10-16T14:59:19.2044010Z                           Field: "spec.template.metadata.labels",
+2025-10-16T14:59:19.2044383Z                       },
+2025-10-16T14:59:19.2044851Z                       {
+2025-10-16T14:59:19.2045464Z                           Type: "FieldValueRequired",
+2025-10-16T14:59:19.2046360Z                           Message: "Required value",
+2025-10-16T14:59:19.2047258Z                           Field: "spec.template.spec.containers",
+2025-10-16T14:59:19.2047770Z                       },
+2025-10-16T14:59:19.2048010Z                   ],
+2025-10-16T14:59:19.2048379Z                   RetryAfterSeconds: 0,
+2025-10-16T14:59:19.2048844Z               },
+2025-10-16T14:59:19.2049257Z               Code: 422,
+2025-10-16T14:59:19.2049612Z           },
+2025-10-16T14:59:19.2050001Z       }[0m
+2025-10-16T14:59:19.2051225Z   [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:655[0m [38;5;243m@ 10/16/25 14:59:18.009[0m
+2025-10-16T14:59:19.2052536Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.2053083Z [38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m
+2025-10-16T14:59:19.2053481Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.2053975Z [38;5;9m• [FAILED] [0.001 seconds][0m
+2025-10-16T14:59:19.2055179Z [0mHeliosApp Controller [38;5;243mWatch predicate functions [0misHeliosDeployment [38;5;9m[1m[It] should return true for Deployment with ArgoCD label[0m
+2025-10-16T14:59:19.2056828Z [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:731[0m
+2025-10-16T14:59:19.2057615Z 
+2025-10-16T14:59:19.2057816Z   [38;5;9m[FAILED] Expected
+2025-10-16T14:59:19.2058145Z       <bool>: false
+2025-10-16T14:59:19.2058534Z   to be true[0m
+2025-10-16T14:59:19.2060266Z   [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:743[0m [38;5;243m@ 10/16/25 14:59:18.012[0m
+2025-10-16T14:59:19.2061492Z [38;5;243m------------------------------[0m
+2025-10-16T14:59:19.2062267Z [38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m
+2025-10-16T14:59:19.2062671Z 
+2025-10-16T14:59:19.2063133Z [38;5;9m[1mSummarizing 11 Failures:[0m
+2025-10-16T14:59:19.2064154Z   [38;5;9m[FAIL][0m [0mHeliosApp Controller [38;5;243mWhen reconciling a resource [38;5;9m[1m[It] should successfully reconcile the resource[0m
+2025-10-16T14:59:19.2065563Z   [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:96[0m
+2025-10-16T14:59:19.2067125Z   [38;5;9m[FAIL][0m [0mHeliosApp Controller [38;5;243mFinalizer Logic [38;5;9m[1m[It] should handle deletion with finalizer[0m
+2025-10-16T14:59:19.2068373Z   [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:205[0m
+2025-10-16T14:59:19.2069586Z   [38;5;9m[FAIL][0m [0mHeliosApp Controller [38;5;243mAutomatic PVC Creation [38;5;9m[1m[It] should create PVC automatically when not specified[0m
+2025-10-16T14:59:19.2070906Z   [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:299[0m
+2025-10-16T14:59:19.2072427Z   [38;5;9m[FAIL][0m [0mHeliosApp Controller [38;5;243mAutomatic PVC Creation [38;5;9m[1m[It] should not create PVC when explicitly specified[0m
+2025-10-16T14:59:19.2073598Z   [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:312[0m
+2025-10-16T14:59:19.2075014Z   [38;5;9m[FAIL][0m [0mHeliosApp Controller [38;5;243mgetPipelineRunStatus function [38;5;9m[1m[It] should return Unknown status when no PipelineRuns exist[0m
+2025-10-16T14:59:19.2076228Z   [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:367[0m
+2025-10-16T14:59:19.2077979Z   [38;5;9m[FAIL][0m [0mHeliosApp Controller [38;5;243mgetPipelineRunStatus function [38;5;9m[1m[It] should extract status from succeeded PipelineRun[0m
+2025-10-16T14:59:19.2079525Z   [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:404[0m
+2025-10-16T14:59:19.2081373Z   [38;5;9m[FAIL][0m [0mHeliosApp Controller [38;5;243mgetPipelineRunStatus function [38;5;9m[1m[It] should extract status from failed PipelineRun[0m
+2025-10-16T14:59:19.2082765Z   [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:442[0m
+2025-10-16T14:59:19.2084523Z   [38;5;9m[FAIL][0m [0mHeliosApp Controller [38;5;243mgetDeploymentHealth function [38;5;9m[1m[It] should return Healthy status when all replicas are ready[0m
+2025-10-16T14:59:19.2085769Z   [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:555[0m
+2025-10-16T14:59:19.2087554Z   [38;5;9m[FAIL][0m [0mHeliosApp Controller [38;5;243mgetDeploymentHealth function [38;5;9m[1m[It] should return Progressing status when some replicas are ready[0m
+2025-10-16T14:59:19.2088833Z   [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:602[0m
+2025-10-16T14:59:19.2090391Z   [38;5;9m[FAIL][0m [0mHeliosApp Controller [38;5;243mgetDeploymentHealth function [38;5;9m[1m[It] should return Degraded status when no replicas are ready[0m
+2025-10-16T14:59:19.2091717Z   [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:655[0m
+2025-10-16T14:59:19.2093536Z   [38;5;9m[FAIL][0m [0mHeliosApp Controller [38;5;243mWatch predicate functions [0misHeliosDeployment [38;5;9m[1m[It] should return true for Deployment with ArgoCD label[0m
+2025-10-16T14:59:19.2094898Z   [38;5;243m/home/runner/work/helios-operator/helios-operator/internal/controller/heliosapp_controller_test.go:743[0m
+2025-10-16T14:59:19.2095485Z 
+2025-10-16T14:59:19.2095803Z [38;5;9m[1mRan 21 of 21 Specs in 6.487 seconds[0m
+2025-10-16T14:59:19.2096684Z [38;5;9m[1mFAIL![0m -- [38;5;10m[1m10 Passed[0m | [38;5;9m[1m11 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m0 Skipped[0m
+2025-10-16T14:59:19.2097258Z --- FAIL: TestControllers (6.49s)
+2025-10-16T14:59:19.2097872Z FAIL
+2025-10-16T14:59:19.2098244Z FAIL	github.com/hoangphuc841/helios-operator/internal/controller	7.447s
+2025-10-16T14:59:19.2098815Z === RUN   TestNewChecker
+2025-10-16T14:59:19.2099065Z --- PASS: TestNewChecker (0.79s)
+2025-10-16T14:59:19.2099399Z === RUN   TestChecker_LivenessCheck
+2025-10-16T14:59:19.2099851Z --- PASS: TestChecker_LivenessCheck (0.01s)
+2025-10-16T14:59:19.2100164Z === RUN   TestChecker_ReadinessCheck_Success
+2025-10-16T14:59:19.2100519Z --- PASS: TestChecker_ReadinessCheck_Success (0.01s)
+2025-10-16T14:59:19.2101003Z === RUN   TestChecker_ReadinessCheck_Timeout
+2025-10-16T14:59:19.2101325Z --- PASS: TestChecker_ReadinessCheck_Timeout (0.01s)
+2025-10-16T14:59:19.2101916Z === RUN   TestChecker_CheckAPIServerConnection_Success
+2025-10-16T14:59:19.2102560Z --- PASS: TestChecker_CheckAPIServerConnection_Success (0.01s)
+2025-10-16T14:59:19.2103045Z === RUN   TestChecker_GetLastCheckTime
+2025-10-16T14:59:19.2103394Z --- PASS: TestChecker_GetLastCheckTime (0.02s)
+2025-10-16T14:59:19.2103897Z === RUN   TestWebhookReadinessCheck
+2025-10-16T14:59:19.2104206Z --- PASS: TestWebhookReadinessCheck (0.00s)
+2025-10-16T14:59:19.2104506Z === RUN   TestLeaderElectionCheck_IsLeader
+2025-10-16T14:59:19.2104933Z --- PASS: TestLeaderElectionCheck_IsLeader (0.00s)
+2025-10-16T14:59:19.2105326Z === RUN   TestLeaderElectionCheck_NotLeader
+2025-10-16T14:59:19.2105738Z --- PASS: TestLeaderElectionCheck_NotLeader (0.00s)
+2025-10-16T14:59:19.2106336Z === RUN   TestLeaderElectionCheck_ToggleLeadership
+2025-10-16T14:59:19.2106812Z --- PASS: TestLeaderElectionCheck_ToggleLeadership (0.00s)
+2025-10-16T14:59:19.2107364Z === RUN   TestChecker_ConcurrentAccess
+2025-10-16T14:59:19.2107780Z --- PASS: TestChecker_ConcurrentAccess (0.01s)
+2025-10-16T14:59:19.2108089Z === RUN   TestChecker_ReadinessCheck_APIError
+2025-10-16T14:59:19.2108635Z --- PASS: TestChecker_ReadinessCheck_APIError (0.02s)
+2025-10-16T14:59:19.2109113Z === RUN   TestChecker_CheckAPIServerConnection_Error
+2025-10-16T14:59:19.2109637Z --- PASS: TestChecker_CheckAPIServerConnection_Error (0.01s)
+2025-10-16T14:59:19.2110121Z PASS
+2025-10-16T14:59:19.2110417Z ok  	github.com/hoangphuc841/helios-operator/internal/health	1.961s
+2025-10-16T14:59:19.2111042Z === RUN   TestGenerateArgoApplication
+2025-10-16T14:59:19.2111557Z === RUN   TestGenerateArgoApplication/basic_helios_app
+2025-10-16T14:59:19.2112388Z === RUN   TestGenerateArgoApplication/helios_app_with_custom_namespace
+2025-10-16T14:59:19.2113073Z --- PASS: TestGenerateArgoApplication (0.00s)
+2025-10-16T14:59:19.2113644Z     --- PASS: TestGenerateArgoApplication/basic_helios_app (0.00s)
+2025-10-16T14:59:19.2114507Z     --- PASS: TestGenerateArgoApplication/helios_app_with_custom_namespace (0.00s)
+2025-10-16T14:59:19.2115197Z === RUN   TestGenerateArgoApplication_ErrorCases
+2025-10-16T14:59:19.2115695Z === RUN   TestGenerateArgoApplication_ErrorCases/nil_helios_app
+2025-10-16T14:59:19.2116276Z === RUN   TestGenerateArgoApplication_ErrorCases/empty_helios_app
+2025-10-16T14:59:19.2116909Z --- PASS: TestGenerateArgoApplication_ErrorCases (0.00s)
+2025-10-16T14:59:19.2117478Z     --- PASS: TestGenerateArgoApplication_ErrorCases/nil_helios_app (0.00s)
+2025-10-16T14:59:19.2118370Z     --- PASS: TestGenerateArgoApplication_ErrorCases/empty_helios_app (0.00s)
+2025-10-16T14:59:19.2118874Z === RUN   TestGetPipelineName
+2025-10-16T14:59:19.2119267Z === RUN   TestGetPipelineName/basic_app_name
+2025-10-16T14:59:19.2119583Z === RUN   TestGetPipelineName/app_name_with_hyphens
+2025-10-16T14:59:19.2119892Z === RUN   TestGetPipelineName/empty_app_name
+2025-10-16T14:59:19.2120269Z --- PASS: TestGetPipelineName (0.00s)
+2025-10-16T14:59:19.2120876Z     --- PASS: TestGetPipelineName/basic_app_name (0.00s)
+2025-10-16T14:59:19.2121600Z     --- PASS: TestGetPipelineName/app_name_with_hyphens (0.00s)
+2025-10-16T14:59:19.2122346Z     --- PASS: TestGetPipelineName/empty_app_name (0.00s)
+2025-10-16T14:59:19.2122864Z === RUN   TestGeneratePipeline
+2025-10-16T14:59:19.2123312Z === RUN   TestGeneratePipeline/basic_helios_app
+2025-10-16T14:59:19.2124056Z === RUN   TestGeneratePipeline/app_with_different_namespace
+2025-10-16T14:59:19.2124679Z --- PASS: TestGeneratePipeline (0.00s)
+2025-10-16T14:59:19.2125268Z     --- PASS: TestGeneratePipeline/basic_helios_app (0.00s)
+2025-10-16T14:59:19.2125944Z     --- PASS: TestGeneratePipeline/app_with_different_namespace (0.00s)
+2025-10-16T14:59:19.2126594Z === RUN   TestGeneratePipeline_ParameterDefaults
+2025-10-16T14:59:19.2127193Z --- PASS: TestGeneratePipeline_ParameterDefaults (0.00s)
+2025-10-16T14:59:19.2127815Z === RUN   TestGeneratePipeline_WorkspaceConfiguration
+2025-10-16T14:59:19.2128306Z --- PASS: TestGeneratePipeline_WorkspaceConfiguration (0.00s)
+2025-10-16T14:59:19.2128962Z === RUN   TestGeneratePipeline_TaskParameters
+2025-10-16T14:59:19.2129375Z --- PASS: TestGeneratePipeline_TaskParameters (0.00s)
+2025-10-16T14:59:19.2129893Z === RUN   TestGenerateEventListener
+2025-10-16T14:59:19.2130397Z === RUN   TestGenerateEventListener/basic_event_listener
+2025-10-16T14:59:19.2130941Z === RUN   TestGenerateEventListener/event_listener_with_different_namespace
+2025-10-16T14:59:19.2131624Z --- PASS: TestGenerateEventListener (0.00s)
+2025-10-16T14:59:19.2132596Z     --- PASS: TestGenerateEventListener/basic_event_listener (0.00s)
+2025-10-16T14:59:19.2133648Z     --- PASS: TestGenerateEventListener/event_listener_with_different_namespace (0.00s)
+2025-10-16T14:59:19.2134446Z === RUN   TestGenerateEventListener_InterceptorConfiguration
+2025-10-16T14:59:19.2135205Z --- PASS: TestGenerateEventListener_InterceptorConfiguration (0.00s)
+2025-10-16T14:59:19.2135815Z === RUN   TestGenerateTriggerBinding
+2025-10-16T14:59:19.2136550Z === RUN   TestGenerateTriggerBinding/basic_trigger_binding
+2025-10-16T14:59:19.2137239Z === RUN   TestGenerateTriggerBinding/trigger_binding_in_custom_namespace
+2025-10-16T14:59:19.2137970Z --- PASS: TestGenerateTriggerBinding (0.00s)
+2025-10-16T14:59:19.2138611Z     --- PASS: TestGenerateTriggerBinding/basic_trigger_binding (0.00s)
+2025-10-16T14:59:19.2139324Z     --- PASS: TestGenerateTriggerBinding/trigger_binding_in_custom_namespace (0.00s)
+2025-10-16T14:59:19.2140069Z === RUN   TestGenerateTriggerBinding_Parameters
+2025-10-16T14:59:19.2140669Z --- PASS: TestGenerateTriggerBinding_Parameters (0.00s)
+2025-10-16T14:59:19.2141222Z === RUN   TestGenerateTriggerTemplate
+2025-10-16T14:59:19.2141744Z === RUN   TestGenerateTriggerTemplate/basic_trigger_template
+2025-10-16T14:59:19.2142569Z === RUN   TestGenerateTriggerTemplate/template_in_custom_namespace
+2025-10-16T14:59:19.2143319Z === RUN   TestGenerateTriggerTemplate/template_with_empty_workspace
+2025-10-16T14:59:19.2143947Z --- PASS: TestGenerateTriggerTemplate (0.00s)
+2025-10-16T14:59:19.2144744Z     --- PASS: TestGenerateTriggerTemplate/basic_trigger_template (0.00s)
+2025-10-16T14:59:19.2145710Z     --- PASS: TestGenerateTriggerTemplate/template_in_custom_namespace (0.00s)
+2025-10-16T14:59:19.2146759Z     --- PASS: TestGenerateTriggerTemplate/template_with_empty_workspace (0.00s)
+2025-10-16T14:59:19.2147456Z === RUN   TestGenerateTriggerTemplate_Parameters
+2025-10-16T14:59:19.2148058Z --- PASS: TestGenerateTriggerTemplate_Parameters (0.00s)
+2025-10-16T14:59:19.2148662Z === RUN   TestGenerateTriggerTemplate_PVCClaimName
+2025-10-16T14:59:19.2149288Z --- PASS: TestGenerateTriggerTemplate_PVCClaimName (0.00s)
+2025-10-16T14:59:19.2149913Z === RUN   TestGenerateTriggerTemplate_EmptyWorkspace
+2025-10-16T14:59:19.2150576Z --- PASS: TestGenerateTriggerTemplate_EmptyWorkspace (0.00s)
+2025-10-16T14:59:19.2151164Z === RUN   TestGenerateTriggerTemplate_NilWorkspace
+2025-10-16T14:59:19.2151778Z --- PASS: TestGenerateTriggerTemplate_NilWorkspace (0.00s)
+2025-10-16T14:59:19.2152432Z PASS
+2025-10-16T14:59:19.2152943Z ok  	github.com/hoangphuc841/helios-operator/internal/resources	1.132s
+2025-10-16T15:00:58.3981879Z === RUN   TestE2E
+2025-10-16T15:00:58.3982561Z   Starting helios-operator integration test suite
+2025-10-16T15:00:58.3983330Z Running Suite: e2e suite - /home/runner/work/helios-operator/helios-operator/test/e2e
+2025-10-16T15:00:58.3984335Z =====================================================================================
+2025-10-16T15:00:58.3985065Z Random Seed: [1m1760626751[0m
+2025-10-16T15:00:58.3985310Z 
+2025-10-16T15:00:58.3985529Z Will run [1m6[0m of [1m6[0m specs
+2025-10-16T15:00:58.3986038Z [38;5;243m------------------------------[0m
+2025-10-16T15:00:58.3986607Z [38;5;9m[BeforeSuite] [FAILED] [105.665 seconds][0m
+2025-10-16T15:00:58.3987122Z [38;5;9m[1m[BeforeSuite] [0m
+2025-10-16T15:00:58.3987995Z [38;5;243m/home/runner/work/helios-operator/helios-operator/test/e2e/e2e_suite_test.go:55[0m
+2025-10-16T15:00:58.3988581Z 
+2025-10-16T15:00:58.3988846Z   [38;5;243mTimeline >>[0m
+2025-10-16T15:00:58.3989714Z   [1mSTEP:[0m building the manager(Operator) image [38;5;243m@ 10/16/25 14:59:11.731[0m
+2025-10-16T15:00:58.3990612Z   running: "make docker-build IMG=example.com/helios-operator:v0.0.1"
+2025-10-16T15:00:58.3991706Z   [1mSTEP:[0m loading the manager(Operator) image on Kind [38;5;243m@ 10/16/25 15:00:56.027[0m
+2025-10-16T15:00:58.3992896Z   running: "kind load docker-image example.com/helios-operator:v0.0.1 --name kind"
+2025-10-16T15:00:58.3994549Z   [38;5;9m[FAILED][0m in [BeforeSuite] - /home/runner/go/pkg/mod/github.com/onsi/ginkgo/v2@v2.26.0/internal/node.go:512 [38;5;243m@ 10/16/25 15:00:57.396[0m
+2025-10-16T15:00:58.3995627Z   [38;5;243m<< Timeline[0m
+2025-10-16T15:00:58.3995863Z 
+2025-10-16T15:00:58.3996330Z   [38;5;9m[FAILED] Failed to load the manager(Operator) image into Kind
+2025-10-16T15:00:58.3996896Z   Unexpected error:
+2025-10-16T15:00:58.3997352Z       <*fmt.wrapError | 0xc000113000>: 
+2025-10-16T15:00:58.3999023Z       "kind load docker-image example.com/helios-operator:v0.0.1 --name kind" failed with error "ERROR: no nodes found for cluster \"kind\"\n": exit status 1
+2025-10-16T15:00:58.3999989Z       {
+2025-10-16T15:00:58.4001605Z           msg: "\"kind load docker-image example.com/helios-operator:v0.0.1 --name kind\" failed with error \"ERROR: no nodes found for cluster \\\"kind\\\"\\n\": exit status 1",
+2025-10-16T15:00:58.4003089Z           err: <*exec.ExitError | 0xc000112fe0>{
+2025-10-16T15:00:58.4003680Z               ProcessState: {
+2025-10-16T15:00:58.4004197Z                   pid: 26151,
+2025-10-16T15:00:58.4004729Z                   status: 256,
+2025-10-16T15:00:58.4005230Z                   rusage: {
+2025-10-16T15:00:58.4005972Z                       Utime: {Sec: 0, Usec: 19145},
+2025-10-16T15:00:58.4006772Z                       Stime: {Sec: 0, Usec: 37008},
+2025-10-16T15:00:58.4007419Z                       Maxrss: 41692,
+2025-10-16T15:00:58.4007991Z                       Ixrss: 0,
+2025-10-16T15:00:58.4008534Z                       Idrss: 0,
+2025-10-16T15:00:58.4009066Z                       Isrss: 0,
+2025-10-16T15:00:58.4009629Z                       Minflt: 4941,
+2025-10-16T15:00:58.4010208Z                       Majflt: 61,
+2025-10-16T15:00:58.4010759Z                       Nswap: 0,
+2025-10-16T15:00:58.4011373Z                       Inblock: 19448,
+2025-10-16T15:00:58.4011987Z                       Oublock: 0,
+2025-10-16T15:00:58.4012720Z                       Msgsnd: 0,
+2025-10-16T15:00:58.4013268Z                       Msgrcv: 0,
+2025-10-16T15:00:58.4013844Z                       Nsignals: 0,
+2025-10-16T15:00:58.4014420Z                       Nvcsw: 879,
+2025-10-16T15:00:58.4014963Z                       Nivcsw: 2,
+2025-10-16T15:00:58.4015407Z                   },
+2025-10-16T15:00:58.4015765Z               },
+2025-10-16T15:00:58.4016192Z               Stderr: nil,
+2025-10-16T15:00:58.4016561Z           },
+2025-10-16T15:00:58.4016861Z       }
+2025-10-16T15:00:58.4017214Z   occurred[0m
+2025-10-16T15:00:58.4018609Z   [38;5;9mIn [1m[BeforeSuite][0m[38;5;9m at: [1m/home/runner/go/pkg/mod/github.com/onsi/ginkgo/v2@v2.26.0/internal/node.go:512[0m [38;5;243m@ 10/16/25 15:00:57.396[0m
+2025-10-16T15:00:58.4019737Z [38;5;243m------------------------------[0m
+2025-10-16T15:00:58.4019996Z 
+2025-10-16T15:00:58.4020210Z [38;5;9m[1mSummarizing 1 Failure:[0m
+2025-10-16T15:00:58.4020957Z   [38;5;9m[FAIL][0m [38;5;9m[1m[BeforeSuite] [0m
+2025-10-16T15:00:58.4021908Z   [38;5;243m/home/runner/go/pkg/mod/github.com/onsi/ginkgo/v2@v2.26.0/internal/node.go:512[0m
+2025-10-16T15:00:58.4022645Z 
+2025-10-16T15:00:58.4022956Z [38;5;9m[1mRan 0 of 6 Specs in 106.660 seconds[0m
+2025-10-16T15:00:58.4023797Z [38;5;9m[1mFAIL![0m -- [38;5;14m[1mA BeforeSuite node failed so all tests were skipped.[0m
+2025-10-16T15:00:58.4024425Z --- FAIL: TestE2E (106.66s)
+2025-10-16T15:00:58.4024770Z FAIL
+2025-10-16T15:00:58.4025204Z FAIL	github.com/hoangphuc841/helios-operator/test/e2e	106.692s
+2025-10-16T15:00:58.4025951Z ?   	github.com/hoangphuc841/helios-operator/test/utils	[no test files]
+2025-10-16T15:00:58.4026480Z FAIL
+2025-10-16T15:00:58.7918548Z make: *** [Makefile:174: test] Error 1
+2025-10-16T15:00:58.7935703Z ##[error]Process completed with exit code 2.
+2025-10-16T15:00:58.8018891Z Post job cleanup.
+2025-10-16T15:00:58.8804634Z [command]/usr/bin/git version
+2025-10-16T15:00:58.8840410Z git version 2.51.0
+2025-10-16T15:00:58.8879791Z Temporarily overriding HOME='/home/runner/work/_temp/437bd78b-da94-4de2-a205-3d3aa16dcf6a' before making global git config changes
+2025-10-16T15:00:58.8881133Z Adding repository directory to the temporary git global config as a safe directory
+2025-10-16T15:00:58.8884408Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/helios-operator/helios-operator
+2025-10-16T15:00:58.8920566Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-10-16T15:00:58.8953183Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-10-16T15:00:58.9179046Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-10-16T15:00:58.9200469Z http.https://github.com/.extraheader
+2025-10-16T15:00:58.9209805Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-10-16T15:00:58.9240266Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-10-16T15:00:58.9574393Z Cleaning up orphan processes

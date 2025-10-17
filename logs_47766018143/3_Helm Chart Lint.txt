@@ -1,0 +1,143 @@
+﻿2025-10-16T14:56:23.4363313Z Current runner version: '2.328.0'
+2025-10-16T14:56:23.4387777Z ##[group]Runner Image Provisioner
+2025-10-16T14:56:23.4388635Z Hosted Compute Agent
+2025-10-16T14:56:23.4389170Z Version: 20250912.392
+2025-10-16T14:56:23.4389878Z Commit: d921fda672a98b64f4f82364647e2f10b2267d0b
+2025-10-16T14:56:23.4390571Z Build Date: 2025-09-12T15:23:14Z
+2025-10-16T14:56:23.4391195Z ##[endgroup]
+2025-10-16T14:56:23.4391775Z ##[group]Operating System
+2025-10-16T14:56:23.4392387Z Ubuntu
+2025-10-16T14:56:23.4392850Z 24.04.3
+2025-10-16T14:56:23.4393374Z LTS
+2025-10-16T14:56:23.4393834Z ##[endgroup]
+2025-10-16T14:56:23.4394343Z ##[group]Runner Image
+2025-10-16T14:56:23.4394972Z Image: ubuntu-24.04
+2025-10-16T14:56:23.4395681Z Version: 20250929.60.1
+2025-10-16T14:56:23.4396749Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250929.60/images/ubuntu/Ubuntu2404-Readme.md
+2025-10-16T14:56:23.4398423Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250929.60
+2025-10-16T14:56:23.4399474Z ##[endgroup]
+2025-10-16T14:56:23.4400709Z ##[group]GITHUB_TOKEN Permissions
+2025-10-16T14:56:23.4402565Z Contents: read
+2025-10-16T14:56:23.4403135Z Metadata: read
+2025-10-16T14:56:23.4403727Z Packages: read
+2025-10-16T14:56:23.4404247Z ##[endgroup]
+2025-10-16T14:56:23.4406838Z Secret source: Actions
+2025-10-16T14:56:23.4407869Z Prepare workflow directory
+2025-10-16T14:56:23.4786610Z Prepare all required actions
+2025-10-16T14:56:23.4824193Z Getting action download info
+2025-10-16T14:56:23.8692775Z Download action repository 'actions/checkout@v5' (SHA:08c6903cd8c0fde910a37f88322edcfb5dd907a8)
+2025-10-16T14:56:24.0405786Z Download action repository 'azure/setup-helm@v4' (SHA:1a275c3b69536ee54be43f2070a358922e12c8d4)
+2025-10-16T14:56:24.3989808Z Complete job name: Helm Chart Lint
+2025-10-16T14:56:24.4684788Z ##[group]Run actions/checkout@v5
+2025-10-16T14:56:24.4685967Z with:
+2025-10-16T14:56:24.4686449Z   repository: hoangphuc841/helios-operator
+2025-10-16T14:56:24.4687231Z   token: ***
+2025-10-16T14:56:24.4687690Z   ssh-strict: true
+2025-10-16T14:56:24.4688153Z   ssh-user: git
+2025-10-16T14:56:24.4688621Z   persist-credentials: true
+2025-10-16T14:56:24.4689130Z   clean: true
+2025-10-16T14:56:24.4689598Z   sparse-checkout-cone-mode: true
+2025-10-16T14:56:24.4690165Z   fetch-depth: 1
+2025-10-16T14:56:24.4690624Z   fetch-tags: false
+2025-10-16T14:56:24.4691089Z   show-progress: true
+2025-10-16T14:56:24.4691579Z   lfs: false
+2025-10-16T14:56:24.4692019Z   submodules: false
+2025-10-16T14:56:24.4692493Z   set-safe-directory: true
+2025-10-16T14:56:24.4693227Z env:
+2025-10-16T14:56:24.4693666Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:24.4694165Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:24.4694696Z ##[endgroup]
+2025-10-16T14:56:24.5604155Z Syncing repository: hoangphuc841/helios-operator
+2025-10-16T14:56:24.5606477Z ##[group]Getting Git version info
+2025-10-16T14:56:24.5607386Z Working directory is '/home/runner/work/helios-operator/helios-operator'
+2025-10-16T14:56:24.5608771Z [command]/usr/bin/git version
+2025-10-16T14:56:24.5659826Z git version 2.51.0
+2025-10-16T14:56:24.5680620Z ##[endgroup]
+2025-10-16T14:56:24.5694122Z Temporarily overriding HOME='/home/runner/work/_temp/6cc00ea4-c32a-4e47-987f-55c93251092b' before making global git config changes
+2025-10-16T14:56:24.5698631Z Adding repository directory to the temporary git global config as a safe directory
+2025-10-16T14:56:24.5700823Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:56:24.5733439Z Deleting the contents of '/home/runner/work/helios-operator/helios-operator'
+2025-10-16T14:56:24.5736863Z ##[group]Initializing the repository
+2025-10-16T14:56:24.5741143Z [command]/usr/bin/git init /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:56:24.5855186Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-10-16T14:56:24.5857104Z hint: is subject to change. To configure the initial branch name to use in all
+2025-10-16T14:56:24.5859185Z hint: of your new repositories, which will suppress this warning, call:
+2025-10-16T14:56:24.5861010Z hint:
+2025-10-16T14:56:24.5862174Z hint: 	git config --global init.defaultBranch <name>
+2025-10-16T14:56:24.5863591Z hint:
+2025-10-16T14:56:24.5864856Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-10-16T14:56:24.5867176Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-10-16T14:56:24.5868843Z hint:
+2025-10-16T14:56:24.5869698Z hint: 	git branch -m <name>
+2025-10-16T14:56:24.5870764Z hint:
+2025-10-16T14:56:24.5871600Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2025-10-16T14:56:24.5873134Z Initialized empty Git repository in /home/runner/work/helios-operator/helios-operator/.git/
+2025-10-16T14:56:24.5875487Z [command]/usr/bin/git remote add origin https://github.com/hoangphuc841/helios-operator
+2025-10-16T14:56:24.5907783Z ##[endgroup]
+2025-10-16T14:56:24.5908616Z ##[group]Disabling automatic garbage collection
+2025-10-16T14:56:24.5911459Z [command]/usr/bin/git config --local gc.auto 0
+2025-10-16T14:56:24.5939116Z ##[endgroup]
+2025-10-16T14:56:24.5939918Z ##[group]Setting up auth
+2025-10-16T14:56:24.5945756Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-10-16T14:56:24.5977101Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-10-16T14:56:24.6303190Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-10-16T14:56:24.6335400Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-10-16T14:56:24.6561810Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-10-16T14:56:24.6595632Z ##[endgroup]
+2025-10-16T14:56:24.6596996Z ##[group]Fetching the repository
+2025-10-16T14:56:24.6605737Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1:refs/remotes/pull/1/merge
+2025-10-16T14:56:24.8922359Z From https://github.com/hoangphuc841/helios-operator
+2025-10-16T14:56:24.8925681Z  * [new ref]         e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1 -> pull/1/merge
+2025-10-16T14:56:24.8955994Z ##[endgroup]
+2025-10-16T14:56:24.8958080Z ##[group]Determining the checkout info
+2025-10-16T14:56:24.8960489Z ##[endgroup]
+2025-10-16T14:56:24.8965470Z [command]/usr/bin/git sparse-checkout disable
+2025-10-16T14:56:24.9009092Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-10-16T14:56:24.9036724Z ##[group]Checking out the ref
+2025-10-16T14:56:24.9040693Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/1/merge
+2025-10-16T14:56:24.9164238Z Note: switching to 'refs/remotes/pull/1/merge'.
+2025-10-16T14:56:24.9165867Z 
+2025-10-16T14:56:24.9166978Z You are in 'detached HEAD' state. You can look around, make experimental
+2025-10-16T14:56:24.9170172Z changes and commit them, and you can discard any commits you make in this
+2025-10-16T14:56:24.9173557Z state without impacting any branches by switching back to a branch.
+2025-10-16T14:56:24.9176037Z 
+2025-10-16T14:56:24.9177241Z If you want to create a new branch to retain commits you create, you may
+2025-10-16T14:56:24.9180602Z do so (now or later) by using -c with the switch command. Example:
+2025-10-16T14:56:24.9181977Z 
+2025-10-16T14:56:24.9182528Z   git switch -c <new-branch-name>
+2025-10-16T14:56:24.9183496Z 
+2025-10-16T14:56:24.9184010Z Or undo this operation with:
+2025-10-16T14:56:24.9184924Z 
+2025-10-16T14:56:24.9185581Z   git switch -
+2025-10-16T14:56:24.9186087Z 
+2025-10-16T14:56:24.9186800Z Turn off this advice by setting config variable advice.detachedHead to false
+2025-10-16T14:56:24.9187885Z 
+2025-10-16T14:56:24.9189404Z HEAD is now at e1ff28e Merge ff6f498efdf5599219b5f62fbf20e6c98a1c02df into ed87fb28aec8054c283f32b91578ac0ec021d6ef
+2025-10-16T14:56:24.9194569Z ##[endgroup]
+2025-10-16T14:56:24.9212642Z [command]/usr/bin/git log -1 --format=%H
+2025-10-16T14:56:24.9235207Z e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1
+2025-10-16T14:56:24.9487374Z ##[group]Run azure/setup-helm@v4
+2025-10-16T14:56:24.9488520Z with:
+2025-10-16T14:56:24.9489328Z   version: v4.3.1
+2025-10-16T14:56:24.9490495Z   token: ***
+2025-10-16T14:56:24.9491449Z   downloadBaseURL: https://get.helm.sh
+2025-10-16T14:56:24.9492608Z env:
+2025-10-16T14:56:24.9493401Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:24.9494351Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:24.9495569Z ##[endgroup]
+2025-10-16T14:56:25.0224592Z ##[group]Installing v4.3.1
+2025-10-16T14:56:25.0237831Z Downloading 'v4.3.1' from 'https://get.helm.sh'
+2025-10-16T14:56:25.4034065Z ##[error]Error: Failed to download Helm from location https://get.helm.sh/helm-v4.3.1-linux-amd64.tar.gz
+2025-10-16T14:57:55.4174795Z Post job cleanup.
+2025-10-16T14:57:55.4976356Z [command]/usr/bin/git version
+2025-10-16T14:57:55.5011660Z git version 2.51.0
+2025-10-16T14:57:55.5048505Z Temporarily overriding HOME='/home/runner/work/_temp/5da2bba4-eb79-463b-bc44-75f68e5e854f' before making global git config changes
+2025-10-16T14:57:55.5049949Z Adding repository directory to the temporary git global config as a safe directory
+2025-10-16T14:57:55.5054457Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:57:55.5090789Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-10-16T14:57:55.5121904Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-10-16T14:57:55.5344168Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-10-16T14:57:55.5365969Z http.https://github.com/.extraheader
+2025-10-16T14:57:55.5374241Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-10-16T14:57:55.5403553Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-10-16T14:57:55.5730180Z Cleaning up orphan processes

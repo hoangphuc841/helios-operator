@@ -1,0 +1,281 @@
+{
+  "dashboard": {
+    "title": "Helios Operator Dashboard",
+    "tags": ["helios", "operator", "kubernetes"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Operator Health",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"helios-operator-metrics\"}",
+            "legendFormat": "Operator Status"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {
+                "type": "value",
+                "value": "0",
+                "text": "DOWN"
+              },
+              {
+                "type": "value",
+                "value": "1",
+                "text": "UP"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": 0
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "Total HeliosApps",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(helios_app_info)",
+            "legendFormat": "Total Apps"
+          }
+        ],
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 6,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "Ready HeliosApps",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(helios_app_ready == 1)",
+            "legendFormat": "Ready Apps"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": 0
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 12,
+          "y": 0
+        }
+      },
+      {
+        "id": 4,
+        "title": "Reconciliation Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(controller_runtime_reconcile_total{controller=\"heliosapp\"}[5m])",
+            "legendFormat": "Reconciliations/sec"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 4
+        }
+      },
+      {
+        "id": 5,
+        "title": "Reconciliation Errors",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(controller_runtime_reconcile_errors_total{controller=\"heliosapp\"}[5m])",
+            "legendFormat": "Errors/sec"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 4
+        }
+      },
+      {
+        "id": 6,
+        "title": "Reconciliation Duration (p99)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, rate(controller_runtime_reconcile_time_seconds_bucket{controller=\"heliosapp\"}[5m]))",
+            "legendFormat": "p99 latency"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 12
+        }
+      },
+      {
+        "id": 7,
+        "title": "Work Queue Depth",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "workqueue_depth{name=\"heliosapp\"}",
+            "legendFormat": "Queue Depth"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 12
+        }
+      },
+      {
+        "id": 8,
+        "title": "Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "container_memory_working_set_bytes{pod=~\"helios-operator-.*\"}",
+            "legendFormat": "{{ pod }}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "bytes"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 20
+        }
+      },
+      {
+        "id": 9,
+        "title": "CPU Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{pod=~\"helios-operator-.*\"}[5m])",
+            "legendFormat": "{{ pod }}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "percentunit"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 20
+        }
+      },
+      {
+        "id": 10,
+        "title": "Pipeline Runs",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(helios_pipeline_runs_total[5m])",
+            "legendFormat": "Total Runs"
+          },
+          {
+            "expr": "rate(helios_pipeline_runs_successful_total[5m])",
+            "legendFormat": "Successful"
+          },
+          {
+            "expr": "rate(helios_pipeline_runs_failed_total[5m])",
+            "legendFormat": "Failed"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 28
+        }
+      },
+      {
+        "id": 11,
+        "title": "Webhook Latency",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, rate(webhook_request_duration_seconds_bucket{webhook=\"heliosapp\"}[5m]))",
+            "legendFormat": "p99"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(webhook_request_duration_seconds_bucket{webhook=\"heliosapp\"}[5m]))",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(webhook_request_duration_seconds_bucket{webhook=\"heliosapp\"}[5m]))",
+            "legendFormat": "p50"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 28
+        }
+      }
+    ]
+  }
+}

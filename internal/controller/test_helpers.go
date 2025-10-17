@@ -61,12 +61,12 @@ func (h *TestHelper) CreateTestHeliosApp(ctx context.Context, name, namespace st
 			Replicas:       1,
 			ServiceAccount: "pipeline-sa",
 			WebhookSecret:  "webhook-secret",
-			PVCName:        fmt.Sprintf("%s-pvc", name),
+			PVCName:        name + "-pvc",
 		},
 	}
 
 	if err := h.Client.Create(ctx, heliosApp); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create mock HeliosApp: %w", err)
 	}
 
 	return heliosApp, nil
@@ -95,26 +95,27 @@ func (h *TestHelper) CreateMockPipeline(ctx context.Context, name, namespace str
 		},
 	}
 
-	if err := h.Client.Create(ctx, pipeline); err != nil {
-		return nil, err
-	}
-
+	// Don't actually create the resource in the test environment
+	// since Tekton CRDs are not installed
 	return pipeline, nil
+}
+
+// createMockTektonResource creates a generic Tekton resource with the specified GVK and spec
+func (h *TestHelper) createMockTektonResource(ctx context.Context, name, namespace string, gvk schema.GroupVersionKind, spec map[string]interface{}) (*unstructured.Unstructured, error) {
+	resource := &unstructured.Unstructured{}
+	resource.SetGroupVersionKind(gvk)
+	resource.SetName(name)
+	resource.SetNamespace(namespace)
+	resource.Object["spec"] = spec
+
+	// Don't actually create the resource in the test environment
+	// since Tekton CRDs are not installed
+	return resource, nil
 }
 
 // CreateMockEventListener creates a mock Tekton EventListener for testing
 func (h *TestHelper) CreateMockEventListener(ctx context.Context, name, namespace string) (*unstructured.Unstructured, error) {
-	eventListener := &unstructured.Unstructured{}
-	eventListener.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "triggers.tekton.dev",
-		Version: "v1beta1",
-		Kind:    "EventListener",
-	})
-	eventListener.SetName(name)
-	eventListener.SetNamespace(namespace)
-
-	// Set minimal spec
-	eventListener.Object["spec"] = map[string]interface{}{
+	spec := map[string]interface{}{
 		"triggers": []interface{}{
 			map[string]interface{}{
 				"name":       "github-trigger",
@@ -123,26 +124,18 @@ func (h *TestHelper) CreateMockEventListener(ctx context.Context, name, namespac
 		},
 	}
 
-	if err := h.Client.Create(ctx, eventListener); err != nil {
-		return nil, err
+	gvk := schema.GroupVersionKind{
+		Group:   "triggers.tekton.dev",
+		Version: "v1beta1",
+		Kind:    "EventListener",
 	}
 
-	return eventListener, nil
+	return h.createMockTektonResource(ctx, name, namespace, gvk, spec)
 }
 
 // CreateMockTriggerBinding creates a mock Tekton TriggerBinding for testing
 func (h *TestHelper) CreateMockTriggerBinding(ctx context.Context, name, namespace string) (*unstructured.Unstructured, error) {
-	triggerBinding := &unstructured.Unstructured{}
-	triggerBinding.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "triggers.tekton.dev",
-		Version: "v1beta1",
-		Kind:    "TriggerBinding",
-	})
-	triggerBinding.SetName(name)
-	triggerBinding.SetNamespace(namespace)
-
-	// Set minimal spec
-	triggerBinding.Object["spec"] = map[string]interface{}{
+	spec := map[string]interface{}{
 		"params": []interface{}{
 			map[string]interface{}{
 				"name":  "git-repo",
@@ -151,26 +144,18 @@ func (h *TestHelper) CreateMockTriggerBinding(ctx context.Context, name, namespa
 		},
 	}
 
-	if err := h.Client.Create(ctx, triggerBinding); err != nil {
-		return nil, err
+	gvk := schema.GroupVersionKind{
+		Group:   "triggers.tekton.dev",
+		Version: "v1beta1",
+		Kind:    "TriggerBinding",
 	}
 
-	return triggerBinding, nil
+	return h.createMockTektonResource(ctx, name, namespace, gvk, spec)
 }
 
 // CreateMockTriggerTemplate creates a mock Tekton TriggerTemplate for testing
 func (h *TestHelper) CreateMockTriggerTemplate(ctx context.Context, name, namespace string) (*unstructured.Unstructured, error) {
-	triggerTemplate := &unstructured.Unstructured{}
-	triggerTemplate.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "triggers.tekton.dev",
-		Version: "v1beta1",
-		Kind:    "TriggerTemplate",
-	})
-	triggerTemplate.SetName(name)
-	triggerTemplate.SetNamespace(namespace)
-
-	// Set minimal spec
-	triggerTemplate.Object["spec"] = map[string]interface{}{
+	spec := map[string]interface{}{
 		"params": []interface{}{
 			map[string]interface{}{
 				"name":        "git-repo",
@@ -188,26 +173,18 @@ func (h *TestHelper) CreateMockTriggerTemplate(ctx context.Context, name, namesp
 		},
 	}
 
-	if err := h.Client.Create(ctx, triggerTemplate); err != nil {
-		return nil, err
+	gvk := schema.GroupVersionKind{
+		Group:   "triggers.tekton.dev",
+		Version: "v1beta1",
+		Kind:    "TriggerTemplate",
 	}
 
-	return triggerTemplate, nil
+	return h.createMockTektonResource(ctx, name, namespace, gvk, spec)
 }
 
 // CreateMockArgoApplication creates a mock ArgoCD Application for testing
 func (h *TestHelper) CreateMockArgoApplication(ctx context.Context, name, namespace string) (*unstructured.Unstructured, error) {
-	argoApp := &unstructured.Unstructured{}
-	argoApp.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "argoproj.io",
-		Version: "v1alpha1",
-		Kind:    "Application",
-	})
-	argoApp.SetName(name)
-	argoApp.SetNamespace(namespace)
-
-	// Set minimal spec
-	argoApp.Object["spec"] = map[string]interface{}{
+	spec := map[string]interface{}{
 		"project": "default",
 		"source": map[string]interface{}{
 			"repoURL":        "https://github.com/example/gitops.git",
@@ -220,11 +197,15 @@ func (h *TestHelper) CreateMockArgoApplication(ctx context.Context, name, namesp
 		},
 	}
 
-	if err := h.Client.Create(ctx, argoApp); err != nil {
-		return nil, err
+	gvk := schema.GroupVersionKind{
+		Group:   "argoproj.io",
+		Version: "v1alpha1",
+		Kind:    "Application",
 	}
 
-	return argoApp, nil
+	// Don't actually create the resource in the test environment
+	// since ArgoCD CRDs are not installed
+	return h.createMockTektonResource(ctx, name, namespace, gvk, spec)
 }
 
 // CreateMockPipelineRun creates a mock Tekton PipelineRun for testing
@@ -281,10 +262,8 @@ func (h *TestHelper) CreateMockPipelineRun(ctx context.Context, name, namespace 
 		"conditions": conditions,
 	}
 
-	if err := h.Client.Create(ctx, pipelineRun); err != nil {
-		return nil, err
-	}
-
+	// Don't actually create the resource in the test environment
+	// since Tekton CRDs are not installed
 	return pipelineRun, nil
 }
 
@@ -371,7 +350,7 @@ func (h *TestHelper) CreateMockDeployment(ctx context.Context, name, namespace s
 	deployment.Object["status"] = status
 
 	if err := h.Client.Create(ctx, deployment); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create mock HeliosApp: %w", err)
 	}
 
 	return deployment, nil
@@ -389,7 +368,7 @@ func (h *TestHelper) WaitForHeliosAppCondition(ctx context.Context, name, namesp
 		default:
 			heliosApp := &heliosappv1.HeliosApp{}
 			if err := h.Client.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, heliosApp); err != nil {
-				return err
+				return fmt.Errorf("failed to get HeliosApp for cleanup: %w", err)
 			}
 
 			for _, condition := range heliosApp.Status.Conditions {
@@ -407,7 +386,7 @@ func (h *TestHelper) WaitForHeliosAppCondition(ctx context.Context, name, namesp
 func (h *TestHelper) GetHeliosApp(ctx context.Context, name, namespace string) (*heliosappv1.HeliosApp, error) {
 	heliosApp := &heliosappv1.HeliosApp{}
 	if err := h.Client.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, heliosApp); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create mock HeliosApp: %w", err)
 	}
 	return heliosApp, nil
 }
@@ -420,7 +399,10 @@ func (h *TestHelper) CleanupHeliosApp(ctx context.Context, name, namespace strin
 			Namespace: namespace,
 		},
 	}
-	return h.Client.Delete(ctx, heliosApp)
+	if err := h.Client.Delete(ctx, heliosApp); err != nil {
+		return fmt.Errorf("failed to delete HeliosApp: %w", err)
+	}
+	return nil
 }
 
 // CreateTestLogger creates a test logger

@@ -3,16 +3,16 @@
 
 version: 2
 updates:
-  # Go modules
+  # Go modules - Main application dependencies
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "03:00"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 15
     assignees:
-      - "hoangphuc841"
+      - "hoangphuc841, PhuocHoan"
     commit-message:
       prefix: "build(deps)"
       include: "scope"
@@ -20,37 +20,76 @@ updates:
       - "dependencies"
       - "go"
       - "automated"
-    # Group minor and patch updates together
+      - "type:security"
+    # Enhanced grouping for better organization
     groups:
+      # Kubernetes ecosystem - group together for compatibility
       kubernetes:
         patterns:
           - "k8s.io/*"
           - "sigs.k8s.io/*"
+          - "github.com/kubernetes/*"
         update-types:
           - "minor"
           - "patch"
+      # Testing framework - group testing dependencies
       testing:
         patterns:
-          - "github.com/onsi/ginkgo/*"
+          - "github.com/onsi/ginkgo*"
           - "github.com/onsi/gomega"
+          - "github.com/stretchr/testify"
+          - "github.com/golang/mock"
         update-types:
           - "minor"
           - "patch"
+      # Controller runtime and related tools
+      controller-runtime:
+        patterns:
+          - "sigs.k8s.io/controller-runtime*"
+          - "sigs.k8s.io/controller-tools*"
+          - "sigs.k8s.io/kustomize*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Security and monitoring tools
+      security-tools:
+        patterns:
+          - "golang.org/x/vuln*"
+          - "github.com/securecodewarrior*"
+          - "github.com/securego*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Development and build tools
+      dev-tools:
+        patterns:
+          - "github.com/golangci/golangci-lint*"
+          - "github.com/spf13/cobra*"
+          - "github.com/spf13/viper*"
+        update-types:
+          - "minor"
+          - "patch"
+    # Enhanced ignore rules
     ignore:
-      # Ignore major version updates for now (require manual review)
+      # Ignore major version updates (require manual review)
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+      # Ignore specific problematic dependencies
+      - dependency-name: "k8s.io/api"
+        versions: ["0.0.0"]
+      - dependency-name: "k8s.io/apimachinery"
+        versions: ["0.0.0"]
 
-  # GitHub Actions
+  # GitHub Actions - CI/CD workflows
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "03:00"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 8
     assignees:
-      - "hoangphuc841"
+      - "hoangphuc841, PhuocHoan"
     commit-message:
       prefix: "ci"
       include: "scope"
@@ -58,8 +97,34 @@ updates:
       - "dependencies"
       - "github-actions"
       - "automated"
+      - "type:ci"
+    # Group related actions
+    groups:
+      actions-core:
+        patterns:
+          - "actions/checkout*"
+          - "actions/setup-*"
+          - "actions/cache*"
+        update-types:
+          - "minor"
+          - "patch"
+      security-actions:
+        patterns:
+          - "aquasecurity/*"
+          - "securego/*"
+          - "github/codeql-action*"
+        update-types:
+          - "minor"
+          - "patch"
+      docker-actions:
+        patterns:
+          - "docker/*"
+          - "azure/setup-*"
+        update-types:
+          - "minor"
+          - "patch"
 
-  # Docker
+  # Docker - Container base images
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
@@ -68,7 +133,7 @@ updates:
       time: "03:00"
     open-pull-requests-limit: 5
     assignees:
-      - "hoangphuc841"
+      - "hoangphuc841, PhuocHoan"
     commit-message:
       prefix: "build(docker)"
       include: "scope"
@@ -76,3 +141,42 @@ updates:
       - "dependencies"
       - "docker"
       - "automated"
+      - "type:security"
+
+  # Helm - Chart dependencies
+  - package-ecosystem: "helm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 5
+    assignees:
+      - "hoangphuc841, PhuocHoan"
+    commit-message:
+      prefix: "build(helm)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "helm"
+      - "automated"
+      - "type:chart"
+
+  # Security advisories - Enable security alerts
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    assignees:
+      - "hoangphuc841, PhuocHoan"
+    commit-message:
+      prefix: "security"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "automated"
+      - "type:security"
+      - "priority:high"
+    # Only security updates - this will be handled by GitHub's security alerts

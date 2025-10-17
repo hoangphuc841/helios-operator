@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - issuer.yaml
+
+patches:
+  - target:
+      kind: Certificate
+      name: helios-operator-webhook-cert
+    patch: |-
+      - op: add
+        path: /spec/secretName
+        value: helios-operator-webhook-cert

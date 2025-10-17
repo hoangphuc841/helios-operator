@@ -33,7 +33,7 @@ func TestLoadFromEnv(t *testing.T) {
 		for _, env := range origEnv {
 			pair := splitEnv(env)
 			if len(pair) == 2 {
-				os.Setenv(pair[0], pair[1])
+				_ = os.Setenv(pair[0], pair[1]) // Ignore error for test cleanup
 			}
 		}
 	}()
@@ -170,7 +170,7 @@ func TestLoadFromEnv(t *testing.T) {
 
 			// Set test environment variables
 			for k, v := range tt.envVars {
-				os.Setenv(k, v)
+				_ = os.Setenv(k, v) // Ignore error for test setup
 			}
 
 			// Load configuration
@@ -351,7 +351,7 @@ func TestOperatorConfig_Validate(t *testing.T) {
 	}
 }
 
-// Helper function to split environment variable string
+// Helper function to split environment variable string.
 func splitEnv(env string) []string {
 	for i := 0; i < len(env); i++ {
 		if env[i] == '=' {

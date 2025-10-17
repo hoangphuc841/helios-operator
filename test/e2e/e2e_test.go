@@ -17,6 +17,7 @@ limitations under the License.
 package e2e
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -34,13 +35,13 @@ import (
 // namespace where the project is deployed in.
 const namespace = "helios-operator-system"
 
-// serviceAccountName created for the project
+// serviceAccountName created for the project.
 const serviceAccountName = "helios-operator-controller-manager"
 
-// metricsServiceName is the name of the metrics service of the project
+// metricsServiceName is the name of the metrics service of the project.
 const metricsServiceName = "helios-operator-controller-manager-metrics-service"
 
-// metricsRoleBindingName is the name of the RBAC that will be created to allow get the metrics data
+// metricsRoleBindingName is the name of the RBAC that will be created to allow get the metrics data.
 const metricsRoleBindingName = "helios-operator-metrics-binding"
 
 var _ = Describe("Manager", Ordered, func() {
@@ -67,9 +68,37 @@ var _ = Describe("Manager", Ordered, func() {
 		Expect(err).NotTo(HaveOccurred(), "Failed to install CRDs")
 
 		By("deploying the controller-manager")
-		cmd = exec.Command("make", "deploy", fmt.Sprintf("IMG=%s", projectImage))
+		cmd = exec.Command("make", "deploy", "IMG="+projectImage)
 		_, err = utils.Run(cmd)
 		Expect(err).NotTo(HaveOccurred(), "Failed to deploy the controller-manager")
+
+		By("creating webhook certificate")
+		certYAML := `apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: helios-operator-webhook-cert
+  namespace: ` + namespace + `
+spec:
+  secretName: helios-operator-webhook-cert
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+  dnsNames:
+  - webhook-service.` + namespace + `.svc
+  - webhook-service.` + namespace + `.svc.cluster.local
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: ` + namespace + `
+spec:
+  selfSigned: {}`
+
+		cmd = exec.Command("kubectl", "apply", "-f", "-")
+		cmd.Stdin = strings.NewReader(certYAML)
+		_, err = utils.Run(cmd)
+		Expect(err).NotTo(HaveOccurred(), "Failed to create webhook certificate")
 	})
 
 	// After all tests have been executed, clean up by undeploying the controller, uninstalling CRDs,
@@ -178,7 +207,10 @@ var _ = Describe("Manager", Ordered, func() {
 				fmt.Sprintf("--serviceaccount=%s:%s", namespace, serviceAccountName),
 			)
 			_, err := utils.Run(cmd)
-			Expect(err).NotTo(HaveOccurred(), "Failed to create ClusterRoleBinding")
+			// Ignore error if ClusterRoleBinding already exists
+			if err != nil && !strings.Contains(err.Error(), "already exists") {
+				Expect(err).NotTo(HaveOccurred(), "Failed to create ClusterRoleBinding")
+			}
 
 			By("validating that the metrics service is available")
 			cmd = exec.Command("kubectl", "get", "service", metricsServiceName, "-n", namespace)
@@ -278,7 +310,7 @@ var _ = Describe("Manager", Ordered, func() {
 				Eventually(func() error {
 					cmd := exec.Command("kubectl", "get", "namespace", testNamespace)
 					_, err := utils.Run(cmd)
-					return err
+					return fmt.Errorf("failed to run command: %w", err)
 				}, 30*time.Second).Should(Succeed(), "Test namespace should be ready")
 			})
 
@@ -582,7 +614,7 @@ spec:
 				}
 
 				for _, tc := range testCases {
-					By(fmt.Sprintf("testing %s", tc.name))
+					By("testing " + tc.name)
 					cmd := exec.Command("kubectl", "apply", "-f", "-")
 					cmd.Stdin = strings.NewReader(tc.appYAML)
 					output, err := utils.Run(cmd)
@@ -608,7 +640,7 @@ spec:
 					}
 
 					// Cleanup
-					appName := fmt.Sprintf("invalid-%s", strings.ReplaceAll(tc.name, " ", "-"))
+					appName := "invalid-" + strings.ReplaceAll(tc.name, " ", "-")
 					cmd = exec.Command("kubectl", "delete", "heliosapp", appName, "-n", testNamespace, "--ignore-not-found=true")
 					_, _ = utils.Run(cmd)
 				}
@@ -644,7 +676,7 @@ spec:
 				Eventually(func() error {
 					cmd := exec.Command("kubectl", "get", "pipeline", fmt.Sprintf("%s-pipeline", recoveryAppName), "-n", testNamespace)
 					_, err := utils.Run(cmd)
-					return err
+					return fmt.Errorf("failed to run command: %w", err)
 				}, 2*time.Minute).Should(Succeed(), "Pipeline should be created")
 
 				By("simulating resource deletion (error scenario)")
@@ -655,7 +687,7 @@ spec:
 				Eventually(func() error {
 					cmd := exec.Command("kubectl", "get", "pipeline", fmt.Sprintf("%s-pipeline", recoveryAppName), "-n", testNamespace)
 					_, err := utils.Run(cmd)
-					return err
+					return fmt.Errorf("failed to run command: %w", err)
 				}, 3*time.Minute).Should(Succeed(), "Pipeline should be recreated after deletion")
 
 				By("verifying finalizer is still present after recovery")
@@ -663,7 +695,7 @@ spec:
 					cmd := exec.Command("kubectl", "get", "heliosapp", recoveryAppName, "-n", testNamespace, "-o", "jsonpath={.metadata.finalizers}")
 					output, err := utils.Run(cmd)
 					if err != nil {
-						return err
+						return fmt.Errorf("failed to run command: %w", err)
 					}
 					if !strings.Contains(output, "platform.helios.io/finalizer") {
 						return fmt.Errorf("finalizer not found: %s", output)
@@ -683,6 +715,7 @@ spec:
 // It uses the Kubernetes TokenRequest API to generate a token by directly sending a request
 // and parsing the resulting token from the API response.
 func serviceAccountToken() (string, error) {
+	ctx := context.Background()
 	const tokenRequestRawString = `{
 		"apiVersion": "authentication.k8s.io/v1",
 		"kind": "TokenRequest"
@@ -693,13 +726,13 @@ func serviceAccountToken() (string, error) {
 	tokenRequestFile := filepath.Join(os.TempDir(), secretName)
 	err := os.WriteFile(tokenRequestFile, []byte(tokenRequestRawString), os.FileMode(0o644))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to write token request file: %w", err)
 	}
 
 	var out string
 	verifyTokenCreation := func(g Gomega) {
 		// Execute kubectl command to create the token
-		cmd := exec.Command("kubectl", "create", "--raw", fmt.Sprintf(
+		cmd := exec.CommandContext(ctx, "kubectl", "create", "--raw", fmt.Sprintf(
 			"/api/v1/namespaces/%s/serviceaccounts/%s/token",
 			namespace,
 			serviceAccountName,
@@ -717,13 +750,13 @@ func serviceAccountToken() (string, error) {
 	}
 	Eventually(verifyTokenCreation).Should(Succeed())
 
-	return out, err
+	return out, nil
 }
 
 // getMetricsOutput retrieves and returns the logs from the curl pod used to access the metrics endpoint.
 func getMetricsOutput() string {
 	By("getting the curl-metrics logs")
-	cmd := exec.Command("kubectl", "logs", "curl-metrics", "-n", namespace)
+	cmd := exec.CommandContext(context.Background(), "kubectl", "logs", "curl-metrics", "-n", namespace)
 	metricsOutput, err := utils.Run(cmd)
 	Expect(err).NotTo(HaveOccurred(), "Failed to retrieve logs from curl pod")
 	Expect(metricsOutput).To(ContainSubstring("< HTTP/1.1 200 OK"))
@@ -738,7 +771,7 @@ type tokenRequest struct {
 	} `json:"status"`
 }
 
-// createHeliosApp creates a HeliosApp resource with the given parameters
+// createHeliosApp creates a HeliosApp resource with the given parameters.
 func createHeliosApp(name, namespace, gitRepo, gitopsRepo, gitopsPath, imageRepo string) error {
 	heliosAppYAML := fmt.Sprintf(`apiVersion: platform.helios.io/v1
 kind: HeliosApp
@@ -757,27 +790,36 @@ spec:
   serviceAccount: "pipeline-sa"
   webhookSecret: "github-webhook-secret"`, name, namespace, gitRepo, gitopsRepo, gitopsPath, imageRepo)
 
-	cmd := exec.Command("kubectl", "apply", "-f", "-")
+	cmd := exec.CommandContext(context.Background(), "kubectl", "apply", "-f", "-")
 	cmd.Stdin = strings.NewReader(heliosAppYAML)
 	_, err := utils.Run(cmd)
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to apply HeliosApp: %w", err)
+	}
+	return nil
 }
 
-// waitForResource waits for a Kubernetes resource to exist
+// waitForResource waits for a Kubernetes resource to exist.
 func waitForResource(resourceType, name, namespace string, timeout time.Duration) error {
 	var lastErr error
 	Eventually(func() error {
-		cmd := exec.Command("kubectl", "get", resourceType, name, "-n", namespace)
+		cmd := exec.CommandContext(context.Background(), "kubectl", "get", resourceType, name, "-n", namespace)
 		_, err := utils.Run(cmd)
-		lastErr = err
-		return err
+		if err != nil {
+			lastErr = fmt.Errorf("failed to get resource %s/%s: %w", resourceType, name, err)
+			return lastErr
+		}
+		return nil
 	}, timeout).Should(Succeed())
 	return lastErr
 }
 
-// deleteHeliosApp deletes a HeliosApp resource and waits for cleanup
+// deleteHeliosApp deletes a HeliosApp resource and waits for cleanup.
 func deleteHeliosApp(name, namespace string) error {
 	cmd := exec.Command("kubectl", "delete", "heliosapp", name, "-n", namespace, "--ignore-not-found=true")
 	_, err := utils.Run(cmd)
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to delete HeliosApp %s: %w", name, err)
+	}
+	return nil
 }

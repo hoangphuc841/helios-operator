@@ -197,15 +197,24 @@ func TestGeneratePipeline_ParameterDefaults(t *testing.T) {
 	// Get spec
 	spec, found := result.Object["spec"]
 	assert.True(t, found)
-	specMap := spec.(map[string]interface{})
+	specMap, ok := spec.(map[string]interface{})
+	if !ok {
+		t.Fatal("Expected spec to be a map")
+	}
 
 	// Check params have defaults
-	params := specMap["params"].([]interface{})
+	params, ok := specMap["params"].([]interface{})
+	if !ok {
+		t.Fatal("Expected params to be a slice")
+	}
 	assert.Len(t, params, 3)
 
 	// Just verify params exist with names and descriptions
 	// The actual default values are embedded in the Tekton structure
-	param0 := params[0].(map[string]interface{})
+	param0, ok := params[0].(map[string]interface{})
+	if !ok {
+		t.Fatal("Expected param0 to be a map")
+	}
 	assert.Equal(t, "git-repo", param0["name"])
 	assert.Equal(t, "string", param0["type"])
 

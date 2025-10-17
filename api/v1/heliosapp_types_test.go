@@ -18,6 +18,7 @@ package v1
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,11 +34,50 @@ func testConditionHelper(t *testing.T, conditionType string, method func(*Helios
 		{
 			name: conditionType + " condition is true",
 			heliosApp: &HeliosApp{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "platform.helios.io/v1",
+					Kind:       "HeliosApp",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-app",
+					Namespace: "default",
+				},
+				Spec: HeliosAppSpec{
+					GitRepo:        "https://github.com/example/test-app",
+					ImageRepo:      "test-registry.com/test-app",
+					Port:           8080,
+					Replicas:       1,
+					ServiceAccount: "default",
+					WebhookSecret:  "webhook-secret",
+					GitopsRepo:     "https://github.com/example/test-app-manifests",
+					GitopsPath:     "apps/test-app",
+					GitopsBranch:   "main",
+				},
 				Status: HeliosAppStatus{
+					DeployedVersion:     "v1.0.0",
+					LastAppliedRevision: "abc123",
+					LastBuild: &BuildStatus{
+						State:            "Succeeded",
+						PipelineRunName:  "build-123",
+						ResultingVersion: "v1.0.0",
+					},
+					WebhookURL:         "https://example.com/webhook",
+					BuildStatus:        "Success",
+					BuildVersion:       "v1.0.0",
+					LastBuildTime:      &metav1.Time{Time: time.Now()},
+					CurrentPipelineRun: "pipeline-run-123",
+					ReadyReplicas:      3,
+					DesiredReplicas:    3,
+					DeploymentHealth:   "Healthy",
+					LastHealthyTime:    &metav1.Time{Time: time.Now()},
 					Conditions: []metav1.Condition{
 						{
-							Type:   conditionType,
-							Status: metav1.ConditionTrue,
+							Type:               conditionType,
+							Status:             metav1.ConditionTrue,
+							ObservedGeneration: 1,
+							LastTransitionTime: metav1.Now(),
+							Reason:             "TestReason",
+							Message:            "Test message",
 						},
 					},
 				},
@@ -47,11 +87,50 @@ func testConditionHelper(t *testing.T, conditionType string, method func(*Helios
 		{
 			name: conditionType + " condition is false",
 			heliosApp: &HeliosApp{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "platform.helios.io/v1",
+					Kind:       "HeliosApp",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-app",
+					Namespace: "default",
+				},
+				Spec: HeliosAppSpec{
+					GitRepo:        "https://github.com/example/test-app",
+					ImageRepo:      "test-registry.com/test-app",
+					Port:           8080,
+					Replicas:       1,
+					ServiceAccount: "default",
+					WebhookSecret:  "webhook-secret",
+					GitopsRepo:     "https://github.com/example/test-app-manifests",
+					GitopsPath:     "apps/test-app",
+					GitopsBranch:   "main",
+				},
 				Status: HeliosAppStatus{
+					DeployedVersion:     "v1.0.0",
+					LastAppliedRevision: "abc123",
+					LastBuild: &BuildStatus{
+						State:            "Succeeded",
+						PipelineRunName:  "build-123",
+						ResultingVersion: "v1.0.0",
+					},
+					WebhookURL:         "https://example.com/webhook",
+					BuildStatus:        "Success",
+					BuildVersion:       "v1.0.0",
+					LastBuildTime:      &metav1.Time{Time: time.Now()},
+					CurrentPipelineRun: "pipeline-run-123",
+					ReadyReplicas:      3,
+					DesiredReplicas:    3,
+					DeploymentHealth:   "Healthy",
+					LastHealthyTime:    &metav1.Time{Time: time.Now()},
 					Conditions: []metav1.Condition{
 						{
-							Type:   conditionType,
-							Status: metav1.ConditionFalse,
+							Type:               conditionType,
+							Status:             metav1.ConditionFalse,
+							ObservedGeneration: 1,
+							LastTransitionTime: metav1.Now(),
+							Reason:             "TestReason",
+							Message:            "Test message",
 						},
 					},
 				},
@@ -61,11 +140,50 @@ func testConditionHelper(t *testing.T, conditionType string, method func(*Helios
 		{
 			name: conditionType + " condition is unknown",
 			heliosApp: &HeliosApp{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "platform.helios.io/v1",
+					Kind:       "HeliosApp",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-app",
+					Namespace: "default",
+				},
+				Spec: HeliosAppSpec{
+					GitRepo:        "https://github.com/example/test-app",
+					ImageRepo:      "test-registry.com/test-app",
+					Port:           8080,
+					Replicas:       1,
+					ServiceAccount: "default",
+					WebhookSecret:  "webhook-secret",
+					GitopsRepo:     "https://github.com/example/test-app-manifests",
+					GitopsPath:     "apps/test-app",
+					GitopsBranch:   "main",
+				},
 				Status: HeliosAppStatus{
+					DeployedVersion:     "v1.0.0",
+					LastAppliedRevision: "abc123",
+					LastBuild: &BuildStatus{
+						State:            "Succeeded",
+						PipelineRunName:  "build-123",
+						ResultingVersion: "v1.0.0",
+					},
+					WebhookURL:         "https://example.com/webhook",
+					BuildStatus:        "Success",
+					BuildVersion:       "v1.0.0",
+					LastBuildTime:      &metav1.Time{Time: time.Now()},
+					CurrentPipelineRun: "pipeline-run-123",
+					ReadyReplicas:      3,
+					DesiredReplicas:    3,
+					DeploymentHealth:   "Healthy",
+					LastHealthyTime:    &metav1.Time{Time: time.Now()},
 					Conditions: []metav1.Condition{
 						{
-							Type:   conditionType,
-							Status: metav1.ConditionUnknown,
+							Type:               conditionType,
+							Status:             metav1.ConditionUnknown,
+							ObservedGeneration: 1,
+							LastTransitionTime: metav1.Now(),
+							Reason:             "TestReason",
+							Message:            "Test message",
 						},
 					},
 				},
@@ -75,8 +193,43 @@ func testConditionHelper(t *testing.T, conditionType string, method func(*Helios
 		{
 			name: "no " + conditionType + " condition",
 			heliosApp: &HeliosApp{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "platform.helios.io/v1",
+					Kind:       "HeliosApp",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-app",
+					Namespace: "default",
+				},
+				Spec: HeliosAppSpec{
+					GitRepo:        "https://github.com/example/test-app",
+					ImageRepo:      "test-registry.com/test-app",
+					Port:           8080,
+					Replicas:       1,
+					ServiceAccount: "default",
+					WebhookSecret:  "webhook-secret",
+					GitopsRepo:     "https://github.com/example/test-app-manifests",
+					GitopsPath:     "apps/test-app",
+					GitopsBranch:   "main",
+				},
 				Status: HeliosAppStatus{
-					Conditions: []metav1.Condition{},
+					DeployedVersion:     "v1.0.0",
+					LastAppliedRevision: "abc123",
+					LastBuild: &BuildStatus{
+						State:            "Succeeded",
+						PipelineRunName:  "build-123",
+						ResultingVersion: "v1.0.0",
+					},
+					WebhookURL:         "https://example.com/webhook",
+					BuildStatus:        "Success",
+					BuildVersion:       "v1.0.0",
+					LastBuildTime:      &metav1.Time{Time: time.Now()},
+					CurrentPipelineRun: "pipeline-run-123",
+					ReadyReplicas:      3,
+					DesiredReplicas:    3,
+					DeploymentHealth:   "Healthy",
+					LastHealthyTime:    &metav1.Time{Time: time.Now()},
+					Conditions:         []metav1.Condition{},
 				},
 			},
 			expected: false,
@@ -212,84 +365,70 @@ func TestHeliosApp_SetCondition(t *testing.T) {
 	}
 }
 
-func TestHeliosApp_GetStatusMessage(t *testing.T) {
+// createTestHeliosApp creates a test HeliosApp with the specified condition
+func createTestHeliosApp(conditionType string, status metav1.ConditionStatus, message, reason string) *HeliosApp {
+	conditions := []metav1.Condition{}
+	if conditionType != "" {
+		conditions = append(conditions, metav1.Condition{
+			Type:    conditionType,
+			Status:  status,
+			Message: message,
+			Reason:  reason,
+		})
+	}
+
+	return &HeliosApp{
+		Status: HeliosAppStatus{
+			Conditions: conditions,
+		},
+	}
+}
+
+// testStatusMethod tests a status method with common test cases
+func testStatusMethod(t *testing.T, methodName string, method func(*HeliosApp) string) {
 	tests := []struct {
 		name      string
 		heliosApp *HeliosApp
 		expected  string
 	}{
 		{
-			name: "with ready condition",
-			heliosApp: &HeliosApp{
-				Status: HeliosAppStatus{
-					Conditions: []metav1.Condition{
-						{
-							Type:    ConditionReady,
-							Status:  metav1.ConditionTrue,
-							Message: "Application is ready",
-						},
-					},
-				},
-			},
-			expected: "Application is ready",
+			name:      "with ready condition",
+			heliosApp: createTestHeliosApp(ConditionReady, metav1.ConditionTrue, "Application is ready", "Ready"),
+			expected:  getExpectedValue(methodName, "Application is ready", "Ready"),
 		},
 		{
-			name: "no ready condition",
-			heliosApp: &HeliosApp{
-				Status: HeliosAppStatus{
-					Conditions: []metav1.Condition{},
-				},
-			},
-			expected: "",
+			name:      "no ready condition",
+			heliosApp: createTestHeliosApp("", metav1.ConditionTrue, "", ""),
+			expected:  "",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.heliosApp.GetStatusMessage()
+			result := method(tt.heliosApp)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
 }
 
-func TestHeliosApp_GetStatusReason(t *testing.T) {
-	tests := []struct {
-		name      string
-		heliosApp *HeliosApp
-		expected  string
-	}{
-		{
-			name: "with ready condition",
-			heliosApp: &HeliosApp{
-				Status: HeliosAppStatus{
-					Conditions: []metav1.Condition{
-						{
-							Type:   ConditionReady,
-							Status: metav1.ConditionTrue,
-							Reason: "Ready",
-						},
-					},
-				},
-			},
-			expected: "Ready",
-		},
-		{
-			name: "no ready condition",
-			heliosApp: &HeliosApp{
-				Status: HeliosAppStatus{
-					Conditions: []metav1.Condition{},
-				},
-			},
-			expected: "",
-		},
+// getExpectedValue returns the expected value based on the method being tested
+func getExpectedValue(methodName, message, reason string) string {
+	switch methodName {
+	case "GetStatusMessage":
+		return message
+	case "GetStatusReason":
+		return reason
+	default:
+		return ""
 	}
+}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := tt.heliosApp.GetStatusReason()
-			assert.Equal(t, tt.expected, result)
-		})
-	}
+func TestHeliosApp_GetStatusMessage(t *testing.T) {
+	testStatusMethod(t, "GetStatusMessage", (*HeliosApp).GetStatusMessage)
+}
+
+func TestHeliosApp_GetStatusReason(t *testing.T) {
+	testStatusMethod(t, "GetStatusReason", (*HeliosApp).GetStatusReason)
 }
 
 func TestHeliosApp_DeepCopy(t *testing.T) {

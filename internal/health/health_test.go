@@ -254,7 +254,12 @@ func TestChecker_ConcurrentAccess(t *testing.T) {
 	done := make(chan bool)
 	for i := 0; i < 10; i++ {
 		go func() {
-			req, _ := http.NewRequest("GET", "/healthz", nil)
+			req, err := http.NewRequest("GET", "/healthz", nil)
+			if err != nil {
+				t.Errorf("Failed to create request: %v", err)
+				done <- true
+				return
+			}
 			_ = checker.LivenessCheck(req)
 			done <- true
 		}()

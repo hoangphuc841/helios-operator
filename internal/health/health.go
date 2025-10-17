@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package health provides health check functionality for the Helios operator,
+// including liveness and readiness probes.
 package health
 
 import (
@@ -26,10 +28,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	log "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-var log = logf.Log.WithName("health")
+var logger = log.Log.WithName("health")
 
 // Checker implements health check logic for the operator
 type Checker struct {
@@ -54,7 +56,7 @@ func (c *Checker) LivenessCheck(req *http.Request) error {
 	c.lastCheckTime = time.Now()
 	c.mu.Unlock()
 
-	log.V(2).Info("Liveness check succeeded")
+	logger.V(2).Info("Liveness check succeeded")
 	return nil
 }
 
@@ -66,11 +68,11 @@ func (c *Checker) ReadinessCheck(req *http.Request) error {
 
 	// Try to list namespaces to verify API connectivity
 	if err := c.checkAPIServerConnection(ctx); err != nil {
-		log.Error(err, "Readiness check failed: unable to connect to API server")
+		logger.Error(err, "Readiness check failed: unable to connect to API server")
 		return fmt.Errorf("API server connection check failed: %w", err)
 	}
 
-	log.V(2).Info("Readiness check succeeded")
+	logger.V(2).Info("Readiness check succeeded")
 	return nil
 }
 
@@ -89,7 +91,7 @@ func WebhookReadinessCheck() healthz.Checker {
 	return func(req *http.Request) error {
 		// Check if webhook certificates are valid
 		// This is a placeholder - actual implementation would check cert validity
-		log.V(2).Info("Webhook readiness check succeeded")
+		logger.V(2).Info("Webhook readiness check succeeded")
 		return nil
 	}
 }
@@ -100,7 +102,7 @@ func LeaderElectionCheck(isLeader func() bool) healthz.Checker {
 		if !isLeader() {
 			return fmt.Errorf("not the leader")
 		}
-		log.V(2).Info("Leader election check succeeded")
+		logger.V(2).Info("Leader election check succeeded")
 		return nil
 	}
 }
