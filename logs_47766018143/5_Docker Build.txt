@@ -1,0 +1,566 @@
+﻿2025-10-16T14:56:23.3685423Z Current runner version: '2.328.0'
+2025-10-16T14:56:23.3708349Z ##[group]Runner Image Provisioner
+2025-10-16T14:56:23.3709199Z Hosted Compute Agent
+2025-10-16T14:56:23.3709821Z Version: 20250912.392
+2025-10-16T14:56:23.3710418Z Commit: d921fda672a98b64f4f82364647e2f10b2267d0b
+2025-10-16T14:56:23.3711144Z Build Date: 2025-09-12T15:23:14Z
+2025-10-16T14:56:23.3711692Z ##[endgroup]
+2025-10-16T14:56:23.3712297Z ##[group]Operating System
+2025-10-16T14:56:23.3712826Z Ubuntu
+2025-10-16T14:56:23.3713290Z 24.04.3
+2025-10-16T14:56:23.3713789Z LTS
+2025-10-16T14:56:23.3714283Z ##[endgroup]
+2025-10-16T14:56:23.3714772Z ##[group]Runner Image
+2025-10-16T14:56:23.3715530Z Image: ubuntu-24.04
+2025-10-16T14:56:23.3716062Z Version: 20250929.60.1
+2025-10-16T14:56:23.3717046Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250929.60/images/ubuntu/Ubuntu2404-Readme.md
+2025-10-16T14:56:23.3718694Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250929.60
+2025-10-16T14:56:23.3719693Z ##[endgroup]
+2025-10-16T14:56:23.3720844Z ##[group]GITHUB_TOKEN Permissions
+2025-10-16T14:56:23.3722978Z Contents: read
+2025-10-16T14:56:23.3723609Z Metadata: read
+2025-10-16T14:56:23.3724148Z Packages: read
+2025-10-16T14:56:23.3724622Z ##[endgroup]
+2025-10-16T14:56:23.3727082Z Secret source: Actions
+2025-10-16T14:56:23.3728149Z Prepare workflow directory
+2025-10-16T14:56:23.4100094Z Prepare all required actions
+2025-10-16T14:56:23.4137247Z Getting action download info
+2025-10-16T14:56:23.7180047Z Download action repository 'actions/checkout@v5' (SHA:08c6903cd8c0fde910a37f88322edcfb5dd907a8)
+2025-10-16T14:56:23.9141926Z Download action repository 'docker/setup-buildx-action@v3' (SHA:e468171a9de216ec08956ac3ada2f0791b6bd435)
+2025-10-16T14:56:24.3546950Z Complete job name: Docker Build
+2025-10-16T14:56:24.4205615Z ##[group]Run actions/checkout@v5
+2025-10-16T14:56:24.4206479Z with:
+2025-10-16T14:56:24.4206911Z   repository: hoangphuc841/helios-operator
+2025-10-16T14:56:24.4207610Z   token: ***
+2025-10-16T14:56:24.4208020Z   ssh-strict: true
+2025-10-16T14:56:24.4208426Z   ssh-user: git
+2025-10-16T14:56:24.4208873Z   persist-credentials: true
+2025-10-16T14:56:24.4209320Z   clean: true
+2025-10-16T14:56:24.4209716Z   sparse-checkout-cone-mode: true
+2025-10-16T14:56:24.4210197Z   fetch-depth: 1
+2025-10-16T14:56:24.4210592Z   fetch-tags: false
+2025-10-16T14:56:24.4210998Z   show-progress: true
+2025-10-16T14:56:24.4211411Z   lfs: false
+2025-10-16T14:56:24.4211776Z   submodules: false
+2025-10-16T14:56:24.4212281Z   set-safe-directory: true
+2025-10-16T14:56:24.4212944Z env:
+2025-10-16T14:56:24.4213319Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:24.4213744Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:24.4214205Z ##[endgroup]
+2025-10-16T14:56:24.5138793Z Syncing repository: hoangphuc841/helios-operator
+2025-10-16T14:56:24.5140499Z ##[group]Getting Git version info
+2025-10-16T14:56:24.5141255Z Working directory is '/home/runner/work/helios-operator/helios-operator'
+2025-10-16T14:56:24.5142249Z [command]/usr/bin/git version
+2025-10-16T14:56:24.5227305Z git version 2.51.0
+2025-10-16T14:56:24.5247559Z ##[endgroup]
+2025-10-16T14:56:24.5261420Z Temporarily overriding HOME='/home/runner/work/_temp/b36d239a-6889-428c-8654-a29e2f875d3b' before making global git config changes
+2025-10-16T14:56:24.5263569Z Adding repository directory to the temporary git global config as a safe directory
+2025-10-16T14:56:24.5266527Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:56:24.5301756Z Deleting the contents of '/home/runner/work/helios-operator/helios-operator'
+2025-10-16T14:56:24.5304967Z ##[group]Initializing the repository
+2025-10-16T14:56:24.5309564Z [command]/usr/bin/git init /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:56:24.5468635Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-10-16T14:56:24.5470359Z hint: is subject to change. To configure the initial branch name to use in all
+2025-10-16T14:56:24.5472056Z hint: of your new repositories, which will suppress this warning, call:
+2025-10-16T14:56:24.5472935Z hint:
+2025-10-16T14:56:24.5473679Z hint: 	git config --global init.defaultBranch <name>
+2025-10-16T14:56:24.5474415Z hint:
+2025-10-16T14:56:24.5475067Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-10-16T14:56:24.5476757Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-10-16T14:56:24.5478063Z hint:
+2025-10-16T14:56:24.5478674Z hint: 	git branch -m <name>
+2025-10-16T14:56:24.5479166Z hint:
+2025-10-16T14:56:24.5479762Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2025-10-16T14:56:24.5480834Z Initialized empty Git repository in /home/runner/work/helios-operator/helios-operator/.git/
+2025-10-16T14:56:24.5483528Z [command]/usr/bin/git remote add origin https://github.com/hoangphuc841/helios-operator
+2025-10-16T14:56:24.5522050Z ##[endgroup]
+2025-10-16T14:56:24.5522783Z ##[group]Disabling automatic garbage collection
+2025-10-16T14:56:24.5525468Z [command]/usr/bin/git config --local gc.auto 0
+2025-10-16T14:56:24.5552210Z ##[endgroup]
+2025-10-16T14:56:24.5552897Z ##[group]Setting up auth
+2025-10-16T14:56:24.5558359Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-10-16T14:56:24.5588586Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-10-16T14:56:24.5947189Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-10-16T14:56:24.5979990Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-10-16T14:56:24.6204693Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-10-16T14:56:24.6239769Z ##[endgroup]
+2025-10-16T14:56:24.6240996Z ##[group]Fetching the repository
+2025-10-16T14:56:24.6249322Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1:refs/remotes/pull/1/merge
+2025-10-16T14:56:24.8709954Z From https://github.com/hoangphuc841/helios-operator
+2025-10-16T14:56:24.8711559Z  * [new ref]         e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1 -> pull/1/merge
+2025-10-16T14:56:24.8748213Z ##[endgroup]
+2025-10-16T14:56:24.8749914Z ##[group]Determining the checkout info
+2025-10-16T14:56:24.8751693Z ##[endgroup]
+2025-10-16T14:56:24.8756317Z [command]/usr/bin/git sparse-checkout disable
+2025-10-16T14:56:24.8801021Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-10-16T14:56:24.8830732Z ##[group]Checking out the ref
+2025-10-16T14:56:24.8834781Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/1/merge
+2025-10-16T14:56:24.8962207Z Note: switching to 'refs/remotes/pull/1/merge'.
+2025-10-16T14:56:24.8963347Z 
+2025-10-16T14:56:24.8964205Z You are in 'detached HEAD' state. You can look around, make experimental
+2025-10-16T14:56:24.8966318Z changes and commit them, and you can discard any commits you make in this
+2025-10-16T14:56:24.8967853Z state without impacting any branches by switching back to a branch.
+2025-10-16T14:56:24.8969170Z 
+2025-10-16T14:56:24.8970086Z If you want to create a new branch to retain commits you create, you may
+2025-10-16T14:56:24.8972187Z do so (now or later) by using -c with the switch command. Example:
+2025-10-16T14:56:24.8973395Z 
+2025-10-16T14:56:24.8973756Z   git switch -c <new-branch-name>
+2025-10-16T14:56:24.8974300Z 
+2025-10-16T14:56:24.8974582Z Or undo this operation with:
+2025-10-16T14:56:24.8975090Z 
+2025-10-16T14:56:24.8975629Z   git switch -
+2025-10-16T14:56:24.8976037Z 
+2025-10-16T14:56:24.8976698Z Turn off this advice by setting config variable advice.detachedHead to false
+2025-10-16T14:56:24.8977763Z 
+2025-10-16T14:56:24.8979308Z HEAD is now at e1ff28e Merge ff6f498efdf5599219b5f62fbf20e6c98a1c02df into ed87fb28aec8054c283f32b91578ac0ec021d6ef
+2025-10-16T14:56:24.8982536Z ##[endgroup]
+2025-10-16T14:56:24.9006697Z [command]/usr/bin/git log -1 --format=%H
+2025-10-16T14:56:24.9029073Z e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1
+2025-10-16T14:56:24.9320286Z ##[group]Run docker/setup-buildx-action@v3
+2025-10-16T14:56:24.9321361Z with:
+2025-10-16T14:56:24.9322019Z   driver: docker-container
+2025-10-16T14:56:24.9322825Z   install: false
+2025-10-16T14:56:24.9323490Z   use: true
+2025-10-16T14:56:24.9324127Z   keep-state: false
+2025-10-16T14:56:24.9324843Z   cache-binary: true
+2025-10-16T14:56:24.9325815Z   cleanup: true
+2025-10-16T14:56:24.9326463Z env:
+2025-10-16T14:56:24.9327062Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:24.9327802Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:24.9328633Z ##[endgroup]
+2025-10-16T14:56:25.2147404Z ##[group]Docker info
+2025-10-16T14:56:25.2172659Z [command]/usr/bin/docker version
+2025-10-16T14:56:25.3212620Z Client: Docker Engine - Community
+2025-10-16T14:56:25.3216040Z  Version:           28.0.4
+2025-10-16T14:56:25.3217013Z  API version:       1.48
+2025-10-16T14:56:25.3217729Z  Go version:        go1.23.7
+2025-10-16T14:56:25.3218366Z  Git commit:        b8034c0
+2025-10-16T14:56:25.3219131Z  Built:             Tue Mar 25 15:07:16 2025
+2025-10-16T14:56:25.3219812Z  OS/Arch:           linux/amd64
+2025-10-16T14:56:25.3220485Z  Context:           default
+2025-10-16T14:56:25.3220846Z 
+2025-10-16T14:56:25.3221149Z Server: Docker Engine - Community
+2025-10-16T14:56:25.3222150Z  Engine:
+2025-10-16T14:56:25.3223200Z   Version:          28.0.4
+2025-10-16T14:56:25.3224418Z   API version:      1.48 (minimum version 1.24)
+2025-10-16T14:56:25.3225918Z   Go version:       go1.23.7
+2025-10-16T14:56:25.3227015Z   Git commit:       6430e49
+2025-10-16T14:56:25.3228151Z   Built:            Tue Mar 25 15:07:16 2025
+2025-10-16T14:56:25.3229324Z   OS/Arch:          linux/amd64
+2025-10-16T14:56:25.3230465Z   Experimental:     false
+2025-10-16T14:56:25.3231594Z  containerd:
+2025-10-16T14:56:25.3232630Z   Version:          v1.7.28
+2025-10-16T14:56:25.3233840Z   GitCommit:        b98a3aace656320842a23f4a392a33f46af97866
+2025-10-16T14:56:25.3235077Z  runc:
+2025-10-16T14:56:25.3236294Z   Version:          1.3.0
+2025-10-16T14:56:25.3237518Z   GitCommit:        v1.3.0-0-g4ca628d1
+2025-10-16T14:56:25.3238859Z  docker-init:
+2025-10-16T14:56:25.3240071Z   Version:          0.19.0
+2025-10-16T14:56:25.3241330Z   GitCommit:        de40ad0
+2025-10-16T14:56:25.3270066Z [command]/usr/bin/docker info
+2025-10-16T14:56:27.5258212Z Client: Docker Engine - Community
+2025-10-16T14:56:27.5259030Z  Version:    28.0.4
+2025-10-16T14:56:27.5259338Z  Context:    default
+2025-10-16T14:56:27.5259581Z  Debug Mode: false
+2025-10-16T14:56:27.5259897Z  Plugins:
+2025-10-16T14:56:27.5260184Z   buildx: Docker Buildx (Docker Inc.)
+2025-10-16T14:56:27.5260583Z     Version:  v0.28.0
+2025-10-16T14:56:27.5261073Z     Path:     /usr/libexec/docker/cli-plugins/docker-buildx
+2025-10-16T14:56:27.5261672Z   compose: Docker Compose (Docker Inc.)
+2025-10-16T14:56:27.5262066Z     Version:  v2.38.2
+2025-10-16T14:56:27.5262462Z     Path:     /usr/libexec/docker/cli-plugins/docker-compose
+2025-10-16T14:56:27.5262812Z 
+2025-10-16T14:56:27.5262931Z Server:
+2025-10-16T14:56:27.5263210Z  Containers: 0
+2025-10-16T14:56:27.5263459Z   Running: 0
+2025-10-16T14:56:27.5263725Z   Paused: 0
+2025-10-16T14:56:27.5263957Z   Stopped: 0
+2025-10-16T14:56:27.5264187Z  Images: 0
+2025-10-16T14:56:27.5264431Z  Server Version: 28.0.4
+2025-10-16T14:56:27.5264712Z  Storage Driver: overlay2
+2025-10-16T14:56:27.5265040Z   Backing Filesystem: extfs
+2025-10-16T14:56:27.5265618Z   Supports d_type: true
+2025-10-16T14:56:27.5265946Z   Using metacopy: false
+2025-10-16T14:56:27.5266258Z   Native Overlay Diff: false
+2025-10-16T14:56:27.5266607Z   userxattr: false
+2025-10-16T14:56:27.5266945Z  Logging Driver: json-file
+2025-10-16T14:56:27.5267292Z  Cgroup Driver: systemd
+2025-10-16T14:56:27.5267621Z  Cgroup Version: 2
+2025-10-16T14:56:27.5268469Z  Plugins:
+2025-10-16T14:56:27.5268767Z   Volume: local
+2025-10-16T14:56:27.5269149Z   Network: bridge host ipvlan macvlan null overlay
+2025-10-16T14:56:27.5269828Z   Log: awslogs fluentd gcplogs gelf journald json-file local splunk syslog
+2025-10-16T14:56:27.5270409Z  Swarm: inactive
+2025-10-16T14:56:27.5271106Z  Runtimes: io.containerd.runc.v2 runc
+2025-10-16T14:56:27.5271526Z  Default Runtime: runc
+2025-10-16T14:56:27.5271853Z  Init Binary: docker-init
+2025-10-16T14:56:27.5272325Z  containerd version: b98a3aace656320842a23f4a392a33f46af97866
+2025-10-16T14:56:27.5272854Z  runc version: v1.3.0-0-g4ca628d1
+2025-10-16T14:56:27.5273246Z  init version: de40ad0
+2025-10-16T14:56:27.5273569Z  Security Options:
+2025-10-16T14:56:27.5273889Z   apparmor
+2025-10-16T14:56:27.5274159Z   seccomp
+2025-10-16T14:56:27.5274444Z    Profile: builtin
+2025-10-16T14:56:27.5274737Z   cgroupns
+2025-10-16T14:56:27.5275038Z  Kernel Version: 6.11.0-1018-azure
+2025-10-16T14:56:27.5275808Z  Operating System: Ubuntu 24.04.3 LTS
+2025-10-16T14:56:27.5276252Z  OSType: linux
+2025-10-16T14:56:27.5276559Z  Architecture: x86_64
+2025-10-16T14:56:27.5276872Z  CPUs: 4
+2025-10-16T14:56:27.5277142Z  Total Memory: 15.62GiB
+2025-10-16T14:56:27.5277473Z  Name: runnervmwhb2z
+2025-10-16T14:56:27.5277827Z  ID: ac1187db-1850-4397-a0f7-3b6e6ef293d6
+2025-10-16T14:56:27.5278248Z  Docker Root Dir: /var/lib/docker
+2025-10-16T14:56:27.5278628Z  Debug Mode: false
+2025-10-16T14:56:27.5278943Z  Username: githubactions
+2025-10-16T14:56:27.5279292Z  Experimental: false
+2025-10-16T14:56:27.5279605Z  Insecure Registries:
+2025-10-16T14:56:27.5284832Z   ::1/128
+2025-10-16T14:56:27.5285124Z   127.0.0.0/8
+2025-10-16T14:56:27.5285645Z  Live Restore Enabled: false
+2025-10-16T14:56:27.5285906Z 
+2025-10-16T14:56:27.5286588Z ##[endgroup]
+2025-10-16T14:56:27.6405086Z ##[group]Buildx version
+2025-10-16T14:56:27.6432295Z [command]/usr/bin/docker buildx version
+2025-10-16T14:56:27.7052212Z github.com/docker/buildx v0.28.0 b1281b81bba797b21d9eaf256e6a13eb14419836
+2025-10-16T14:56:27.7086947Z ##[endgroup]
+2025-10-16T14:56:27.7243012Z ##[group]Inspecting default docker context
+2025-10-16T14:56:27.7392192Z [
+2025-10-16T14:56:27.7392510Z   {
+2025-10-16T14:56:27.7392803Z     "Name": "default",
+2025-10-16T14:56:27.7393172Z     "Metadata": {},
+2025-10-16T14:56:27.7393528Z     "Endpoints": {
+2025-10-16T14:56:27.7393841Z       "docker": {
+2025-10-16T14:56:27.7394193Z         "Host": "unix:///var/run/docker.sock",
+2025-10-16T14:56:27.7394636Z         "SkipTLSVerify": false
+2025-10-16T14:56:27.7395015Z       }
+2025-10-16T14:56:27.7395472Z     },
+2025-10-16T14:56:27.7395756Z     "TLSMaterial": {},
+2025-10-16T14:56:27.7396090Z     "Storage": {
+2025-10-16T14:56:27.7396431Z       "MetadataPath": "<IN MEMORY>",
+2025-10-16T14:56:27.7396910Z       "TLSPath": "<IN MEMORY>"
+2025-10-16T14:56:27.7397282Z     }
+2025-10-16T14:56:27.7398119Z   }
+2025-10-16T14:56:27.7398375Z ]
+2025-10-16T14:56:27.7399125Z ##[endgroup]
+2025-10-16T14:56:27.7399735Z ##[group]Creating a new builder instance
+2025-10-16T14:56:27.8681117Z [command]/usr/bin/docker buildx create --name builder-587f40ee-6316-4d1f-b3e3-5a6a3fb932b5 --driver docker-container --buildkitd-flags --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host --use
+2025-10-16T14:56:27.9526958Z builder-587f40ee-6316-4d1f-b3e3-5a6a3fb932b5
+2025-10-16T14:56:27.9565104Z ##[endgroup]
+2025-10-16T14:56:27.9565834Z ##[group]Booting builder
+2025-10-16T14:56:27.9604360Z [command]/usr/bin/docker buildx inspect --bootstrap --builder builder-587f40ee-6316-4d1f-b3e3-5a6a3fb932b5
+2025-10-16T14:56:28.0140146Z #1 [internal] booting buildkit
+2025-10-16T14:56:28.1649060Z #1 pulling image moby/buildkit:buildx-stable-1
+2025-10-16T14:56:31.1804809Z #1 pulling image moby/buildkit:buildx-stable-1 3.2s done
+2025-10-16T14:56:31.3307512Z #1 creating container buildx_buildkit_builder-587f40ee-6316-4d1f-b3e3-5a6a3fb932b50
+2025-10-16T14:56:31.4669416Z #1 creating container buildx_buildkit_builder-587f40ee-6316-4d1f-b3e3-5a6a3fb932b50 0.3s done
+2025-10-16T14:56:31.4724803Z #1 DONE 3.5s
+2025-10-16T14:56:31.5037075Z Name:          builder-587f40ee-6316-4d1f-b3e3-5a6a3fb932b5
+2025-10-16T14:56:31.5038032Z Driver:        docker-container
+2025-10-16T14:56:31.5039095Z Last Activity: 2025-10-16 14:56:27 +0000 UTC
+2025-10-16T14:56:31.5039420Z 
+2025-10-16T14:56:31.5128212Z Nodes:
+2025-10-16T14:56:31.5131624Z Name:                  builder-587f40ee-6316-4d1f-b3e3-5a6a3fb932b50
+2025-10-16T14:56:31.5132238Z Endpoint:              unix:///var/run/docker.sock
+2025-10-16T14:56:31.5132683Z Status:                running
+2025-10-16T14:56:31.5133530Z BuildKit daemon flags: --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
+2025-10-16T14:56:31.5134372Z BuildKit version:      v0.25.1
+2025-10-16T14:56:31.5134934Z Platforms:             linux/amd64, linux/amd64/v2, linux/amd64/v3, linux/386
+2025-10-16T14:56:31.5135641Z Labels:
+2025-10-16T14:56:31.5136044Z  org.mobyproject.buildkit.worker.executor:         oci
+2025-10-16T14:56:31.5136743Z  org.mobyproject.buildkit.worker.hostname:         9a00e61b9710
+2025-10-16T14:56:31.5137389Z  org.mobyproject.buildkit.worker.network:          host
+2025-10-16T14:56:31.5138007Z  org.mobyproject.buildkit.worker.oci.process-mode: sandbox
+2025-10-16T14:56:31.5138430Z  org.mobyproject.buildkit.worker.selinux.enabled:  false
+2025-10-16T14:56:31.5138817Z  org.mobyproject.buildkit.worker.snapshotter:      overlayfs
+2025-10-16T14:56:31.5139140Z GC Policy rule#0:
+2025-10-16T14:56:31.5139330Z  All:            false
+2025-10-16T14:56:31.5139642Z  Filters:        type==source.local,type==exec.cachemount,type==source.git.checkout
+2025-10-16T14:56:31.5140009Z  Keep Duration:  48h0m0s
+2025-10-16T14:56:31.5140207Z  Max Used Space: 488.3MiB
+2025-10-16T14:56:31.5140405Z GC Policy rule#1:
+2025-10-16T14:56:31.5140576Z  All:            false
+2025-10-16T14:56:31.5140771Z  Keep Duration:  1440h0m0s
+2025-10-16T14:56:31.5140967Z  Reserved Space: 7.451GiB
+2025-10-16T14:56:31.5141161Z  Max Used Space: 54.02GiB
+2025-10-16T14:56:31.5141352Z  Min Free Space: 13.97GiB
+2025-10-16T14:56:31.5141538Z GC Policy rule#2:
+2025-10-16T14:56:31.5141708Z  All:            false
+2025-10-16T14:56:31.5141883Z  Reserved Space: 7.451GiB
+2025-10-16T14:56:31.5142073Z  Max Used Space: 54.02GiB
+2025-10-16T14:56:31.5142288Z  Min Free Space: 13.97GiB
+2025-10-16T14:56:31.5142598Z GC Policy rule#3:
+2025-10-16T14:56:31.5142877Z  All:            true
+2025-10-16T14:56:31.5143189Z  Reserved Space: 7.451GiB
+2025-10-16T14:56:31.5143509Z  Max Used Space: 54.02GiB
+2025-10-16T14:56:31.5143828Z  Min Free Space: 13.97GiB
+2025-10-16T14:56:31.5144633Z ##[endgroup]
+2025-10-16T14:56:31.5991561Z ##[group]Inspect builder
+2025-10-16T14:56:31.5994141Z {
+2025-10-16T14:56:31.5994457Z   "nodes": [
+2025-10-16T14:56:31.5994732Z     {
+2025-10-16T14:56:31.5995119Z       "name": "builder-587f40ee-6316-4d1f-b3e3-5a6a3fb932b50",
+2025-10-16T14:56:31.5995948Z       "endpoint": "unix:///var/run/docker.sock",
+2025-10-16T14:56:31.5996422Z       "status": "running",
+2025-10-16T14:56:31.5997338Z       "buildkitd-flags": "--allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host",
+2025-10-16T14:56:31.5998229Z       "buildkit": "v0.25.1",
+2025-10-16T14:56:31.5998777Z       "platforms": "linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/386",
+2025-10-16T14:56:31.5999375Z       "features": {
+2025-10-16T14:56:31.5999893Z         "Automatically load images to the Docker Engine image store": true,
+2025-10-16T14:56:31.6000493Z         "Cache export": true,
+2025-10-16T14:56:31.6000884Z         "Direct push": true,
+2025-10-16T14:56:31.6001274Z         "Docker exporter": true,
+2025-10-16T14:56:31.6001701Z         "Multi-platform build": true,
+2025-10-16T14:56:31.6002120Z         "OCI exporter": true
+2025-10-16T14:56:31.6002487Z       },
+2025-10-16T14:56:31.6002773Z       "labels": {
+2025-10-16T14:56:31.6003174Z         "org.mobyproject.buildkit.worker.executor": "oci",
+2025-10-16T14:56:31.6003819Z         "org.mobyproject.buildkit.worker.hostname": "9a00e61b9710",
+2025-10-16T14:56:31.6004695Z         "org.mobyproject.buildkit.worker.network": "host",
+2025-10-16T14:56:31.6005479Z         "org.mobyproject.buildkit.worker.oci.process-mode": "sandbox",
+2025-10-16T14:56:31.6006105Z         "org.mobyproject.buildkit.worker.selinux.enabled": "false",
+2025-10-16T14:56:31.6006976Z         "org.mobyproject.buildkit.worker.snapshotter": "overlayfs"
+2025-10-16T14:56:31.6007601Z       },
+2025-10-16T14:56:31.6007858Z       "gcPolicy": [
+2025-10-16T14:56:31.6008140Z         {
+2025-10-16T14:56:31.6008364Z           "all": false,
+2025-10-16T14:56:31.6008637Z           "filter": [
+2025-10-16T14:56:31.6008922Z             "type==source.local",
+2025-10-16T14:56:31.6009249Z             "type==exec.cachemount",
+2025-10-16T14:56:31.6009620Z             "type==source.git.checkout"
+2025-10-16T14:56:31.6009986Z           ],
+2025-10-16T14:56:31.6010269Z           "keepDuration": "48h0m0s",
+2025-10-16T14:56:31.6010641Z           "maxUsedSpace": "488.3MiB"
+2025-10-16T14:56:31.6010991Z         },
+2025-10-16T14:56:31.6011240Z         {
+2025-10-16T14:56:31.6011494Z           "all": false,
+2025-10-16T14:56:31.6011831Z           "keepDuration": "1440h0m0s",
+2025-10-16T14:56:31.6012221Z           "reservedSpace": "7.451GiB",
+2025-10-16T14:56:31.6012596Z           "maxUsedSpace": "54.02GiB",
+2025-10-16T14:56:31.6012979Z           "minFreeSpace": "13.97GiB"
+2025-10-16T14:56:31.6013331Z         },
+2025-10-16T14:56:31.6013575Z         {
+2025-10-16T14:56:31.6013828Z           "all": false,
+2025-10-16T14:56:31.6014141Z           "reservedSpace": "7.451GiB",
+2025-10-16T14:56:31.6014521Z           "maxUsedSpace": "54.02GiB",
+2025-10-16T14:56:31.6014883Z           "minFreeSpace": "13.97GiB"
+2025-10-16T14:56:31.6015642Z         },
+2025-10-16T14:56:31.6015888Z         {
+2025-10-16T14:56:31.6016140Z           "all": true,
+2025-10-16T14:56:31.6016455Z           "reservedSpace": "7.451GiB",
+2025-10-16T14:56:31.6016844Z           "maxUsedSpace": "54.02GiB",
+2025-10-16T14:56:31.6017213Z           "minFreeSpace": "13.97GiB"
+2025-10-16T14:56:31.6017569Z         }
+2025-10-16T14:56:31.6017824Z       ]
+2025-10-16T14:56:31.6018057Z     }
+2025-10-16T14:56:31.6018289Z   ],
+2025-10-16T14:56:31.6018624Z   "name": "builder-587f40ee-6316-4d1f-b3e3-5a6a3fb932b5",
+2025-10-16T14:56:31.6019109Z   "driver": "docker-container",
+2025-10-16T14:56:31.6019487Z   "lastActivity": "2025-10-16T14:56:27.000Z"
+2025-10-16T14:56:31.6019863Z }
+2025-10-16T14:56:31.6020382Z ##[endgroup]
+2025-10-16T14:56:31.6020883Z ##[group]BuildKit version
+2025-10-16T14:56:31.6021311Z builder-587f40ee-6316-4d1f-b3e3-5a6a3fb932b50: v0.25.1
+2025-10-16T14:56:31.6021969Z ##[endgroup]
+2025-10-16T14:56:31.6159174Z ##[group]Run make docker-build IMG=ghcr.io/helios-operator/helios-operator:ci-e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1
+2025-10-16T14:56:31.6160084Z [36;1mmake docker-build IMG=ghcr.io/helios-operator/helios-operator:ci-e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1[0m
+2025-10-16T14:56:31.6196369Z shell: /usr/bin/bash -e {0}
+2025-10-16T14:56:31.6196603Z env:
+2025-10-16T14:56:31.6196792Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:31.6197015Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:31.6197237Z ##[endgroup]
+2025-10-16T14:56:31.6627158Z Building Docker image: ghcr.io/helios-operator/helios-operator:ci-e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1
+2025-10-16T14:56:32.0232019Z #0 building with "default" instance using docker driver
+2025-10-16T14:56:32.0232505Z 
+2025-10-16T14:56:32.0232753Z #1 [internal] load build definition from Dockerfile
+2025-10-16T14:56:32.0233134Z #1 transferring dockerfile: 2.96kB done
+2025-10-16T14:56:32.0233432Z #1 DONE 0.0s
+2025-10-16T14:56:32.0233559Z 
+2025-10-16T14:56:32.0233814Z #2 [auth] docker/dockerfile:pull token for registry-1.docker.io
+2025-10-16T14:56:32.0234218Z #2 DONE 0.0s
+2025-10-16T14:56:32.0234342Z 
+2025-10-16T14:56:32.0234670Z #3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+2025-10-16T14:56:32.1567949Z #3 DONE 0.3s
+2025-10-16T14:56:32.2628636Z 
+2025-10-16T14:56:32.2630704Z #4 docker-image://docker.io/docker/dockerfile:1@sha256:b6afd42430b15f2d2a4c5a02b919e98a525b785b1aaff16747d2f623364e39b6
+2025-10-16T14:56:32.2635102Z #4 resolve docker.io/docker/dockerfile:1@sha256:b6afd42430b15f2d2a4c5a02b919e98a525b785b1aaff16747d2f623364e39b6 done
+2025-10-16T14:56:32.2636954Z #4 sha256:b6afd42430b15f2d2a4c5a02b919e98a525b785b1aaff16747d2f623364e39b6 8.40kB / 8.40kB done
+2025-10-16T14:56:32.2638077Z #4 sha256:62b0eac4b38b65f257ba2525a1bc87978b5e339d6133b5daef1bde40fe7aa10f 850B / 850B done
+2025-10-16T14:56:32.2639159Z #4 sha256:6742480c08d7878bbb82a5f5b55d7cb17c5dea60d2068cb2bd37994f3a5c680e 1.33kB / 1.33kB done
+2025-10-16T14:56:32.2640419Z #4 sha256:77246a01651da592b7bae79e0e20ed3b4f2e4c00a1b54b7c921c91ae3fa9ef07 2.10MB / 13.57MB 0.1s
+2025-10-16T14:56:32.3628906Z #4 sha256:77246a01651da592b7bae79e0e20ed3b4f2e4c00a1b54b7c921c91ae3fa9ef07 5.24MB / 13.57MB 0.2s
+2025-10-16T14:56:32.5536555Z #4 sha256:77246a01651da592b7bae79e0e20ed3b4f2e4c00a1b54b7c921c91ae3fa9ef07 9.44MB / 13.57MB 0.3s
+2025-10-16T14:56:32.5540940Z #4 extracting sha256:77246a01651da592b7bae79e0e20ed3b4f2e4c00a1b54b7c921c91ae3fa9ef07
+2025-10-16T14:56:32.6542528Z #4 sha256:77246a01651da592b7bae79e0e20ed3b4f2e4c00a1b54b7c921c91ae3fa9ef07 13.57MB / 13.57MB 0.4s done
+2025-10-16T14:56:32.7560408Z #4 extracting sha256:77246a01651da592b7bae79e0e20ed3b4f2e4c00a1b54b7c921c91ae3fa9ef07 0.1s done
+2025-10-16T14:56:32.7561121Z #4 DONE 0.5s
+2025-10-16T14:56:32.7561309Z 
+2025-10-16T14:56:32.7561495Z #5 [auth] library/golang:pull token for registry-1.docker.io
+2025-10-16T14:56:32.9065044Z #5 DONE 0.0s
+2025-10-16T14:56:32.9065537Z 
+2025-10-16T14:56:32.9065799Z #6 [internal] load metadata for gcr.io/distroless/static-debian12:nonroot
+2025-10-16T14:56:33.0328439Z #6 ...
+2025-10-16T14:56:33.0328650Z 
+2025-10-16T14:56:33.0328997Z #7 [internal] load metadata for docker.io/library/golang:1.25.3-alpine3.22
+2025-10-16T14:56:33.0329612Z #7 DONE 0.3s
+2025-10-16T14:56:33.1832108Z 
+2025-10-16T14:56:33.1832556Z #6 [internal] load metadata for gcr.io/distroless/static-debian12:nonroot
+2025-10-16T14:56:33.4356327Z #6 DONE 0.7s
+2025-10-16T14:56:33.5947522Z 
+2025-10-16T14:56:33.5948135Z #8 [internal] load .dockerignore
+2025-10-16T14:56:33.5948478Z #8 transferring context: 557B done
+2025-10-16T14:56:33.5948757Z #8 DONE 0.0s
+2025-10-16T14:56:33.5948872Z 
+2025-10-16T14:56:33.5948975Z #9 [internal] load build context
+2025-10-16T14:56:33.5949242Z #9 transferring context: 375.88kB done
+2025-10-16T14:56:33.5949512Z #9 DONE 0.0s
+2025-10-16T14:56:33.5949623Z 
+2025-10-16T14:56:33.5950092Z #10 [stage-1 1/3] FROM gcr.io/distroless/static-debian12:nonroot@sha256:e8a4044e0b4ae4257efa45fc026c0bc30ad320d43bd4c1a7d5271bd241e386d0
+2025-10-16T14:56:33.5951422Z #10 resolve gcr.io/distroless/static-debian12:nonroot@sha256:e8a4044e0b4ae4257efa45fc026c0bc30ad320d43bd4c1a7d5271bd241e386d0 done
+2025-10-16T14:56:33.5952312Z #10 sha256:bfb59b82a9b65e47d485e53b3e815bca3b3e21a095bd0cb88ced9ac0b48062bf 0B / 13.36kB 0.1s
+2025-10-16T14:56:33.5953029Z #10 sha256:e8a4044e0b4ae4257efa45fc026c0bc30ad320d43bd4c1a7d5271bd241e386d0 1.51kB / 1.51kB done
+2025-10-16T14:56:33.5953757Z #10 sha256:fd4aa3667332c2a4837e1b5f395b0555b3c4ec299e38166ae93ee84bad01befa 0B / 104.27kB 0.1s
+2025-10-16T14:56:33.7030625Z #10 sha256:bfb59b82a9b65e47d485e53b3e815bca3b3e21a095bd0cb88ced9ac0b48062bf 13.36kB / 13.36kB 0.2s done
+2025-10-16T14:56:33.7032526Z #10 sha256:fd4aa3667332c2a4837e1b5f395b0555b3c4ec299e38166ae93ee84bad01befa 104.27kB / 104.27kB 0.2s done
+2025-10-16T14:56:33.7036564Z #10 sha256:127eb3c971acb50a3c7b511a978bb497b56add4c91225e57605b3b43cc0a9662 2.11kB / 2.11kB done
+2025-10-16T14:56:33.7037723Z #10 sha256:27f84f08032bfa619e7989c45500c49a1ddbc0073e8bb015f6ed626bcbccf818 1.61kB / 1.61kB done
+2025-10-16T14:56:33.7038777Z #10 extracting sha256:fd4aa3667332c2a4837e1b5f395b0555b3c4ec299e38166ae93ee84bad01befa done
+2025-10-16T14:56:33.7039792Z #10 extracting sha256:bfb59b82a9b65e47d485e53b3e815bca3b3e21a095bd0cb88ced9ac0b48062bf
+2025-10-16T14:56:33.8206522Z #10 extracting sha256:bfb59b82a9b65e47d485e53b3e815bca3b3e21a095bd0cb88ced9ac0b48062bf done
+2025-10-16T14:56:33.8207628Z #10 sha256:62de241dac5fe19d5f8f4defe034289006ddaa0f2cca735db4718fe2a23e504e 0B / 31.24kB 0.3s
+2025-10-16T14:56:33.8208711Z #10 sha256:017886f7e1764618ffad6fbd503c42a60076c63adc16355cac80f0f311cae4c9 0B / 544.07kB 0.3s
+2025-10-16T14:56:33.9941135Z #10 sha256:017886f7e1764618ffad6fbd503c42a60076c63adc16355cac80f0f311cae4c9 544.07kB / 544.07kB 0.4s done
+2025-10-16T14:56:33.9942261Z #10 extracting sha256:017886f7e1764618ffad6fbd503c42a60076c63adc16355cac80f0f311cae4c9
+2025-10-16T14:56:34.0941968Z #10 sha256:62de241dac5fe19d5f8f4defe034289006ddaa0f2cca735db4718fe2a23e504e 31.24kB / 31.24kB 0.4s done
+2025-10-16T14:56:34.0942973Z #10 extracting sha256:017886f7e1764618ffad6fbd503c42a60076c63adc16355cac80f0f311cae4c9 0.2s done
+2025-10-16T14:56:34.0943672Z #10 sha256:7c12895b777bcaa8ccae0605b4de635b68fc32d60fa08f421dc3818bf55ee212 188B / 188B 0.6s done
+2025-10-16T14:56:34.0944326Z #10 sha256:2780920e5dbfbe103d03a583ed75345306e572ec5a48cb10361f046767d9f29a 67B / 67B 0.5s done
+2025-10-16T14:56:34.0945463Z #10 sha256:5664b15f108bf9436ce3312090a767300800edbbfd4511aa1a6d64357024d5dd 0B / 168B 0.6s
+2025-10-16T14:56:34.0946095Z #10 sha256:3214acf345c0cc6bbdb56b698a41ccdefc624a09d6beb0d38b5de0b2303ecaf4 0B / 123B 0.6s
+2025-10-16T14:56:34.2039837Z #10 sha256:3214acf345c0cc6bbdb56b698a41ccdefc624a09d6beb0d38b5de0b2303ecaf4 123B / 123B 0.7s done
+2025-10-16T14:56:34.2041055Z #10 extracting sha256:62de241dac5fe19d5f8f4defe034289006ddaa0f2cca735db4718fe2a23e504e done
+2025-10-16T14:56:34.2041762Z #10 sha256:045fc1c20da893bef6d0ed64e92b243213b0cebcd478389573bdfb095e212a98 0B / 93B 0.7s
+2025-10-16T14:56:34.2042463Z #10 extracting sha256:2780920e5dbfbe103d03a583ed75345306e572ec5a48cb10361f046767d9f29a
+2025-10-16T14:56:34.3278587Z #10 sha256:5664b15f108bf9436ce3312090a767300800edbbfd4511aa1a6d64357024d5dd 168B / 168B 0.8s done
+2025-10-16T14:56:34.3279758Z #10 extracting sha256:2780920e5dbfbe103d03a583ed75345306e572ec5a48cb10361f046767d9f29a done
+2025-10-16T14:56:34.3281028Z #10 extracting sha256:7c12895b777bcaa8ccae0605b4de635b68fc32d60fa08f421dc3818bf55ee212 done
+2025-10-16T14:56:34.3282651Z #10 extracting sha256:3214acf345c0cc6bbdb56b698a41ccdefc624a09d6beb0d38b5de0b2303ecaf4 done
+2025-10-16T14:56:34.3283500Z #10 extracting sha256:5664b15f108bf9436ce3312090a767300800edbbfd4511aa1a6d64357024d5dd done
+2025-10-16T14:56:34.3284664Z #10 sha256:4aa0ea1413d37a58615488592a0b827ea4b2e48fa5a77cf707d0e35f025e613f 0B / 385B 0.8s
+2025-10-16T14:56:34.3286262Z #10 extracting sha256:045fc1c20da893bef6d0ed64e92b243213b0cebcd478389573bdfb095e212a98
+2025-10-16T14:56:34.4713920Z #10 sha256:045fc1c20da893bef6d0ed64e92b243213b0cebcd478389573bdfb095e212a98 93B / 93B 0.8s done
+2025-10-16T14:56:34.4715735Z #10 extracting sha256:045fc1c20da893bef6d0ed64e92b243213b0cebcd478389573bdfb095e212a98 done
+2025-10-16T14:56:34.4716872Z #10 sha256:da7816fa955ea24533c388143c78804c28682eef99b4ee3723b548c70148bba6 0B / 321B 0.9s
+2025-10-16T14:56:34.4717782Z #10 extracting sha256:4aa0ea1413d37a58615488592a0b827ea4b2e48fa5a77cf707d0e35f025e613f done
+2025-10-16T14:56:34.4718614Z #10 extracting sha256:da7816fa955ea24533c388143c78804c28682eef99b4ee3723b548c70148bba6
+2025-10-16T14:56:34.5852330Z #10 sha256:4aa0ea1413d37a58615488592a0b827ea4b2e48fa5a77cf707d0e35f025e613f 385B / 385B 0.9s done
+2025-10-16T14:56:34.5853465Z #10 sha256:da7816fa955ea24533c388143c78804c28682eef99b4ee3723b548c70148bba6 321B / 321B 1.0s done
+2025-10-16T14:56:34.5854487Z #10 extracting sha256:da7816fa955ea24533c388143c78804c28682eef99b4ee3723b548c70148bba6 done
+2025-10-16T14:56:34.5855742Z #10 sha256:ddf74a63f7d8b7d157e5db1a45675a58e304b4c1d425b05c28c835b987623395 0B / 131.93kB 1.0s
+2025-10-16T14:56:34.5859400Z #10 extracting sha256:ddf74a63f7d8b7d157e5db1a45675a58e304b4c1d425b05c28c835b987623395
+2025-10-16T14:56:34.7351486Z #10 sha256:ddf74a63f7d8b7d157e5db1a45675a58e304b4c1d425b05c28c835b987623395 131.93kB / 131.93kB 1.1s done
+2025-10-16T14:56:34.7352638Z #10 extracting sha256:ddf74a63f7d8b7d157e5db1a45675a58e304b4c1d425b05c28c835b987623395 done
+2025-10-16T14:56:34.7353333Z #10 DONE 1.2s
+2025-10-16T14:56:34.7353470Z 
+2025-10-16T14:56:34.7354353Z #11 [builder 1/9] FROM docker.io/library/golang:1.25.3-alpine3.22@sha256:aee43c3ccbf24fdffb7295693b6e33b21e01baec1b2a55acc351fde345e9ec34
+2025-10-16T14:56:34.7355549Z #11 resolve docker.io/library/golang:1.25.3-alpine3.22@sha256:aee43c3ccbf24fdffb7295693b6e33b21e01baec1b2a55acc351fde345e9ec34 done
+2025-10-16T14:56:34.7356523Z #11 sha256:eddaa94abd7ba615b9d760e7e70d75af2567a9332a3c959bb79a64a2f74bf682 2.08kB / 2.08kB done
+2025-10-16T14:56:34.7357284Z #11 sha256:2d35ebdb57d9971fea0cac1582aa78935adf8058b2cc32db163c98822e5dfa1b 3.80MB / 3.80MB 0.2s done
+2025-10-16T14:56:34.7358071Z #11 sha256:aee43c3ccbf24fdffb7295693b6e33b21e01baec1b2a55acc351fde345e9ec34 10.29kB / 10.29kB done
+2025-10-16T14:56:34.7359078Z #11 sha256:c3dc5d5e8cf34ccb2172fb8d1aa399aa13cd8b60d27bba891d18e3b436a0c5f6 1.92kB / 1.92kB done
+2025-10-16T14:56:34.7360180Z #11 extracting sha256:2d35ebdb57d9971fea0cac1582aa78935adf8058b2cc32db163c98822e5dfa1b 0.1s done
+2025-10-16T14:56:34.7361312Z #11 sha256:85e8836fcdb2966cd3e43a5440ccddffd1828d2d186a49fa7c17b605db8b3bb3 291.15kB / 291.15kB 0.2s done
+2025-10-16T14:56:34.7362461Z #11 sha256:91631faa732ae651543f888b70295cbfe29a433d3c8da02b9966f67f238d3603 60.15MB / 60.15MB 1.0s done
+2025-10-16T14:56:34.7363554Z #11 sha256:f3f5ae8826faeb0e0415f8f29afbc9550ae5d655f3982b2924949c93d5efd5c8 126B / 126B 0.2s done
+2025-10-16T14:56:34.7364600Z #11 extracting sha256:85e8836fcdb2966cd3e43a5440ccddffd1828d2d186a49fa7c17b605db8b3bb3 0.0s done
+2025-10-16T14:56:34.7365776Z #11 sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 32B / 32B 0.3s done
+2025-10-16T14:56:34.7366779Z #11 extracting sha256:91631faa732ae651543f888b70295cbfe29a433d3c8da02b9966f67f238d3603 0.2s
+2025-10-16T14:56:38.6650373Z #11 extracting sha256:91631faa732ae651543f888b70295cbfe29a433d3c8da02b9966f67f238d3603 4.0s done
+2025-10-16T14:56:39.0406908Z #11 extracting sha256:f3f5ae8826faeb0e0415f8f29afbc9550ae5d655f3982b2924949c93d5efd5c8
+2025-10-16T14:56:39.1908319Z #11 extracting sha256:f3f5ae8826faeb0e0415f8f29afbc9550ae5d655f3982b2924949c93d5efd5c8 done
+2025-10-16T14:56:39.1909077Z #11 extracting sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 done
+2025-10-16T14:56:39.1909589Z #11 DONE 5.6s
+2025-10-16T14:56:39.1909700Z 
+2025-10-16T14:56:39.1909860Z #12 [builder 2/9] RUN apk add --no-cache ca-certificates git
+2025-10-16T14:56:39.1910430Z #12 0.116 fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/main/x86_64/APKINDEX.tar.gz
+2025-10-16T14:56:39.4201897Z #12 0.195 fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/community/x86_64/APKINDEX.tar.gz
+2025-10-16T14:56:39.5518159Z #12 0.477 (1/12) Installing brotli-libs (1.1.0-r2)
+2025-10-16T14:56:39.6527373Z #12 0.490 (2/12) Installing c-ares (1.34.5-r0)
+2025-10-16T14:56:39.6527929Z #12 0.498 (3/12) Installing libunistring (1.3-r0)
+2025-10-16T14:56:39.6528250Z #12 0.514 (4/12) Installing libidn2 (2.3.7-r0)
+2025-10-16T14:56:39.6528555Z #12 0.523 (5/12) Installing nghttp2-libs (1.65.0-r0)
+2025-10-16T14:56:39.6528868Z #12 0.541 (6/12) Installing libpsl (0.21.5-r3)
+2025-10-16T14:56:39.6529184Z #12 0.548 (7/12) Installing zstd-libs (1.5.7-r0)
+2025-10-16T14:56:39.6529456Z #12 0.559 (8/12) Installing libcurl (8.14.1-r2)
+2025-10-16T14:56:39.6529714Z #12 0.570 (9/12) Installing libexpat (2.7.3-r0)
+2025-10-16T14:56:39.6529995Z #12 0.578 (10/12) Installing pcre2 (10.43-r1)
+2025-10-16T14:56:39.8460066Z #12 0.589 (11/12) Installing git (2.49.1-r0)
+2025-10-16T14:56:39.8461449Z #12 0.657 (12/12) Installing git-init-template (2.49.1-r0)
+2025-10-16T14:56:39.8461985Z #12 0.664 Executing busybox-1.37.0-r19.trigger
+2025-10-16T14:56:39.8462464Z #12 0.670 OK: 20 MiB in 29 packages
+2025-10-16T14:56:39.8462838Z #12 DONE 0.8s
+2025-10-16T14:56:40.0244524Z 
+2025-10-16T14:56:40.0245058Z #13 [builder 3/9] WORKDIR /workspace
+2025-10-16T14:56:40.0245625Z #13 DONE 0.0s
+2025-10-16T14:56:40.0245740Z 
+2025-10-16T14:56:40.0245835Z #14 [builder 4/9] COPY go.mod go.sum ./
+2025-10-16T14:56:40.0246074Z #14 DONE 0.0s
+2025-10-16T14:56:40.0246174Z 
+2025-10-16T14:56:40.0246438Z #15 [builder 5/9] RUN --mount=type=cache,target=/go/pkg/mod   go mod download &&   go mod verify
+2025-10-16T14:56:48.7019754Z #15 8.828 all modules verified
+2025-10-16T14:56:50.2769693Z #15 DONE 10.4s
+2025-10-16T14:56:50.4655693Z 
+2025-10-16T14:56:50.4656780Z #16 [builder 6/9] COPY api/ api/
+2025-10-16T14:56:50.4657391Z #16 DONE 0.0s
+2025-10-16T14:56:50.4657845Z 
+2025-10-16T14:56:50.4658033Z #17 [builder 7/9] COPY internal/ internal/
+2025-10-16T14:56:50.4658464Z #17 DONE 0.0s
+2025-10-16T14:56:50.4658648Z 
+2025-10-16T14:56:50.4658789Z #18 [builder 8/9] COPY cmd/ cmd/
+2025-10-16T14:56:50.4659151Z #18 DONE 0.0s
+2025-10-16T14:56:50.4659346Z 
+2025-10-16T14:56:50.4660897Z #19 [builder 9/9] RUN --mount=type=cache,target=/root/.cache/go-build   --mount=type=cache,target=/go/pkg/mod   CGO_ENABLED=0   GOOS=linux   GOARCH=amd64   go build   -trimpath   -ldflags="-w -s -extldflags '-static'   -X main.version=e1ff28e   -X main.commit=e1ff28e   -X main.date=2025-10-16T14:56:31Z"   -o manager   cmd/main.go
+2025-10-16T14:58:09.1689293Z #19 DONE 78.9s
+2025-10-16T14:58:09.3228352Z 
+2025-10-16T14:58:09.3229041Z #20 [stage-1 2/3] COPY --from=builder /workspace/manager .
+2025-10-16T14:58:09.3229598Z #20 DONE 0.1s
+2025-10-16T14:58:09.4752764Z 
+2025-10-16T14:58:09.4753313Z #21 exporting to image
+2025-10-16T14:58:09.4753712Z #21 exporting layers
+2025-10-16T14:58:10.0059358Z #21 exporting layers 0.7s done
+2025-10-16T14:58:10.0289919Z #21 writing image sha256:781af0de3ca90ebf357c0a417d84859fc0926621f7cb28c6f40c504b2cfb4897 done
+2025-10-16T14:58:10.0291105Z #21 naming to ghcr.io/helios-operator/helios-operator:ci-e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1 done
+2025-10-16T14:58:10.0291931Z #21 naming to helios.dev/helios-operator:latest done
+2025-10-16T14:58:10.0292368Z #21 DONE 0.7s
+2025-10-16T14:58:10.0376064Z ##[group]Run docker images | grep helios-operator
+2025-10-16T14:58:10.0376448Z [36;1mdocker images | grep helios-operator[0m
+2025-10-16T14:58:10.0411302Z shell: /usr/bin/bash -e {0}
+2025-10-16T14:58:10.0411518Z env:
+2025-10-16T14:58:10.0411677Z   GO_VERSION: 1.25.3
+2025-10-16T14:58:10.0411880Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:58:10.0412158Z ##[endgroup]
+2025-10-16T14:58:10.0601287Z ghcr.io/helios-operator/helios-operator   ci-e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1   781af0de3ca9   1 second ago   59MB
+2025-10-16T14:58:10.0602447Z helios.dev/helios-operator                latest                                        781af0de3ca9   1 second ago   59MB
+2025-10-16T14:58:10.0675141Z Post job cleanup.
+2025-10-16T14:58:10.3549480Z ##[group]Removing builder
+2025-10-16T14:58:10.4724230Z [command]/usr/bin/docker buildx rm builder-587f40ee-6316-4d1f-b3e3-5a6a3fb932b5
+2025-10-16T14:58:10.6076747Z builder-587f40ee-6316-4d1f-b3e3-5a6a3fb932b5 removed
+2025-10-16T14:58:10.6122656Z ##[endgroup]
+2025-10-16T14:58:10.6123841Z ##[group]Cleaning up certificates
+2025-10-16T14:58:10.6130757Z ##[endgroup]
+2025-10-16T14:58:10.6131314Z ##[group]Post cache
+2025-10-16T14:58:10.6133705Z State not set
+2025-10-16T14:58:10.6134588Z ##[endgroup]
+2025-10-16T14:58:10.6288793Z Post job cleanup.
+2025-10-16T14:58:10.7045919Z [command]/usr/bin/git version
+2025-10-16T14:58:10.7083335Z git version 2.51.0
+2025-10-16T14:58:10.7120128Z Temporarily overriding HOME='/home/runner/work/_temp/264cdb28-fd3b-4d1a-9aa4-c59864e5d8f4' before making global git config changes
+2025-10-16T14:58:10.7121337Z Adding repository directory to the temporary git global config as a safe directory
+2025-10-16T14:58:10.7125940Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:58:10.7162217Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-10-16T14:58:10.7195084Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-10-16T14:58:10.7421171Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-10-16T14:58:10.7444780Z http.https://github.com/.extraheader
+2025-10-16T14:58:10.7454616Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-10-16T14:58:10.7487412Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-10-16T14:58:10.7814696Z Cleaning up orphan processes

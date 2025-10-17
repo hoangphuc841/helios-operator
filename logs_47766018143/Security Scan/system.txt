@@ -1,0 +1,5 @@
+2025-10-16T14:58:50.1370000Z Requested labels: ubuntu-latest
+2025-10-16T14:58:50.1370000Z Job defined at: hoangphuc841/helios-operator/.github/workflows/ci.yaml@refs/pull/1/merge
+2025-10-16T14:58:50.1370000Z Waiting for a runner to pick up this job...
+2025-10-16T14:58:50.6270000Z Job is waiting for a hosted runner to come online.
+2025-10-16T14:58:50.6270000Z Job is about to start running on the hosted runner: GitHub Actions 1000000057

@@ -1,0 +1,220 @@
+{{- if .Values.rbac.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "helios-operator.fullname" . }}-manager-role
+  labels:
+    {{- include "helios-operator.labels" . | nindent 4 }}
+rules:
+# HeliosApp resources
+- apiGroups:
+  - platform.helios.io
+  resources:
+  - heliosapps
+  - heliosapps/status
+  - heliosapps/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+
+# Tekton Pipeline resources
+- apiGroups:
+  - tekton.dev
+  resources:
+  - pipelines
+  - pipelineruns
+  - tasks
+  - taskruns
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+
+# Tekton Trigger resources
+- apiGroups:
+  - triggers.tekton.dev
+  resources:
+  - eventlisteners
+  - triggerbindings
+  - triggertemplates
+  - triggerbindings/status
+  - eventlisteners/status
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+
+# ArgoCD Application resources
+- apiGroups:
+  - argoproj.io
+  resources:
+  - applications
+  - applications/status
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+
+# Core Kubernetes resources
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - persistentvolumeclaims
+  - services
+  - services/status
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - deployments/status
+  - replicasets
+  - replicasets/status
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+
+# ConfigMaps and Secrets
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+
+# Events
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+
+# Additional rules from values
+{{- with .Values.rbac.rules }}
+{{- toYaml . | nindent 0 }}
+{{- end }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "helios-operator.fullname" . }}-manager-rolebinding
+  labels:
+    {{- include "helios-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "helios-operator.fullname" . }}-manager-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "helios-operator.serviceAccountName" . }}
+  namespace: {{ include "helios-operator.namespace" . }}
+
+{{- if .Values.leaderElection.enabled }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "helios-operator.fullname" . }}-leader-election-role
+  labels:
+    {{- include "helios-operator.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - update
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "helios-operator.fullname" . }}-leader-election-rolebinding
+  labels:
+    {{- include "helios-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "helios-operator.fullname" . }}-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "helios-operator.serviceAccountName" . }}
+  namespace: {{ include "helios-operator.namespace" . }}
+{{- end }}
+
+{{- if .Values.metrics.enabled }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "helios-operator.fullname" . }}-metrics-reader
+  labels:
+    {{- include "helios-operator.labels" . | nindent 4 }}
+rules:
+- nonResourceURLs:
+  - "/metrics"
+  verbs:
+  - get
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "helios-operator.fullname" . }}-metrics-binding
+  labels:
+    {{- include "helios-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "helios-operator.fullname" . }}-metrics-reader
+subjects:
+- kind: ServiceAccount
+  name: {{ include "helios-operator.serviceAccountName" . }}
+  namespace: {{ include "helios-operator.namespace" . }}
+{{- end }}
+{{- end }}

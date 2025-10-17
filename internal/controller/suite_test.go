@@ -30,8 +30,14 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	log "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	// Tekton imports
+	tektonv1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
+	triggersv1beta1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
+
+	// Note: ArgoCD imports will be added later when compatibility issues are resolved
 
 	heliosappv1 "github.com/hoangphuc841/helios-operator/api/v1"
 	// +kubebuilder:scaffold:imports
@@ -53,7 +59,7 @@ func TestControllers(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
+	log.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
 	ctx, cancel = context.WithCancel(context.TODO())
 
@@ -67,8 +73,8 @@ var _ = BeforeSuite(func() {
 		// default path defined in controller-runtime which is /usr/local/kubebuilder/.
 		// Note that you must have the required binaries setup under the bin directory to perform
 		// the tests directly. When we run make test it will be setup and used automatically.
-		BinaryAssetsDirectory: filepath.Join("..", "..", "bin", "k8s",
-			fmt.Sprintf("1.31.0-%s-%s", runtime.GOOS, runtime.GOARCH)),
+		BinaryAssetsDirectory: filepath.Join("..", "..", "bin", "k8s", "k8s",
+			fmt.Sprintf("1.34.1-%s-%s", runtime.GOOS, runtime.GOARCH)),
 	}
 
 	var err error
@@ -79,6 +85,16 @@ var _ = BeforeSuite(func() {
 
 	err = heliosappv1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
+
+	// Add Tekton and ArgoCD schemes for testing
+	err = tektonv1.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = triggersv1beta1.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
+	// Note: ArgoCD scheme will be added when compatibility issues are resolved
+	// For now, we'll mock ArgoCD resources in tests
 
 	// +kubebuilder:scaffold:scheme
 

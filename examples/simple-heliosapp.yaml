@@ -1,0 +1,25 @@
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: simple-app
+  namespace: default
+spec:
+  # Source code repository
+  gitRepo: https://github.com/example/simple-app
+  gitBranch: main
+
+  # Container image configuration
+  imageRepo: my-registry.com/simple-app
+  port: 8080
+  replicas: 2
+
+  # Service account for Tekton pipelines
+  serviceAccount: simple-app-sa
+
+  # GitHub webhook secret
+  webhookSecret: github-webhook-secret
+
+  # GitOps repository configuration
+  gitopsRepo: https://github.com/example/simple-app-manifests
+  gitopsPath: apps/simple-app
+  gitopsBranch: main

@@ -1,0 +1,279 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  GO_VERSION: "1.25.3"
+  GOLANGCI_LINT_VERSION: "v2.5.0"
+  HELM_VERSION: "v3.19.0"
+  KUBECTL_VERSION: "v1.34.1"
+  GOTOOLCHAIN: local
+
+jobs:
+  # Fast parallel jobs that can run independently
+  lint:
+    name: Lint and Vet
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+          args: --timeout=5m --fast
+
+      - name: Check code formatting
+        run: |
+          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+            echo "The following files are not formatted:"
+            gofmt -s -l .
+            exit 1
+          fi
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install test dependencies
+        run: |
+          go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+          ENVTEST_ASSETS_DIR=$(setup-envtest use ${{ env.KUBECTL_VERSION }} --bin-dir $(pwd)/bin/k8s -p path)
+          echo "ENVTEST_ASSETS_DIR=$ENVTEST_ASSETS_DIR" >> $GITHUB_ENV
+
+      - name: Run unit tests
+        run: |
+          go test ./... -race -v -coverprofile=coverage.out -covermode=atomic
+
+      - name: Generate test coverage
+        run: |
+          go tool cover -html=coverage.out -o coverage.html
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage.out
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  build:
+    name: Build and Verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Generate code
+        run: make generate
+
+      - name: Generate manifests
+        run: make manifests
+
+      - name: Verify generated code
+        run: |
+          if ! git diff --quiet; then
+            echo "Generated code is out of date. Please run 'make generate' and 'make manifests'"
+            git diff
+            exit 1
+          fi
+
+      - name: Build operator binary
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o manager cmd/main.go
+
+      - name: Verify binary
+        run: |
+          ./manager --help || true
+          ls -la manager
+
+  helm-lint:
+    name: Helm Chart Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Lint Helm chart
+        run: helm lint helm/helios-operator/
+
+      - name: Template Helm chart
+        run: helm template helios-operator helm/helios-operator/ --dry-run
+
+      - name: Package Helm chart
+        run: |
+          mkdir -p dist
+          helm package helm/helios-operator/ --destination dist/
+
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: ${{ env.KUBECTL_VERSION }}
+
+      - name: Set up Minikube
+        uses: medyagh/setup-minikube@v0.0.20
+        with:
+          driver: docker
+          memory: 4096
+          cpus: 2
+
+      - name: Install dependencies
+        run: |
+          # Install cert-manager
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.1/cert-manager.yaml
+          kubectl wait --for=condition=ready pod -l app=cert-manager -n cert-manager --timeout=60s
+
+          # Install Tekton
+          kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+          kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
+
+          # Install ArgoCD
+          helm repo add argo https://argoproj.github.io/argo-helm
+          helm repo update
+          helm upgrade --install argocd argo/argo-cd --version 8.6.3 --namespace argocd --create-namespace --wait
+
+      - name: Run E2E tests
+        run: make test-e2e
+
+      - name: Collect logs on failure
+        if: failure()
+        run: |
+          kubectl get pods --all-namespaces
+          kubectl describe pods --all-namespaces | head -1000
+
+  # Only run on main branch pushes
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [lint, test, build, helm-lint, e2e-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            echo "changelog<<EOF" >> $GITHUB_OUTPUT
+            head -50 CHANGELOG.md >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "changelog=No changelog available" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: false

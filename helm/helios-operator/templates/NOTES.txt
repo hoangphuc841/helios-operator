@@ -1,0 +1,124 @@
+🎉 Helios Operator has been successfully deployed!
+
+## 📋 Post-Installation Checklist
+
+### 1. Verify Installation
+First, check that the operator is running:
+```bash
+kubectl get pods -n {{ .Values.namespace.name }} -l app.kubernetes.io/name={{ include "helios-operator.name" . }}
+kubectl get deployment -n {{ .Values.namespace.name }} {{ include "helios-operator.fullname" . }}
+```
+
+### 2. Verify CRD Installation
+Ensure the HeliosApp Custom Resource Definition is installed:
+```bash
+kubectl get crd heliosapps.platform.helios.io
+kubectl describe crd heliosapps.platform.helios.io
+```
+
+### 3. Check Operator Status
+Monitor the operator logs for any issues:
+```bash
+kubectl logs -n {{ .Values.namespace.name }} deployment/{{ include "helios-operator.fullname" . }} -f
+```
+
+### 4. Verify Dependencies
+{{- if .Values.tekton.enabled }}
+**Tekton Pipelines** (required for CI/CD):
+```bash
+kubectl get pods -n {{ .Values.tekton.namespace }} -l app=tekton-pipelines-controller
+kubectl get pods -n {{ .Values.tekton.namespace }} -l app=tekton-triggers-controller
+```
+{{- end }}
+
+{{- if .Values.argocd.enabled }}
+**ArgoCD** (required for GitOps):
+```bash
+kubectl get pods -n {{ .Values.argocd.namespace }} -l app.kubernetes.io/name=argocd-server
+# Get ArgoCD admin password:
+kubectl -n {{ .Values.argocd.namespace }} get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+```
+{{- end }}
+
+### 5. Create Your First HeliosApp
+Deploy a sample application to test the operator:
+
+```bash
+cat <<EOF | kubectl apply -f -
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: sample-app
+  namespace: default
+spec:
+  gitRepo: "https://github.com/your-org/your-app.git"
+  gitBranch: "main"
+  gitopsRepo: "https://github.com/your-org/your-gitops.git"
+  gitopsPath: "sample-app"
+  imageRepo: "docker.io/your-org/sample-app"
+  port: 80
+  replicas: 1
+  serviceAccount: "pipeline-sa"
+  webhookSecret: "github-webhook-secret"
+  # PVC will be created automatically if not specified
+EOF
+```
+
+### 6. Monitor Your Application
+Watch the application status:
+```bash
+kubectl get heliosapp sample-app -o yaml
+kubectl describe heliosapp sample-app
+```
+
+### 7. Access Services
+{{- if .Values.metrics.enabled }}
+**Metrics Endpoint**:
+```bash
+kubectl port-forward -n {{ .Values.namespace.name }} svc/{{ include "helios-operator.fullname" . }}-metrics 8443:8443
+# Visit: https://localhost:8443/metrics
+```
+{{- end }}
+
+{{- if .Values.webhook.enabled }}
+**Webhook Validation**: Enabled and will validate HeliosApp resources automatically.
+{{- end }}
+
+## 🔧 Configuration
+
+### Environment Variables
+The operator can be configured using environment variables:
+- `LOG_LEVEL`: Set logging level (debug, info, warn, error)
+- `METRICS_BIND_ADDRESS`: Metrics server address (default: :8443)
+- `HEALTH_PROBE_BIND_ADDRESS`: Health probe address (default: :8081)
+- `LEADER_ELECTION`: Enable leader election (default: true)
+
+### Feature Flags
+Configure features via Helm values:
+- `features.autoPipelineGeneration`: Auto-generate Tekton pipelines
+- `features.realTimeStatusUpdates`: Real-time status updates
+- `features.webhookValidation`: Webhook validation
+- `features.metricsCollection`: Metrics collection
+
+## 📚 Documentation
+
+- **User Guide**: [docs/user-guide/](https://github.com/hoangphuc841/helios-operator/tree/main/docs/user-guide)
+- **Developer Guide**: [docs/developer-guide/](https://github.com/hoangphuc841/helios-operator/tree/main/docs/developer-guide)
+- **API Reference**: [docs/reference/](https://github.com/hoangphuc841/helios-operator/tree/main/docs/reference)
+
+## 🆘 Troubleshooting
+
+### Common Issues
+1. **Operator not starting**: Check RBAC permissions and CRD installation
+2. **Pipelines not running**: Verify Tekton installation and service account permissions
+3. **ArgoCD sync issues**: Check GitOps repository access and ArgoCD configuration
+
+### Get Help
+- **GitHub Issues**: [Create an issue](https://github.com/hoangphuc841/helios-operator/issues)
+- **Documentation**: [Full documentation](https://github.com/hoangphuc841/helios-operator/tree/main/docs)
+
+---
+
+🚀 **Ready to deploy your applications with Helios Operator!**
+
+For more information, visit: https://github.com/hoangphuc841/helios-operator

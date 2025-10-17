@@ -1,0 +1,49 @@
+{{- if .Values.service.enabled | default true }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "helios-operator.fullname" . }}
+  namespace: {{ include "helios-operator.namespace" . }}
+  labels:
+    {{- include "helios-operator.labels" . | nindent 4 }}
+  annotations:
+    {{- include "helios-operator.annotations" . | nindent 4 }}
+    {{- with .Values.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - port: {{ .Values.service.port }}
+    targetPort: 8443
+    protocol: TCP
+    name: https
+  selector:
+    {{- include "helios-operator.selectorLabels" . | nindent 4 }}
+{{- end }}
+
+{{- if .Values.metrics.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "helios-operator.fullname" . }}-metrics
+  namespace: {{ include "helios-operator.namespace" . }}
+  labels:
+    {{- include "helios-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics
+  annotations:
+    {{- include "helios-operator.annotations" . | nindent 4 }}
+    {{- with .Values.metrics.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.metrics.service.type }}
+  ports:
+  - port: {{ .Values.metrics.service.port }}
+    targetPort: 8443
+    protocol: TCP
+    name: https
+  selector:
+    {{- include "helios-operator.selectorLabels" . | nindent 4 }}
+{{- end }}

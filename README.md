@@ -1,135 +1,199 @@
-# helios-operator
-// TODO(user): Add simple overview of use/purpose
+# 🚀 Helios Operator
 
-## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+> **Zero-Configuration GitOps Deployment for Kubernetes Applications**
 
-## Getting Started
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Go Version](https://img.shields.io/badge/go-1.25.3-blue.svg)](go.mod)
+[![Kubernetes](https://img.shields.io/badge/kubernetes-1.34.1-green.svg)](go.mod)
+[![Build Status](https://github.com/hoangphuc841/helios-operator/workflows/CI/badge.svg)](https://github.com/hoangphuc841/helios-operator/actions)
+[![Coverage](https://codecov.io/gh/hoangphuc841/helios-operator/branch/main/graph/badge.svg)](https://codecov.io/gh/hoangphuc841/helios-operator)
+[![Release](https://img.shields.io/github/v/release/hoangphuc841/helios-operator)](https://github.com/hoangphuc841/helios-operator/releases)
 
-### Prerequisites
-- go version v1.24.0+
-- docker version 17.03+.
-- kubectl version v1.11.3+.
-- Access to a Kubernetes v1.11.3+ cluster.
+Helios Operator is a Kubernetes operator that automates the complete application lifecycle from source code to production deployment using **Tekton Pipelines** and **ArgoCD**. Simply define your application once, and Helios handles the rest.
 
-### To Deploy on the cluster
-**Build and push your image to the location specified by `IMG`:**
+## ✨ **Why Helios?**
 
-```sh
-make docker-build docker-push IMG=<some-registry>/helios-operator:tag
+- 🎯 **Zero Configuration** - No need to know Tekton or ArgoCD internals
+- 🔄 **Automatic Pipeline Generation** - Pipelines created from templates
+- 📊 **Real-time Status Updates** - Kubernetes Watches for instant feedback
+- 🛡️ **Production Ready** - Built-in security, monitoring, and best practices
+- 🚀 **GitOps Native** - Pure GitOps workflow with ArgoCD
+
+## 🎬 **Quick Start (5 minutes)**
+
+### 1. Install Prerequisites
+
+```bash
+# Install Tekton Pipelines
+kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+
+# Install ArgoCD
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-**NOTE:** This image ought to be published in the personal registry you specified.
-And it is required to have access to pull the image from the working environment.
-Make sure you have the proper permission to the registry if the above commands don’t work.
+### 2. Install Helios Operator
 
-**Install the CRDs into the cluster:**
+```bash
+# Install via Helm
+helm repo add helios-operator https://hoangphuc841.github.io/helios-operator
+helm install helios-operator helios-operator/helios-operator
 
-```sh
-make install
+# Or install via kubectl
+kubectl apply -f https://raw.githubusercontent.com/hoangphuc841/helios-operator/main/config/default/kustomization.yaml
 ```
 
-**Deploy the Manager to the cluster with the image specified by `IMG`:**
+### 3. Create Your First Application
 
-```sh
-make deploy IMG=<some-registry>/helios-operator:tag
+```yaml
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: my-awesome-app
+  namespace: default
+spec:
+  gitRepo: "https://github.com/your-org/your-app.git"
+  imageRepo: "docker.io/your-org/my-awesome-app"
+  port: 80
+  replicas: 1
+  serviceAccount: "pipeline-sa"
+  webhookSecret: "github-webhook-secret"
+  pvcName: "my-awesome-app-pvc"
 ```
 
-> **NOTE**: If you encounter RBAC errors, you may need to grant yourself cluster-admin
-privileges or be logged in as admin.
+### 3. Watch the Magic Happen ✨
 
-**Create instances of your solution**
-You can apply the samples (examples) from the config/sample:
+```bash
+# Check your application status
+kubectl get heliosapp my-awesome-app
 
-```sh
-kubectl apply -k config/samples/
+# Watch the operator create resources
+kubectl get pipelines,eventlisteners,applications -A
 ```
 
->**NOTE**: Ensure that the samples has default values to test it out.
+**That's it!** Helios automatically:
 
-### To Uninstall
-**Delete the instances (CRs) from the cluster:**
+- ✅ Creates Tekton Pipeline (`my-awesome-app-pipeline`)
+- ✅ Sets up webhook triggers for Git events
+- ✅ Creates ArgoCD Application for GitOps deployment
+- ✅ Provides real-time status updates
 
-```sh
-kubectl delete -k config/samples/
+## 🌟 **Key Features**
+
+### 🎯 Zero-Configuration Pipeline Creation
+
+No more manual Pipeline management. Helios automatically generates Tekton Pipelines from templates based on your application name.
+
+### 🔄 Real-time Status Updates
+
+Built-in Kubernetes Watches provide instant feedback on:
+
+- ArgoCD Application sync status
+- Tekton PipelineRun build progress
+- Kubernetes Deployment health
+
+### 🛡️ Production-Ready Security
+
+- Pod Security Standards compliance
+- RBAC with least privilege access
+- Webhook validation for resource integrity
+- Structured logging with context
+
+### 📊 Comprehensive Monitoring
+
+- Prometheus metrics integration
+- ServiceMonitor support
+- Custom metrics for build success rates
+- Deployment health tracking
+
+## 📚 **Documentation**
+
+### 👥 **For Users**
+
+- **[Getting Started Guide](docs/user-guide/01-getting-started.md)** - Complete setup and first application
+- **[HeliosApp Reference](docs/user-guide/03-helios-app-spec.md)** - Detailed spec explanation
+- **[Troubleshooting](docs/user-guide/04-troubleshooting.md)** - Common issues and solutions
+
+### 👨‍💻 **For Developers**
+
+- **[Architecture Overview](docs/developer-guide/01-architecture.md)** - System design and components
+- **[Development Setup](docs/developer-guide/02-development-setup.md)** - Local development environment
+- **[Testing Guide](docs/developer-guide/03-testing.md)** - Unit, integration, and E2E tests
+
+### 📖 **Reference**
+
+- **[Helm Chart Values](docs/reference/helm-chart-values.md)** - Complete configuration reference
+- **[Prometheus Metrics](docs/reference/prometheus-metrics.md)** - Available metrics and monitoring
+
+**[📋 Full Documentation Index](docs/index.md)**
+
+## 🏗️ **Architecture**
+
+```mermaid
+graph TB
+    A[Developer] -->|Git Push| B[GitHub]
+    B -->|Webhook| C[Tekton EventListener]
+    C --> D[Tekton Pipeline]
+    D --> E[Docker Build & Push]
+    D --> F[Update GitOps Repo]
+    F --> G[ArgoCD Sync]
+    G --> H[Kubernetes Deployment]
+
+    I[Helios Operator] -->|Manages| C
+    I -->|Manages| G
+    I -->|Watches| H
+    I -->|Updates| J[HeliosApp Status]
 ```
 
-**Delete the APIs(CRDs) from the cluster:**
+## 🚀 **Production Deployment**
 
-```sh
-make uninstall
+### High Availability Setup
+
+```bash
+helm install helios-operator helios-operator/helios-operator \
+  --set replicaCount=3 \
+  --set podDisruptionBudget.enabled=true \
+  --set metrics.serviceMonitor.enabled=true
 ```
 
-**UnDeploy the controller from the cluster:**
+### Custom Configuration
 
-```sh
-make undeploy
+```bash
+helm install helios-operator helios-operator/helios-operator \
+  --set image.tag=latest \
+  --set features.autoPipelineGeneration=true \
+  --set webhook.enabled=true
 ```
 
-## Project Distribution
+## 🤝 **Contributing**
 
-Following the options to release and provide this solution to the users.
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-### By providing a bundle with all YAML files
+### Development Quick Start
 
-1. Build the installer for the image built and published in the registry:
+```bash
+# Clone the repository
+git clone https://github.com/hoangphuc841/helios-operator.git
+cd helios-operator
 
-```sh
-make build-installer IMG=<some-registry>/helios-operator:tag
+# Run tests
+make test
+
+# Build and deploy locally
+make docker-build IMG=helios-operator:latest
+make deploy IMG=helios-operator:latest
 ```
 
-**NOTE:** The makefile target mentioned above generates an 'install.yaml'
-file in the dist directory. This file contains all the resources built
-with Kustomize, which are necessary to install this project without its
-dependencies.
+## 📄 **License**
 
-2. Using the installer
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
-Users can just run 'kubectl apply -f <URL for YAML BUNDLE>' to install
-the project, i.e.:
+## 🙏 **Acknowledgments**
 
-```sh
-kubectl apply -f https://raw.githubusercontent.com/<org>/helios-operator/<tag or branch>/dist/install.yaml
-```
+- [Kubebuilder](https://kubebuilder.io/) - Kubernetes controller framework
+- [Tekton](https://tekton.dev/) - Kubernetes-native CI/CD
+- [ArgoCD](https://argoproj.github.io/cd/) - Declarative GitOps CD
 
-### By providing a Helm Chart
+---
 
-1. Build the chart using the optional helm plugin
-
-```sh
-operator-sdk edit --plugins=helm/v1-alpha
-```
-
-2. See that a chart was generated under 'dist/chart', and users
-can obtain this solution from there.
-
-**NOTE:** If you change the project, you need to update the Helm Chart
-using the same command above to sync the latest changes. Furthermore,
-if you create webhooks, you need to use the above command with
-the '--force' flag and manually ensure that any custom configuration
-previously added to 'dist/chart/values.yaml' or 'dist/chart/manager/manager.yaml'
-is manually re-applied afterwards.
-
-## Contributing
-// TODO(user): Add detailed information on how you would like others to contribute to this project
-
-**NOTE:** Run `make help` for more information on all potential `make` targets
-
-More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
-
-## License
-
-Copyright 2025.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
+**Ready to deploy?** Start with our [Getting Started Guide](docs/user-guide/01-getting-started.md) 🚀

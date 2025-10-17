@@ -1,0 +1,141 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: helios-operator-alerts
+  namespace: helios-operator-system
+  labels:
+    app.kubernetes.io/name: helios-operator
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: helios-operator
+spec:
+  groups:
+    - name: helios-operator
+      interval: 30s
+      rules:
+        # Operator Health Alerts
+        - alert: HeliosOperatorDown
+          expr: up{job="helios-operator-metrics"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: operator
+          annotations:
+            summary: "Helios Operator is down"
+            description: "The Helios Operator has been down for more than 5 minutes."
+
+        - alert: HeliosOperatorHighErrorRate
+          expr: |
+            rate(controller_runtime_reconcile_errors_total{controller="heliosapp"}[5m]) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+            component: operator
+          annotations:
+            summary: "High error rate in Helios Operator"
+            description: "The Helios Operator is experiencing a high reconciliation error rate ({{ $value }} errors/sec)."
+
+        # Reconciliation Performance Alerts
+        - alert: HeliosReconciliationSlow
+          expr: |
+            histogram_quantile(0.99, rate(controller_runtime_reconcile_time_seconds_bucket{controller="heliosapp"}[5m])) > 60
+          for: 15m
+          labels:
+            severity: warning
+            component: operator
+          annotations:
+            summary: "Slow reconciliation in Helios Operator"
+            description: "99th percentile reconciliation time is {{ $value }}s, which is above the 60s threshold."
+
+        - alert: HeliosReconciliationQueueDepth
+          expr: |
+            workqueue_depth{name="heliosapp"} > 100
+          for: 10m
+          labels:
+            severity: warning
+            component: operator
+          annotations:
+            summary: "High reconciliation queue depth"
+            description: "Helios Operator work queue has {{ $value }} items pending for more than 10 minutes."
+
+        # Resource Management Alerts
+        - alert: HeliosOperatorHighMemoryUsage
+          expr: |
+            container_memory_working_set_bytes{pod=~"helios-operator-.*"} /
+            container_spec_memory_limit_bytes{pod=~"helios-operator-.*"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            component: operator
+          annotations:
+            summary: "High memory usage in Helios Operator"
+            description: "Helios Operator pod {{ $labels.pod }} is using {{ $value | humanizePercentage }} of its memory limit."
+
+        - alert: HeliosOperatorHighCPUUsage
+          expr: |
+            rate(container_cpu_usage_seconds_total{pod=~"helios-operator-.*"}[5m]) > 0.8
+          for: 15m
+          labels:
+            severity: warning
+            component: operator
+          annotations:
+            summary: "High CPU usage in Helios Operator"
+            description: "Helios Operator pod {{ $labels.pod }} is using {{ $value | humanizePercentage }} CPU."
+
+        # HeliosApp Status Alerts
+        - alert: HeliosAppPipelineFailures
+          expr: |
+            increase(helios_pipeline_runs_failed_total[1h]) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: pipeline
+          annotations:
+            summary: "Multiple HeliosApp pipeline failures"
+            description: "{{ $value }} pipeline failures in the last hour for HeliosApp {{ $labels.namespace }}/{{ $labels.name }}."
+
+        - alert: HeliosAppNotReady
+          expr: |
+            helios_app_ready == 0
+          for: 30m
+          labels:
+            severity: warning
+            component: application
+          annotations:
+            summary: "HeliosApp not ready"
+            description: "HeliosApp {{ $labels.namespace }}/{{ $labels.name }} has been in non-ready state for 30 minutes."
+
+        # Leader Election Alerts
+        - alert: HeliosLeaderElectionFailure
+          expr: |
+            rate(leader_election_master_status{name="helios-operator"}[5m]) < 0.9
+          for: 5m
+          labels:
+            severity: critical
+            component: operator
+          annotations:
+            summary: "Leader election is unstable"
+            description: "Helios Operator leader election is showing instability with {{ $value | humanizePercentage }} availability."
+
+        # Webhook Alerts
+        - alert: HeliosWebhookHighLatency
+          expr: |
+            histogram_quantile(0.99, rate(webhook_request_duration_seconds_bucket{webhook="heliosapp"}[5m])) > 5
+          for: 10m
+          labels:
+            severity: warning
+            component: webhook
+          annotations:
+            summary: "High webhook latency"
+            description: "99th percentile webhook latency is {{ $value }}s, which may impact user experience."
+
+        - alert: HeliosWebhookFailures
+          expr: |
+            rate(webhook_request_total{webhook="heliosapp", result="error"}[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            component: webhook
+          annotations:
+            summary: "High webhook failure rate"
+            description: "Webhook is experiencing {{ $value }} failures per second."

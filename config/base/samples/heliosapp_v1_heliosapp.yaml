@@ -1,0 +1,24 @@
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: helios
+  namespace: helios
+spec:
+  # Source code repository (contains your application code)
+  gitRepo: "https://github.com/your-username/your-app.git"
+  gitBranch: "main"
+
+  # GitOps repository (empty, Helios will automatically create manifests)
+  gitopsRepo: "https://github.com/your-username/your-gitops.git"
+  gitopsPath: "my-first-app" # Directory in GitOps repo
+  gitopsBranch: "main"
+
+  # Container image configuration
+  imageRepo: "docker.io/your-username/my-first-app"
+  port: 80
+  replicas: 1
+
+  # Pipeline configuration
+  serviceAccount: "pipeline-sa"
+  webhookSecret: "github-webhook-secret"
+  pvcName: "my-app-pvc"

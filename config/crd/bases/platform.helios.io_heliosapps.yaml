@@ -1,0 +1,317 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.19.0
+  name: heliosapps.platform.helios.io
+spec:
+  group: platform.helios.io
+  names:
+    kind: HeliosApp
+    listKind: HeliosAppList
+    plural: heliosapps
+    singular: heliosapp
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .spec.gitRepo
+      name: Git Repo
+      type: string
+    - jsonPath: .spec.imageRepo
+      name: Image Repo
+      type: string
+    - jsonPath: .spec.port
+      name: Port
+      type: integer
+    - jsonPath: .spec.replicas
+      name: Replicas
+      type: integer
+    - jsonPath: .status.conditions[?(@.type=="Ready")].status
+      name: Status
+      type: string
+    - jsonPath: .status.conditions[?(@.type=="Synced")].status
+      name: Synced
+      type: string
+    - jsonPath: .status.conditions[?(@.type=="BuildSucceeded")].status
+      name: Build
+      type: string
+    - jsonPath: .status.conditions[?(@.type=="Ready")].message
+      name: Message
+      type: string
+    name: v1
+    schema:
+      openAPIV3Schema:
+        description: "HeliosApp represents a complete GitOps-enabled application with
+          automated CI/CD.\n\nHeliosApp automates the entire application lifecycle
+          from source code to production deployment:\n1. Monitors source code repository
+          for changes via GitHub webhooks\n2. Triggers Tekton pipelines to build and
+          push container images\n3. Updates GitOps repository with new image versions\n4.
+          ArgoCD automatically syncs changes to the cluster\n5. Provides comprehensive
+          status monitoring and health checks\n\nThe operator creates and manages
+          the following resources:\n- Tekton Pipeline, EventListener, TriggerBinding,
+          and TriggerTemplate\n- ArgoCD Application for GitOps synchronization\n-
+          PersistentVolumeClaim for build workspace (if not specified)\n\nExample
+          usage:\n\n\tkubectl apply -f - <<EOF\n\tapiVersion: platform.helios.io/v1\n\tkind:
+          HeliosApp\n\tmetadata:\n\t  name: my-app\n\t  namespace: default\n\tspec:\n\t
+          \ gitRepo: https://github.com/example/my-app\n\t  imageRepo: my-registry.com/my-app\n\t
+          \ port: 8080\n\t  serviceAccount: my-app-sa\n\t  webhookSecret: github-webhook-secret\n\t
+          \ gitopsRepo: https://github.com/example/my-app-manifests\n\tEOF"
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: Spec defines the desired state of the HeliosApp
+            properties:
+              gitBranch:
+                default: main
+                description: |-
+                  GitBranch specifies the branch or tag to use when cloning the source repository.
+                  Defaults to "main" if not specified.
+                type: string
+              gitRepo:
+                description: |-
+                  GitRepo is the URL of the source code repository containing the application.
+                  This repository will be cloned by Tekton pipelines for building container images.
+                  Example: "https://github.com/example/my-app"
+                pattern: ^https?://
+                type: string
+              gitopsBranch:
+                default: main
+                description: |-
+                  GitopsBranch specifies the branch or tag to monitor in the GitOps repository.
+                  Defaults to "main" if not specified.
+                type: string
+              gitopsPath:
+                default: ""
+                description: |-
+                  GitopsPath specifies the path within the GitOps repository containing the application manifests.
+                  Defaults to the HeliosApp name if not specified.
+                  Example: "apps/my-app" or "k8s/production/my-app"
+                type: string
+              gitopsRepo:
+                description: |-
+                  GitopsRepo is the URL of the GitOps repository containing deployment manifests.
+                  ArgoCD will monitor this repository for changes and sync them to the cluster.
+                  Example: "https://github.com/example/my-app-manifests"
+                pattern: ^https?://
+                type: string
+              imageRepo:
+                description: |-
+                  ImageRepo is the container registry repository where built images will be pushed.
+                  Images will be tagged with the git commit SHA for traceability.
+                  Example: "my-registry.com/my-app"
+                type: string
+              port:
+                description: |-
+                  Port specifies the port that the application listens on.
+                  This is used for health checks and service configuration.
+                format: int32
+                maximum: 65535
+                minimum: 1
+                type: integer
+              pvcName:
+                description: |-
+                  PVCName optionally specifies an existing PersistentVolumeClaim for the pipeline workspace.
+                  If not provided, a PVC will be automatically created with a default size of 1Gi.
+                  The automatically created PVC will be named: <helios-app-name>-workspace
+                type: string
+              replicas:
+                default: 1
+                description: |-
+                  Replicas defines the desired number of application replicas.
+                  Defaults to 1 if not specified.
+                format: int32
+                minimum: 0
+                type: integer
+              serviceAccount:
+                description: |-
+                  ServiceAccount is the Kubernetes ServiceAccount that Tekton PipelineRuns will use.
+                  This ServiceAccount must have permissions to push images to the specified ImageRepo
+                  and access any required secrets for the build process.
+                type: string
+              webhookSecret:
+                description: |-
+                  WebhookSecret is the name of a Kubernetes Secret containing the GitHub webhook secret.
+                  This secret is used to validate incoming webhook payloads from GitHub.
+                  The secret should contain a key named "webhook-secret" with the secret value.
+                type: string
+            required:
+            - gitRepo
+            - gitopsRepo
+            - imageRepo
+            - port
+            - serviceAccount
+            - webhookSecret
+            type: object
+          status:
+            description: Status defines the observed state of the HeliosApp
+            properties:
+              buildStatus:
+                description: 'Current build status: "Running", "Succeeded", "Failed",
+                  "Unknown"'
+                type: string
+              buildVersion:
+                description: Image version from the last successful build
+                type: string
+              conditions:
+                description: |-
+                  Conditions represent the latest available observations of an object's state.
+                  These follow the standard Kubernetes condition pattern and include:
+                  - Ready: Overall application health status
+                  - Synced: ArgoCD synchronization status
+                  - BuildSucceeded: Build pipeline execution status
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              currentPipelineRun:
+                description: Name of the current/last PipelineRun
+                type: string
+              deployedVersion:
+                description: |-
+                  DeployedVersion is the image tag/digest of the version currently running and healthy in the cluster.
+                  This field is updated when ArgoCD successfully syncs a new version to the cluster.
+                  Example: "sha256:abc123..." or "v1.2.3"
+                type: string
+              deploymentHealth:
+                description: 'Overall deployment health: "Healthy", "Progressing",
+                  "Degraded", "Unknown"'
+                type: string
+              desiredReplicas:
+                description: Total desired replicas
+                format: int32
+                type: integer
+              lastAppliedRevision:
+                description: |-
+                  LastAppliedRevision is the git commit SHA that was last successfully synced by ArgoCD.
+                  This provides traceability back to the specific commit in the GitOps repository.
+                  Example: "abc123def456..."
+                type: string
+              lastBuild:
+                description: |-
+                  LastBuild contains information about the most recent Tekton PipelineRun execution.
+                  This includes build status, timing, and the resulting image version.
+                properties:
+                  finishedAt:
+                    description: |-
+                      FinishedAt is the timestamp when the build pipeline completed execution.
+                      This field is only populated when the build reaches a final state (Succeeded or Failed).
+                    format: date-time
+                    type: string
+                  pipelineRunName:
+                    description: |-
+                      PipelineRunName is the name of the Tekton PipelineRun that executed this build.
+                      This can be used to query detailed logs and information about the build.
+                      Example: "my-app-pipelinerun-abc123"
+                    type: string
+                  resultingVersion:
+                    description: |-
+                      ResultingVersion is the image tag or digest of the container image produced by this build.
+                      This typically corresponds to the git commit SHA or a semantic version tag.
+                      Example: "sha256:abc123..." or "v1.2.3"
+                    type: string
+                  startedAt:
+                    description: StartedAt is the timestamp when the build pipeline
+                      started execution.
+                    format: date-time
+                    type: string
+                  state:
+                    description: |-
+                      State indicates the current status of the build pipeline execution.
+                      Possible values: "Succeeded", "Failed", "Running", "Unknown"
+                    type: string
+                type: object
+              lastBuildTime:
+                description: Timestamp of the last build attempt
+                format: date-time
+                type: string
+              lastHealthyTime:
+                description: Timestamp when deployment last became healthy
+                format: date-time
+                type: string
+              readyReplicas:
+                description: Number of ready replicas
+                format: int32
+                type: integer
+              webhookURL:
+                description: |-
+                  WebhookURL is the publicly accessible URL for the Tekton EventListener.
+                  This URL should be configured as a webhook in your Git repository to trigger builds.
+                  Example: "https://el-helios-listener.default.svc.cluster.local:8080"
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

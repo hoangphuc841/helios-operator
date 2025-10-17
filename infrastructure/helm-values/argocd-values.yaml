@@ -1,0 +1,103 @@
+# ArgoCD Helm Values for Helios Operator
+# Optimized for local Minikube development
+
+## Server Configuration
+server:
+  service:
+    type: ClusterIP
+
+  # Ingress configuration for local access
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    hosts:
+      - argocd.local
+    tls:
+      - secretName: argocd-server-tls
+        hosts:
+          - argocd.local
+
+  # Resource limits for local development
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+## Controller Configuration
+controller:
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+## Repo Server Configuration
+repoServer:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+## Redis Configuration
+redis:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+## ApplicationSet Controller
+applicationSet:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+## Notifications Controller
+notifications:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+## Global Configuration
+configs:
+  params:
+    # Allow insecure mode for easier local development
+    server.insecure: true
+
+  # Repository credentials (add your private repos here if needed)
+  repositories:
+    {}
+    # Example:
+    # my-private-repo:
+    #   url: https://github.com/private/repo.git
+    #   type: git
+    #   username: your-username
+    #   password: your-token
+
+## RBAC Configuration
+# Customize RBAC policies if needed
+rbac:
+  policy.default: role:readonly
+  policy.csv: |
+    g, admins, role:admin

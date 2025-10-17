@@ -1,0 +1,35 @@
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: production-app
+  namespace: production
+  labels:
+    app.kubernetes.io/name: production-app
+    app.kubernetes.io/version: "1.0.0"
+    environment: production
+  annotations:
+    helios.io/description: "Production application with full GitOps workflow"
+    helios.io/team: "platform-team"
+spec:
+  # Source code repository
+  gitRepo: https://github.com/company/production-app
+  gitBranch: main
+
+  # Container image configuration
+  imageRepo: company-registry.com/production-app
+  port: 8080
+  replicas: 5
+
+  # Service account for Tekton pipelines
+  serviceAccount: production-app-sa
+
+  # GitHub webhook secret
+  webhookSecret: production-github-webhook-secret
+
+  # Custom PVC for larger builds
+  pvcName: production-app-workspace
+
+  # GitOps repository configuration
+  gitopsRepo: https://github.com/company/production-app-manifests
+  gitopsPath: production/apps/production-app
+  gitopsBranch: main

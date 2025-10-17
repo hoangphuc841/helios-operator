@@ -1,0 +1,300 @@
+﻿2025-10-16T14:56:23.5210540Z Current runner version: '2.328.0'
+2025-10-16T14:56:23.5233800Z ##[group]Runner Image Provisioner
+2025-10-16T14:56:23.5234665Z Hosted Compute Agent
+2025-10-16T14:56:23.5235239Z Version: 20250912.392
+2025-10-16T14:56:23.5235895Z Commit: d921fda672a98b64f4f82364647e2f10b2267d0b
+2025-10-16T14:56:23.5236599Z Build Date: 2025-09-12T15:23:14Z
+2025-10-16T14:56:23.5237156Z ##[endgroup]
+2025-10-16T14:56:23.5237764Z ##[group]Operating System
+2025-10-16T14:56:23.5238301Z Ubuntu
+2025-10-16T14:56:23.5238786Z 24.04.3
+2025-10-16T14:56:23.5239275Z LTS
+2025-10-16T14:56:23.5239897Z ##[endgroup]
+2025-10-16T14:56:23.5240528Z ##[group]Runner Image
+2025-10-16T14:56:23.5241179Z Image: ubuntu-24.04
+2025-10-16T14:56:23.5241711Z Version: 20250929.60.1
+2025-10-16T14:56:23.5242685Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250929.60/images/ubuntu/Ubuntu2404-Readme.md
+2025-10-16T14:56:23.5244297Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250929.60
+2025-10-16T14:56:23.5245294Z ##[endgroup]
+2025-10-16T14:56:23.5246404Z ##[group]GITHUB_TOKEN Permissions
+2025-10-16T14:56:23.5248453Z Contents: read
+2025-10-16T14:56:23.5248970Z Metadata: read
+2025-10-16T14:56:23.5249580Z Packages: read
+2025-10-16T14:56:23.5250384Z ##[endgroup]
+2025-10-16T14:56:23.5253078Z Secret source: Actions
+2025-10-16T14:56:23.5254128Z Prepare workflow directory
+2025-10-16T14:56:23.5626234Z Prepare all required actions
+2025-10-16T14:56:23.5663325Z Getting action download info
+2025-10-16T14:56:23.9480750Z Download action repository 'actions/checkout@v5' (SHA:08c6903cd8c0fde910a37f88322edcfb5dd907a8)
+2025-10-16T14:56:24.0942299Z Download action repository 'actions/setup-go@v6' (SHA:44694675825211faa026b3c33043df3e48a5fa00)
+2025-10-16T14:56:24.3979478Z Download action repository 'securego/gosec@master' (SHA:0adab9d9bee15a7d79feeddb2998961c97dd9c19)
+2025-10-16T14:56:24.7079957Z Download action repository 'github/codeql-action@v4' (SHA:f443b600d91635bebf5b0d9ebc620189c0d6fba5)
+2025-10-16T14:56:25.3699472Z Complete job name: Security Scan
+2025-10-16T14:56:25.4183219Z ##[group]Pull down action image 'securego/gosec:2.22.10'
+2025-10-16T14:56:25.4237003Z ##[command]/usr/bin/docker pull securego/gosec:2.22.10
+2025-10-16T14:56:25.7496746Z 2.22.10: Pulling from securego/gosec
+2025-10-16T14:56:25.8125046Z 2d35ebdb57d9: Pulling fs layer
+2025-10-16T14:56:25.8127538Z 85e8836fcdb2: Pulling fs layer
+2025-10-16T14:56:25.8128896Z 91631faa732a: Pulling fs layer
+2025-10-16T14:56:25.8130245Z f3f5ae8826fa: Pulling fs layer
+2025-10-16T14:56:25.8131350Z 4f4fb700ef54: Pulling fs layer
+2025-10-16T14:56:25.8132586Z 6e4f1560c365: Pulling fs layer
+2025-10-16T14:56:25.8133693Z 7613020ea08d: Pulling fs layer
+2025-10-16T14:56:25.8134751Z 4013a74a7a98: Pulling fs layer
+2025-10-16T14:56:25.8135647Z 7613020ea08d: Waiting
+2025-10-16T14:56:25.8136474Z 6e4f1560c365: Waiting
+2025-10-16T14:56:25.8137287Z 4013a74a7a98: Waiting
+2025-10-16T14:56:25.8138088Z f3f5ae8826fa: Waiting
+2025-10-16T14:56:25.8138882Z 4f4fb700ef54: Waiting
+2025-10-16T14:56:25.9587904Z 85e8836fcdb2: Download complete
+2025-10-16T14:56:25.9612905Z 2d35ebdb57d9: Verifying Checksum
+2025-10-16T14:56:25.9614641Z 2d35ebdb57d9: Download complete
+2025-10-16T14:56:26.0538746Z f3f5ae8826fa: Verifying Checksum
+2025-10-16T14:56:26.0541443Z f3f5ae8826fa: Download complete
+2025-10-16T14:56:26.0579556Z 4f4fb700ef54: Verifying Checksum
+2025-10-16T14:56:26.0582803Z 4f4fb700ef54: Download complete
+2025-10-16T14:56:26.0756516Z 2d35ebdb57d9: Pull complete
+2025-10-16T14:56:26.3386666Z 7613020ea08d: Verifying Checksum
+2025-10-16T14:56:26.3392270Z 7613020ea08d: Download complete
+2025-10-16T14:56:26.4368743Z 4013a74a7a98: Verifying Checksum
+2025-10-16T14:56:26.4371811Z 4013a74a7a98: Download complete
+2025-10-16T14:56:26.7364245Z 85e8836fcdb2: Pull complete
+2025-10-16T14:56:26.8230376Z 91631faa732a: Verifying Checksum
+2025-10-16T14:56:26.8231083Z 91631faa732a: Download complete
+2025-10-16T14:56:26.8465251Z 6e4f1560c365: Verifying Checksum
+2025-10-16T14:56:26.8471984Z 6e4f1560c365: Download complete
+2025-10-16T14:56:31.5391327Z 91631faa732a: Pull complete
+2025-10-16T14:56:31.5502687Z f3f5ae8826fa: Pull complete
+2025-10-16T14:56:31.5600455Z 4f4fb700ef54: Pull complete
+2025-10-16T14:56:32.9071624Z 6e4f1560c365: Pull complete
+2025-10-16T14:56:33.0253823Z 7613020ea08d: Pull complete
+2025-10-16T14:56:33.0373075Z 4013a74a7a98: Pull complete
+2025-10-16T14:56:33.0413896Z Digest: sha256:c8852d609f9af551387555a81808a3bca8d172629b124fab0d83c937cabc2f3d
+2025-10-16T14:56:33.0428878Z Status: Downloaded newer image for securego/gosec:2.22.10
+2025-10-16T14:56:33.0441011Z docker.io/securego/gosec:2.22.10
+2025-10-16T14:56:33.0463713Z ##[endgroup]
+2025-10-16T14:56:33.0717727Z ##[group]Run actions/checkout@v5
+2025-10-16T14:56:33.0718300Z with:
+2025-10-16T14:56:33.0718532Z   repository: hoangphuc841/helios-operator
+2025-10-16T14:56:33.0718974Z   token: ***
+2025-10-16T14:56:33.0719222Z   ssh-strict: true
+2025-10-16T14:56:33.0719455Z   ssh-user: git
+2025-10-16T14:56:33.0719657Z   persist-credentials: true
+2025-10-16T14:56:33.0720186Z   clean: true
+2025-10-16T14:56:33.0720405Z   sparse-checkout-cone-mode: true
+2025-10-16T14:56:33.0720643Z   fetch-depth: 1
+2025-10-16T14:56:33.0720829Z   fetch-tags: false
+2025-10-16T14:56:33.0721010Z   show-progress: true
+2025-10-16T14:56:33.0721188Z   lfs: false
+2025-10-16T14:56:33.0721359Z   submodules: false
+2025-10-16T14:56:33.0721539Z   set-safe-directory: true
+2025-10-16T14:56:33.0722040Z env:
+2025-10-16T14:56:33.0722220Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:33.0722424Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:33.0722645Z ##[endgroup]
+2025-10-16T14:56:33.1632175Z Syncing repository: hoangphuc841/helios-operator
+2025-10-16T14:56:33.1633518Z ##[group]Getting Git version info
+2025-10-16T14:56:33.1633984Z Working directory is '/home/runner/work/helios-operator/helios-operator'
+2025-10-16T14:56:33.1634726Z [command]/usr/bin/git version
+2025-10-16T14:56:33.1708189Z git version 2.51.0
+2025-10-16T14:56:33.1727804Z ##[endgroup]
+2025-10-16T14:56:33.1742097Z Temporarily overriding HOME='/home/runner/work/_temp/8dcd3dc3-1d65-4d0c-a53a-3619c9f52f9c' before making global git config changes
+2025-10-16T14:56:33.1743354Z Adding repository directory to the temporary git global config as a safe directory
+2025-10-16T14:56:33.1746905Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:56:33.1793376Z Deleting the contents of '/home/runner/work/helios-operator/helios-operator'
+2025-10-16T14:56:33.1796669Z ##[group]Initializing the repository
+2025-10-16T14:56:33.1801211Z [command]/usr/bin/git init /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:56:33.1946531Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-10-16T14:56:33.1947384Z hint: is subject to change. To configure the initial branch name to use in all
+2025-10-16T14:56:33.1948172Z hint: of your new repositories, which will suppress this warning, call:
+2025-10-16T14:56:33.1948747Z hint:
+2025-10-16T14:56:33.1949161Z hint: 	git config --global init.defaultBranch <name>
+2025-10-16T14:56:33.1949571Z hint:
+2025-10-16T14:56:33.1950070Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-10-16T14:56:33.1950607Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-10-16T14:56:33.1950998Z hint:
+2025-10-16T14:56:33.1951236Z hint: 	git branch -m <name>
+2025-10-16T14:56:33.1951468Z hint:
+2025-10-16T14:56:33.1951848Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2025-10-16T14:56:33.1952837Z Initialized empty Git repository in /home/runner/work/helios-operator/helios-operator/.git/
+2025-10-16T14:56:33.1964433Z [command]/usr/bin/git remote add origin https://github.com/hoangphuc841/helios-operator
+2025-10-16T14:56:33.2002538Z ##[endgroup]
+2025-10-16T14:56:33.2003188Z ##[group]Disabling automatic garbage collection
+2025-10-16T14:56:33.2007634Z [command]/usr/bin/git config --local gc.auto 0
+2025-10-16T14:56:33.2035257Z ##[endgroup]
+2025-10-16T14:56:33.2035937Z ##[group]Setting up auth
+2025-10-16T14:56:33.2042788Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-10-16T14:56:33.2072255Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-10-16T14:56:33.2431487Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-10-16T14:56:33.2462859Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-10-16T14:56:33.2681417Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-10-16T14:56:33.2714784Z ##[endgroup]
+2025-10-16T14:56:33.2715541Z ##[group]Fetching the repository
+2025-10-16T14:56:33.2724357Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1:refs/remotes/pull/1/merge
+2025-10-16T14:56:33.5549518Z From https://github.com/hoangphuc841/helios-operator
+2025-10-16T14:56:33.5551047Z  * [new ref]         e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1 -> pull/1/merge
+2025-10-16T14:56:33.5584740Z ##[endgroup]
+2025-10-16T14:56:33.5585352Z ##[group]Determining the checkout info
+2025-10-16T14:56:33.5586492Z ##[endgroup]
+2025-10-16T14:56:33.5592254Z [command]/usr/bin/git sparse-checkout disable
+2025-10-16T14:56:33.5635001Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-10-16T14:56:33.5660921Z ##[group]Checking out the ref
+2025-10-16T14:56:33.5666318Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/1/merge
+2025-10-16T14:56:33.5786886Z Note: switching to 'refs/remotes/pull/1/merge'.
+2025-10-16T14:56:33.5787636Z 
+2025-10-16T14:56:33.5788330Z You are in 'detached HEAD' state. You can look around, make experimental
+2025-10-16T14:56:33.5789432Z changes and commit them, and you can discard any commits you make in this
+2025-10-16T14:56:33.5790692Z state without impacting any branches by switching back to a branch.
+2025-10-16T14:56:33.5792433Z 
+2025-10-16T14:56:33.5792777Z If you want to create a new branch to retain commits you create, you may
+2025-10-16T14:56:33.5793516Z do so (now or later) by using -c with the switch command. Example:
+2025-10-16T14:56:33.5794000Z 
+2025-10-16T14:56:33.5794234Z   git switch -c <new-branch-name>
+2025-10-16T14:56:33.5794590Z 
+2025-10-16T14:56:33.5794861Z Or undo this operation with:
+2025-10-16T14:56:33.5795234Z 
+2025-10-16T14:56:33.5801327Z   git switch -
+2025-10-16T14:56:33.5801655Z 
+2025-10-16T14:56:33.5802060Z Turn off this advice by setting config variable advice.detachedHead to false
+2025-10-16T14:56:33.5802621Z 
+2025-10-16T14:56:33.5803246Z HEAD is now at e1ff28e Merge ff6f498efdf5599219b5f62fbf20e6c98a1c02df into ed87fb28aec8054c283f32b91578ac0ec021d6ef
+2025-10-16T14:56:33.5805106Z ##[endgroup]
+2025-10-16T14:56:33.5834918Z [command]/usr/bin/git log -1 --format=%H
+2025-10-16T14:56:33.5857505Z e1ff28e148b3962a1c3e6b7ef34cd95ac33e53d1
+2025-10-16T14:56:33.6118889Z ##[group]Run actions/setup-go@v6
+2025-10-16T14:56:33.6119160Z with:
+2025-10-16T14:56:33.6119337Z   go-version: 1.25.3
+2025-10-16T14:56:33.6119531Z   check-latest: false
+2025-10-16T14:56:33.6120022Z   token: ***
+2025-10-16T14:56:33.6120201Z   cache: true
+2025-10-16T14:56:33.6120363Z env:
+2025-10-16T14:56:33.6120521Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:33.6120722Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:33.6120937Z ##[endgroup]
+2025-10-16T14:56:33.7723386Z Setup go version spec 1.25.3
+2025-10-16T14:56:33.7748130Z Attempting to download 1.25.3...
+2025-10-16T14:56:34.1882610Z matching 1.25.3...
+2025-10-16T14:56:34.1910449Z Acquiring 1.25.3 from https://github.com/actions/go-versions/releases/download/1.25.3-18483679098/go-1.25.3-linux-x64.tar.gz
+2025-10-16T14:56:34.6423267Z Extracting Go...
+2025-10-16T14:56:34.6533809Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/089b0707-3cce-402c-9906-9fdba4e245e3 -f /home/runner/work/_temp/65524307-410c-434e-a4e4-b50b3697d514
+2025-10-16T14:56:36.0769465Z Successfully extracted go to /home/runner/work/_temp/089b0707-3cce-402c-9906-9fdba4e245e3
+2025-10-16T14:56:36.0770347Z Adding to the cache ...
+2025-10-16T14:56:40.6122787Z Successfully cached go to /opt/hostedtoolcache/go/1.25.3/x64
+2025-10-16T14:56:40.6123958Z Added go to the path
+2025-10-16T14:56:40.6126926Z Successfully set up Go version 1.25.3
+2025-10-16T14:56:40.6333883Z [command]/opt/hostedtoolcache/go/1.25.3/x64/bin/go env GOMODCACHE
+2025-10-16T14:56:40.6362060Z [command]/opt/hostedtoolcache/go/1.25.3/x64/bin/go env GOCACHE
+2025-10-16T14:56:40.6391513Z /home/runner/go/pkg/mod
+2025-10-16T14:56:40.6406862Z /home/runner/.cache/go-build
+2025-10-16T14:56:40.7073668Z Cache is not found
+2025-10-16T14:56:40.7090991Z go version go1.25.3 linux/amd64
+2025-10-16T14:56:40.7091179Z 
+2025-10-16T14:56:40.7091462Z ##[group]go env
+2025-10-16T14:56:40.8492682Z AR='ar'
+2025-10-16T14:56:40.8493007Z CC='gcc'
+2025-10-16T14:56:40.8493330Z CGO_CFLAGS='-O2 -g'
+2025-10-16T14:56:40.8493682Z CGO_CPPFLAGS=''
+2025-10-16T14:56:40.8493925Z CGO_CXXFLAGS='-O2 -g'
+2025-10-16T14:56:40.8494126Z CGO_ENABLED='1'
+2025-10-16T14:56:40.8494311Z CGO_FFLAGS='-O2 -g'
+2025-10-16T14:56:40.8494514Z CGO_LDFLAGS='-O2 -g'
+2025-10-16T14:56:40.8494695Z CXX='g++'
+2025-10-16T14:56:40.8494866Z GCCGO='gccgo'
+2025-10-16T14:56:40.8495040Z GO111MODULE=''
+2025-10-16T14:56:40.8495205Z GOAMD64='v1'
+2025-10-16T14:56:40.8495370Z GOARCH='amd64'
+2025-10-16T14:56:40.8495538Z GOAUTH='netrc'
+2025-10-16T14:56:40.8495700Z GOBIN=''
+2025-10-16T14:56:40.8495887Z GOCACHE='/home/runner/.cache/go-build'
+2025-10-16T14:56:40.8496132Z GOCACHEPROG=''
+2025-10-16T14:56:40.8496299Z GODEBUG=''
+2025-10-16T14:56:40.8496487Z GOENV='/home/runner/.config/go/env'
+2025-10-16T14:56:40.8496709Z GOEXE=''
+2025-10-16T14:56:40.8496882Z GOEXPERIMENT=''
+2025-10-16T14:56:40.8497064Z GOFIPS140='off'
+2025-10-16T14:56:40.8497249Z GOFLAGS=''
+2025-10-16T14:56:40.8497848Z GOGCCFLAGS='-fPIC -m64 -pthread -Wl,--no-gc-sections -fmessage-length=0 -ffile-prefix-map=/tmp/go-build634863611=/tmp/go-build -gno-record-gcc-switches'
+2025-10-16T14:56:40.8498435Z GOHOSTARCH='amd64'
+2025-10-16T14:56:40.8498621Z GOHOSTOS='linux'
+2025-10-16T14:56:40.8498791Z GOINSECURE=''
+2025-10-16T14:56:40.8499079Z GOMOD='/home/runner/work/helios-operator/helios-operator/go.mod'
+2025-10-16T14:56:40.8499415Z GOMODCACHE='/home/runner/go/pkg/mod'
+2025-10-16T14:56:40.8499644Z GONOPROXY=''
+2025-10-16T14:56:40.8500108Z GONOSUMDB=''
+2025-10-16T14:56:40.8500290Z GOOS='linux'
+2025-10-16T14:56:40.8500487Z GOPATH='/home/runner/go'
+2025-10-16T14:56:40.8500837Z GOPRIVATE=''
+2025-10-16T14:56:40.8501215Z GOPROXY='https://proxy.golang.org,direct'
+2025-10-16T14:56:40.8501524Z GOROOT='/opt/hostedtoolcache/go/1.25.3/x64'
+2025-10-16T14:56:40.8501788Z GOSUMDB='sum.golang.org'
+2025-10-16T14:56:40.8501987Z GOTELEMETRY='local'
+2025-10-16T14:56:40.8502222Z GOTELEMETRYDIR='/home/runner/.config/go/telemetry'
+2025-10-16T14:56:40.8502492Z GOTMPDIR=''
+2025-10-16T14:56:40.8502666Z GOTOOLCHAIN='local'
+2025-10-16T14:56:40.8503201Z GOTOOLDIR='/opt/hostedtoolcache/go/1.25.3/x64/pkg/tool/linux_amd64'
+2025-10-16T14:56:40.8503535Z GOVCS=''
+2025-10-16T14:56:40.8503709Z GOVERSION='go1.25.3'
+2025-10-16T14:56:40.8503890Z GOWORK=''
+2025-10-16T14:56:40.8504071Z PKG_CONFIG='pkg-config'
+2025-10-16T14:56:40.8504197Z 
+2025-10-16T14:56:40.8504709Z ##[endgroup]
+2025-10-16T14:56:40.8662124Z ##[group]Run securego/gosec@master
+2025-10-16T14:56:40.8662388Z with:
+2025-10-16T14:56:40.8662583Z   args: -fmt sarif -out gosec.sarif ./...
+2025-10-16T14:56:40.8662831Z env:
+2025-10-16T14:56:40.8662981Z   GO_VERSION: 1.25.3
+2025-10-16T14:56:40.8663182Z   GOLANGCI_LINT_VERSION: v2.5.0
+2025-10-16T14:56:40.8663397Z   GOTOOLCHAIN: local
+2025-10-16T14:56:40.8663585Z ##[endgroup]
+2025-10-16T14:56:40.8764720Z ##[command]/usr/bin/docker run --name securegogosec22210_e821e3 --label 94ea1d --workdir /github/workspace --rm -e "GO_VERSION" -e "GOLANGCI_LINT_VERSION" -e "GOTOOLCHAIN" -e "INPUT_ARGS" -e "HOME" -e "GITHUB_JOB" -e "GITHUB_REF" -e "GITHUB_SHA" -e "GITHUB_REPOSITORY" -e "GITHUB_REPOSITORY_OWNER" -e "GITHUB_REPOSITORY_OWNER_ID" -e "GITHUB_RUN_ID" -e "GITHUB_RUN_NUMBER" -e "GITHUB_RETENTION_DAYS" -e "GITHUB_RUN_ATTEMPT" -e "GITHUB_ACTOR_ID" -e "GITHUB_ACTOR" -e "GITHUB_WORKFLOW" -e "GITHUB_HEAD_REF" -e "GITHUB_BASE_REF" -e "GITHUB_EVENT_NAME" -e "GITHUB_SERVER_URL" -e "GITHUB_API_URL" -e "GITHUB_GRAPHQL_URL" -e "GITHUB_REF_NAME" -e "GITHUB_REF_PROTECTED" -e "GITHUB_REF_TYPE" -e "GITHUB_WORKFLOW_REF" -e "GITHUB_WORKFLOW_SHA" -e "GITHUB_REPOSITORY_ID" -e "GITHUB_TRIGGERING_ACTOR" -e "GITHUB_WORKSPACE" -e "GITHUB_ACTION" -e "GITHUB_EVENT_PATH" -e "GITHUB_ACTION_REPOSITORY" -e "GITHUB_ACTION_REF" -e "GITHUB_PATH" -e "GITHUB_ENV" -e "GITHUB_STEP_SUMMARY" -e "GITHUB_STATE" -e "GITHUB_OUTPUT" -e "RUNNER_OS" -e "RUNNER_ARCH" -e "RUNNER_NAME" -e "RUNNER_ENVIRONMENT" -e "RUNNER_TOOL_CACHE" -e "RUNNER_TEMP" -e "RUNNER_WORKSPACE" -e "ACTIONS_RUNTIME_URL" -e "ACTIONS_RUNTIME_TOKEN" -e "ACTIONS_CACHE_URL" -e "ACTIONS_RESULTS_URL" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "/home/runner/work/helios-operator/helios-operator":"/github/workspace" securego/gosec:2.22.10  "-fmt sarif -out gosec.sarif ./..."
+2025-10-16T14:56:41.6793177Z [gosec] 2025/10/16 14:56:41 Including rules: default
+2025-10-16T14:56:41.6794850Z [gosec] 2025/10/16 14:56:41 Excluding rules: default
+2025-10-16T14:56:41.6795413Z [gosec] 2025/10/16 14:56:41 Including analyzers: default
+2025-10-16T14:56:41.6795953Z [gosec] 2025/10/16 14:56:41 Excluding analyzers: default
+2025-10-16T14:56:41.6818320Z [gosec] 2025/10/16 14:56:41 Import directory: /github/workspace/cmd
+2025-10-16T14:56:41.6819580Z [gosec] 2025/10/16 14:56:41 Import directory: /github/workspace/internal/config
+2025-10-16T14:56:41.6821302Z [gosec] 2025/10/16 14:56:41 Import directory: /github/workspace/internal/common
+2025-10-16T14:56:41.6822109Z [gosec] 2025/10/16 14:56:41 Import directory: /github/workspace/internal/resources
+2025-10-16T14:58:03.4649887Z [gosec] 2025/10/16 14:58:03 Import directory: /github/workspace/internal/controller
+2025-10-16T14:58:03.4653808Z [gosec] 2025/10/16 14:58:03 Checking package: main
+2025-10-16T14:58:03.4654521Z [gosec] 2025/10/16 14:58:03 Checking file: /github/workspace/cmd/main.go
+2025-10-16T14:58:03.5607003Z [gosec] 2025/10/16 14:58:03 Import directory: /github/workspace/internal/health
+2025-10-16T14:58:03.5614455Z [gosec] 2025/10/16 14:58:03 Checking package: config
+2025-10-16T14:58:03.5615408Z [gosec] 2025/10/16 14:58:03 Checking file: /github/workspace/internal/config/config.go
+2025-10-16T14:58:03.7272706Z [gosec] 2025/10/16 14:58:03 Import directory: /github/workspace/test/e2e
+2025-10-16T14:58:03.7273833Z [gosec] 2025/10/16 14:58:03 Checking package: common
+2025-10-16T14:58:03.7277006Z [gosec] 2025/10/16 14:58:03 Checking file: /github/workspace/internal/common/constants.go
+2025-10-16T14:58:03.7336815Z [gosec] 2025/10/16 14:58:03 Checking file: /github/workspace/internal/common/errors.go
+2025-10-16T14:58:04.1684717Z [gosec] 2025/10/16 14:58:04 Import directory: /github/workspace/test/utils
+2025-10-16T14:58:04.1687504Z [gosec] 2025/10/16 14:58:04 Checking package: resources
+2025-10-16T14:58:04.1688709Z [gosec] 2025/10/16 14:58:04 Checking file: /github/workspace/internal/resources/argocd.go
+2025-10-16T14:58:04.1824862Z [gosec] 2025/10/16 14:58:04 Checking file: /github/workspace/internal/resources/pipeline.go
+2025-10-16T14:58:04.2291748Z [gosec] 2025/10/16 14:58:04 Checking file: /github/workspace/internal/resources/tekton.go
+2025-10-16T14:58:04.4280167Z [gosec] 2025/10/16 14:58:04 Import directory: /github/workspace/api/v1
+2025-10-16T14:58:04.4281284Z [gosec] 2025/10/16 14:58:04 Checking package: health
+2025-10-16T14:58:04.4282382Z [gosec] 2025/10/16 14:58:04 Checking file: /github/workspace/internal/health/health.go
+2025-10-16T14:58:08.9552353Z [gosec] 2025/10/16 14:58:08 Checking package: utils
+2025-10-16T14:58:08.9553114Z [gosec] 2025/10/16 14:58:08 Checking file: /github/workspace/test/utils/utils.go
+2025-10-16T14:58:09.8229054Z [gosec] 2025/10/16 14:58:09 Checking package: controller
+2025-10-16T14:58:09.8230842Z [gosec] 2025/10/16 14:58:09 Checking file: /github/workspace/internal/controller/heliosapp_controller.go
+2025-10-16T14:58:10.3572073Z [gosec] 2025/10/16 14:58:10 Checking file: /github/workspace/internal/controller/metrics.go
+2025-10-16T14:58:10.4138866Z [gosec] 2025/10/16 14:58:10 Checking file: /github/workspace/internal/controller/reconcile_phases.go
+2025-10-16T14:58:10.5273796Z [gosec] 2025/10/16 14:58:10 Checking file: /github/workspace/internal/controller/test_helpers.go
+2025-10-16T14:58:10.6682677Z [gosec] 2025/10/16 14:58:10 Checking package: v1
+2025-10-16T14:58:10.6683498Z [gosec] 2025/10/16 14:58:10 Checking file: /github/workspace/api/v1/groupversion_info.go
+2025-10-16T14:58:10.6720300Z [gosec] 2025/10/16 14:58:10 Checking file: /github/workspace/api/v1/heliosapp_types.go
+2025-10-16T14:58:10.7154092Z [gosec] 2025/10/16 14:58:10 Checking file: /github/workspace/api/v1/heliosapp_webhook.go
+2025-10-16T14:58:10.9505391Z [gosec] 2025/10/16 14:58:10 Checking file: /github/workspace/api/v1/zz_generated.deepcopy.go
+2025-10-16T14:58:12.9778332Z Post job cleanup.
+2025-10-16T14:58:13.0555549Z [command]/usr/bin/git version
+2025-10-16T14:58:13.0590513Z git version 2.51.0
+2025-10-16T14:58:13.0663588Z Temporarily overriding HOME='/home/runner/work/_temp/d4722d2d-9ee5-477b-ae48-6f1c13893ac5' before making global git config changes
+2025-10-16T14:58:13.0665047Z Adding repository directory to the temporary git global config as a safe directory
+2025-10-16T14:58:13.0668972Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/helios-operator/helios-operator
+2025-10-16T14:58:13.0705466Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-10-16T14:58:13.0738676Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-10-16T14:58:13.0969150Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-10-16T14:58:13.0991529Z http.https://github.com/.extraheader
+2025-10-16T14:58:13.1001195Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-10-16T14:58:13.1030572Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-10-16T14:58:13.1363716Z Cleaning up orphan processes

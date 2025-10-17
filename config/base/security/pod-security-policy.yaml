@@ -1,0 +1,47 @@
+# Pod Security Policy for Helios Operator
+# This file defines the Pod Security Standards that should be applied to namespaces
+# where the Helios Operator creates resources.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: helios-apps
+  labels:
+    # Enforce restricted Pod Security Standards
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+    # Additional security labels
+    security.helios.io/enforce-non-root: "true"
+    security.helios.io/enforce-read-only-fs: "true"
+    security.helios.io/drop-all-capabilities: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+  labels:
+    # Enforce restricted Pod Security Standards for ArgoCD
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tekton-pipelines
+  labels:
+    # Enforce restricted Pod Security Standards for Tekton
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tekton-triggers
+  labels:
+    # Enforce restricted Pod Security Standards for Tekton Triggers
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted

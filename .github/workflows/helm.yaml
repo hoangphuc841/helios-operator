@@ -1,0 +1,105 @@
+name: Helm Chart Operations
+
+on:
+  push:
+    branches: ["main", "develop"]
+    paths:
+      - "helm/**"
+      - "config/**"
+  pull_request:
+    branches: ["main", "develop"]
+    paths:
+      - "helm/**"
+      - "config/**"
+
+concurrency:
+  group: helm-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  HELM_VERSION: "v3.19.0"
+
+jobs:
+  lint:
+    name: Lint Helm Chart
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Lint Helm chart
+        run: helm lint helm/helios-operator/
+
+      - name: Template Helm chart
+        run: helm template helios-operator helm/helios-operator/ --dry-run
+
+  package:
+    name: Package Helm Chart
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Package Helm chart
+        run: |
+          mkdir -p dist
+          helm package helm/helios-operator/ --destination dist/
+
+      - name: Upload chart artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-chart
+          path: dist/*.tgz
+
+  test:
+    name: Test Helm Chart
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint, package]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "v1.34.1"
+
+      - name: Create test namespace
+        run: kubectl create namespace helios-test
+
+      - name: Install chart with test values
+        run: |
+          helm install helios-test helm/helios-operator/ \
+            --namespace helios-test \
+            --create-namespace \
+            --wait \
+            --timeout 5m
+
+      - name: Verify installation
+        run: |
+          kubectl get pods -n helios-test
+          kubectl get crd heliosapps.platform.helios.io
+
+      - name: Uninstall chart
+        if: always()
+        run: |
+          helm uninstall helios-test --namespace helios-test || true
+          kubectl delete namespace helios-test || true

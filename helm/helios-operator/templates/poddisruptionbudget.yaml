@@ -1,0 +1,21 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "helios-operator.fullname" . }}
+  namespace: {{ include "helios-operator.namespace" . }}
+  labels:
+    {{- include "helios-operator.labels" . | nindent 4 }}
+  annotations:
+    {{- include "helios-operator.annotations" . | nindent 4 }}
+spec:
+  {{- if .Values.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if .Values.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "helios-operator.selectorLabels" . | nindent 6 }}
+{{- end }}

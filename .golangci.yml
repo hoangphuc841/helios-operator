@@ -1,52 +1,310 @@
 version: "2"
+
 run:
   allow-parallel-runners: true
+  allow-serial-runners: true
+  timeout: 10m
+  go: "1.25"
+  modules-download-mode: readonly
+  relative-path-mode: gomod
+
 linters:
   default: none
   enable:
-    - copyloopvar
-    - dupl
-    - errcheck
-    - ginkgolinter
-    - goconst
-    - gocyclo
+    # Core correctness/perf
     - govet
+    - staticcheck
     - ineffassign
+    - unused
+    - unparam
+    - unconvert
+    - errorlint
+    - errcheck
+    - gocritic
+    - gosec
+    - prealloc
+    - nakedret
+    - copyloopvar
+    - cyclop
     - lll
     - misspell
-    - nakedret
-    - prealloc
+    - bodyclose
     - revive
-    - staticcheck
-    - unconvert
-    - unparam
-    - unused
+    - godot
+    - godox
+    - dupl
+    - importas
+    - testpackage
+    - ginkgolinter
+
+    # Recommended additions
+    - nolintlint
+    - depguard
+    - noctx
+    - contextcheck
+    - containedctx
+    - wrapcheck
+    - exhaustive
+    - exhaustruct
+    - rowserrcheck
+    - sqlclosecheck
+    - errname
+    - perfsprint
+
   settings:
+    # Complexity: prefer cyclop (function + package)
+    cyclop:
+      max-complexity: 30
+      package-average: 0.0
+
+    # gocritic: enable broad but curated rulesets
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+      disabled-checks:
+        - dupImport
+        - ifElseChain
+        - octalLiteral
+        - whyNoLint
+        - wrapperFunc
+
+    # govet: treat your logger functions as printf-family
+    govet:
+      settings:
+        printf:
+          funcs:
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+
+    # Strings/consts
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+
+    # Long lines
+    lll:
+      line-length: 140
+
+    # Spelling
+    misspell:
+      locale: US
+
+    # Security
+    gosec:
+      severity: medium
+      confidence: medium
+      excludes:
+        - G204
+        - G304
+
+    # Revive rules (subset; expand as needed)
     revive:
       rules:
         - name: comment-spacings
+          severity: warning
         - name: import-shadowing
-  exclusions:
-    generated: lax
-    rules:
-      - linters:
-          - lll
-        path: api/*
-      - linters:
-          - dupl
-          - lll
-        path: internal/*
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+          severity: error
+        - name: package-comments
+          severity: warning
+        - name: range-val-in-closure
+          severity: error
+        - name: time-naming
+          severity: warning
+        - name: var-naming
+          severity: warning
+        - name: var-declaration
+          severity: warning
+        - name: range-val-address
+          severity: error
+        - name: range
+          severity: warning
+        - name: unexported-return
+          severity: warning
+        - name: errorf
+          severity: error
+        - name: empty-block
+          severity: warning
+        - name: superfluous-else
+          severity: warning
+        - name: unreachable-code
+          severity: error
+        - name: redefines-builtin-id
+          severity: error
+
+    # Duplicate code
+    dupl:
+      threshold: 100
+
+    # Import restrictions
+    depguard:
+      rules:
+        main:
+          deny:
+            - pkg: "github.com/golangci/golangci-lint/pkg/logutils"
+              desc: "use logr instead"
+          allow:
+            # Standard library packages
+            - "bufio"
+            - "bytes"
+            - "context"
+            - "crypto/tls"
+            - "encoding/json"
+            - "errors"
+            - "flag"
+            - "fmt"
+            - "net"
+            - "net/http"
+            - "net/url"
+            - "os"
+            - "os/exec"
+            - "path/filepath"
+            - "reflect"
+            - "regexp"
+            - "runtime"
+            - "strconv"
+            - "strings"
+            - "sync"
+            - "testing"
+            - "time"
+            # Kubernetes packages
+            - "k8s.io/api/apps/v1"
+            - "k8s.io/api/core/v1"
+            - "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+            - "k8s.io/apimachinery/pkg/apis/meta/v1"
+            - "k8s.io/apimachinery/pkg/runtime"
+            - "k8s.io/apimachinery/pkg/runtime/schema"
+            - "k8s.io/apimachinery/pkg/types"
+            - "k8s.io/apimachinery/pkg/api/errors"
+            - "k8s.io/apimachinery/pkg/util/runtime"
+            - "k8s.io/client-go/kubernetes/scheme"
+            - "k8s.io/client-go/plugin/pkg/client/auth"
+            - "k8s.io/client-go/rest"
+            # Controller runtime packages
+            - "sigs.k8s.io/controller-runtime"
+            - "sigs.k8s.io/controller-runtime/pkg/scheme"
+            - "sigs.k8s.io/controller-runtime/pkg/client"
+            - "sigs.k8s.io/controller-runtime/pkg/log"
+            - "sigs.k8s.io/controller-runtime/pkg/webhook"
+            - "sigs.k8s.io/controller-runtime/pkg/webhook/admission"
+            - "sigs.k8s.io/controller-runtime/pkg/metrics"
+            - "sigs.k8s.io/controller-runtime/pkg/metrics/filters"
+            - "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+            - "sigs.k8s.io/controller-runtime/pkg/certwatcher"
+            - "sigs.k8s.io/controller-runtime/pkg/log/zap"
+            - "sigs.k8s.io/controller-runtime/pkg/healthz"
+            - "sigs.k8s.io/controller-runtime/pkg/client/fake"
+            - "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+            - "sigs.k8s.io/controller-runtime/pkg/event"
+            - "sigs.k8s.io/controller-runtime/pkg/handler"
+            - "sigs.k8s.io/controller-runtime/pkg/predicate"
+            - "sigs.k8s.io/controller-runtime/pkg/reconcile"
+            - "sigs.k8s.io/controller-runtime/pkg/envtest"
+            # Tekton packages
+            - "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
+            - "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
+            # Project packages
+            - "github.com/hoangphuc841/helios-operator/api/v1"
+            - "github.com/hoangphuc841/helios-operator/internal/controller"
+            - "github.com/hoangphuc841/helios-operator/internal/health"
+            - "github.com/hoangphuc841/helios-operator/internal/common"
+            - "github.com/hoangphuc841/helios-operator/internal/config"
+            - "github.com/hoangphuc841/helios-operator/internal/resources"
+            - "github.com/hoangphuc841/helios-operator/test/utils"
+            # Test packages
+            - "github.com/stretchr/testify/assert"
+            - "github.com/stretchr/testify/require"
+            - "github.com/stretchr/testify/mock"
+            - "github.com/onsi/ginkgo/v2"
+            - "github.com/onsi/gomega"
+            # Additional test utilities
+            - "k8s.io/apimachinery/pkg/util/errors"
+            - "k8s.io/apimachinery/pkg/api/meta"
+            # Other packages
+            - "github.com/prometheus/client_golang/prometheus"
+            - "github.com/go-logr/logr"
+
+    # Error handling details
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+      disable-default-exclusions: false
+      exclude-functions:
+        - io/ioutil.ReadFile
+        - io.Copy(*bytes.Buffer)
+        - io.Copy(os.Stdout)
+
+    # K8s aliases
+    importas:
+      alias:
+        - pkg: k8s.io/api/core/v1
+          alias: corev1
+        - pkg: k8s.io/apimachinery/pkg/apis/meta/v1
+          alias: metav1
+        - pkg: k8s.io/apimachinery/pkg/runtime
+          alias: runtime
+        - pkg: sigs.k8s.io/controller-runtime/pkg/log
+          alias: log
+
+    # Test discipline
+    testpackage:
+      skip-regexp: (export|internal)_test\.go
+
+    ginkgolinter:
+      suppress-async-assertion: false
+      suppress-len-assertion: false
+      suppress-nil-assertion: false
+      suppress-err-assertion: false
+      suppress-compare-assertion: false
+      forbid-focus-container: true
+      force-expect-to: true
+      validate-async-intervals: true
+      forbid-spec-pollution: true
+
 formatters:
   enable:
     - gofmt
     - goimports
+    - gofumpt
+    - gci
+    - golines
   exclusions:
     generated: lax
     paths:
       - third_party$
       - builtin$
       - examples$
+      - api/v1/zz_generated\.go$
+      - config/crd/bases/.*\.yaml$
+
+# Consider phasing in for legacy repos (uncomment to use)
+# issues:
+#   new: true
+#   whole-files: true
+
+severity:
+  default: error
+  rules:
+    - linters:
+        - dupl
+      severity: warning
+    - linters:
+        - gosec
+      severity: warning
+    - linters:
+        - cyclop
+      severity: warning
+    - linters:
+        - lll
+      severity: warning
+    - linters:
+        - revive
+      severity: warning
+    - linters:
+        - mnd
+      severity: warning
