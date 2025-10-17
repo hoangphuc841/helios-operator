@@ -46,7 +46,7 @@ type HeliosAppSpec struct {
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=1
 	// +kubebuilder:validation:Minimum=0
-	Replicas   int32  `json:"replicas"`
+	Replicas int32 `json:"replicas"`
 
 	// +kubebuilder:validation:Required
 	// Tên của Tekton Pipeline sẽ được kích hoạt.
@@ -60,7 +60,28 @@ type HeliosAppSpec struct {
 	// Tên của Secret chứa mã webhook cho GitHub.
 	WebhookSecret string `json:"webhookSecret"`
 
-	PVCName   	string `json:"pvcName"`
+	PVCName string `json:"pvcName"`
+
+	// +kubebuilder:validation:Required
+	// URL của repository chứa Helm chart hoặc Kustomize template
+	TemplateRepo string `json:"templateRepo"`
+
+	// +kubebuilder:validation:Required
+	// Đường dẫn đến template trong templateRepo (ví dụ: "charts/my-app")
+	TemplatePath string `json:"templatePath"`
+
+	// +kubebuilder:validation:Required
+	// URL của GitOps repository trung tâm nơi lưu trữ manifest đã render
+	GitOpsRepo string `json:"gitopsRepo"`
+
+	// +kubebuilder:validation:Required
+	// Đường dẫn đến thư mục của ứng dụng trong GitOps repo (ví dụ: "apps/production/my-api")
+	GitOpsPath string `json:"gitopsPath"`
+
+	// +kubebuilder:validation:Optional
+	// Các giá trị tùy chỉnh để render template (ví dụ: replicaCount, ingress.host, resources, etc.)
+	// +kubebuilder:pruning:PreserveUnknownFields
+	Values map[string]string `json:"values,omitempty"`
 }
 
 // HeliosAppStatus defines the observed state of HeliosApp
@@ -75,6 +96,18 @@ type HeliosAppStatus struct {
 	// Tag của image đã được deploy thành công
 	// +optional
 	DeployedVersion string `json:"deployedVersion,omitempty"`
+
+	// Generation của HeliosApp đã được quan sát và xử lý
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
+	// Tên của PipelineRun đang chạy hoặc đã hoàn thành cho manifest generation
+	// +optional
+	ManifestPipelineRun string `json:"manifestPipelineRun,omitempty"`
+
+	// Tên của ArgoCD Application đã được tạo
+	// +optional
+	ArgoApplication string `json:"argoApplication,omitempty"`
 }
 
 // +kubebuilder:object:root=true

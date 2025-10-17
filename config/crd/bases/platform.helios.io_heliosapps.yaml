@@ -39,9 +39,18 @@ spec:
           spec:
             description: HeliosAppSpec defines the desired state of HeliosApp
             properties:
+              gitBranch:
+                default: main
+                type: string
               gitRepo:
                 type: string
-              gitBranch:
+              gitopsPath:
+                description: 'Đường dẫn đến thư mục của ứng dụng trong GitOps repo
+                  (ví dụ: "apps/production/my-api")'
+                type: string
+              gitopsRepo:
+                description: URL của GitOps repository trung tâm nơi lưu trữ manifest
+                  đã render
                 type: string
               imageRepo:
                 type: string
@@ -63,21 +72,41 @@ spec:
               serviceAccount:
                 description: Tên của ServiceAccount mà PipelineRun sẽ sử dụng.
                 type: string
+              templatePath:
+                description: 'Đường dẫn đến template trong templateRepo (ví dụ: "charts/my-app")'
+                type: string
+              templateRepo:
+                description: URL của repository chứa Helm chart hoặc Kustomize template
+                type: string
+              values:
+                additionalProperties:
+                  type: string
+                description: 'Các giá trị tùy chỉnh để render template (ví dụ: replicaCount,
+                  ingress.host, resources, etc.)'
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
               webhookSecret:
                 description: Tên của Secret chứa mã webhook cho GitHub.
                 type: string
             required:
             - gitRepo
+            - gitopsPath
+            - gitopsRepo
             - imageRepo
             - pipelineName
             - port
             - pvcName
             - serviceAccount
+            - templatePath
+            - templateRepo
             - webhookSecret
             type: object
           status:
             description: HeliosAppStatus defines the observed state of HeliosApp
             properties:
+              argoApplication:
+                description: Tên của ArgoCD Application đã được tạo
+                type: string
               conditions:
                 description: 'Trạng thái hiện tại của các tài nguyên được quản lý:
                   "DeploymentReady", "ServiceReady"'
@@ -139,6 +168,14 @@ spec:
               deployedVersion:
                 description: Tag của image đã được deploy thành công
                 type: string
+              manifestPipelineRun:
+                description: Tên của PipelineRun đang chạy hoặc đã hoàn thành cho
+                  manifest generation
+                type: string
+              observedGeneration:
+                description: Generation của HeliosApp đã được quan sát và xử lý
+                format: int64
+                type: integer
             type: object
         type: object
     served: true
