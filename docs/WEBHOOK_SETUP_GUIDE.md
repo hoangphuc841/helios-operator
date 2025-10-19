@@ -1,5 +1,7 @@
 # GitHub Webhook Setup Guide
 
+Note: For a quick, streamlined setup, follow the simplified instructions in GETTING_STARTED.md (see Step 6: "Setup GitHub Webhooks"). This page is the detailed reference with extra options and troubleshooting.
+
 Quick reference for setting up GitHub webhooks to auto-trigger Helios pipelines.
 
 ## Prerequisites
@@ -43,14 +45,14 @@ Go to: `https://github.com/YOUR_USERNAME/YOUR_REPO/settings/hooks`
 
 Click **Add webhook** and fill in:
 
-| Field                | Value                                                                  |
-| -------------------- | ---------------------------------------------------------------------- |
-| **Payload URL**      | `https://YOUR_URL/hooks`                                               |
-| **Content type**     | `application/json`                                                     |
-| **Secret**           | `[Paste your webhook secret]`                                          |
-| **SSL verification** | Enable (for production with valid cert)<br>Disable (for ngrok/testing) |
-| **Events**           | Select "Just the push event"                                           |
-| **Active**           | ✅ Checked                                                             |
+| Field                | Value                                                                 |
+| -------------------- | --------------------------------------------------------------------- |
+| **Payload URL**      | `https://YOUR_URL/hooks`                                              |
+| **Content type**     | `application/json`                                                    |
+| **Secret**           | `[Paste your webhook secret]`                                         |
+| **SSL verification** | Enable (for production with valid cert) / Disable (for ngrok/testing) |
+| **Events**           | Select "Just the push event"                                          |
+| **Active**           | ✅ Checked                                                            |
 
 Click **Add webhook**.
 
@@ -117,7 +119,7 @@ Select this if you want more control:
 - ✅ **Pull requests** - Trigger on PR events (optional)
 - ✅ **Releases** - Trigger on release creation (optional)
 
-**Option 3: Send me everything**
+#### Option 3: Send me everything
 
 - ⚠️ Not recommended - too many events
 
@@ -286,7 +288,7 @@ When GitHub sends a webhook, it looks like this:
 
 ## Headers GitHub Sends
 
-```
+```text
 X-GitHub-Event: push
 X-GitHub-Delivery: abc-123-def-456
 X-Hub-Signature-256: sha256=...
@@ -322,8 +324,9 @@ User-Agent: GitHub-Hookshot/...
    - Set up alerts for failed webhooks
 
 6. **Use IP allowlisting (optional)**
-   - GitHub webhook IPs: https://api.github.com/meta
-   - Add firewall rules to only allow GitHub IPs
+
+- GitHub webhook IPs: <https://api.github.com/meta>
+- Add firewall rules to only allow GitHub IPs
 
 ## Exposing EventListener - Detailed Options
 
@@ -403,7 +406,7 @@ kubectl apply -f webhook-ingress.yaml
 
 ## Complete Workflow with Webhooks
 
-```
+```text
 Developer → git push
     ↓
 GitHub → Webhook POST to EventListener

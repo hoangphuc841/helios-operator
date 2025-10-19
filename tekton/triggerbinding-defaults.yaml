@@ -1,0 +1,21 @@
+---
+# TriggerBinding with environment defaults (non-sensitive)
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: helios-defaults
+  namespace: default
+spec:
+  params:
+    - name: image-registry
+      value: docker.io/hophuochoan
+    - name: gitops-repo-url
+      value: https://github.com/PhuocHoan/helios-gitops
+    - name: gitops-repo-branch
+      value: main
+    - name: manifest-path-in-gitops-repo
+      value: apps/dev/$(body.repository.name)/deployment.yaml
+    - name: pvc-name
+      value: shared-workspace-pvc
+    - name: context-subpath
+      value: "my-nodejs-app" # Empty by default - app is at repo root. Override if app is in subdirectory.

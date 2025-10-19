@@ -79,6 +79,10 @@ type HeliosAppSpec struct {
 	GitOpsPath string `json:"gitopsPath"`
 
 	// +kubebuilder:validation:Optional
+	// Subdirectory trong source repo chứa Dockerfile (ví dụ: "my-app", để trống nếu Dockerfile ở root)
+	ContextSubpath string `json:"contextSubpath,omitempty"`
+
+	// +kubebuilder:validation:Optional
 	// Các giá trị tùy chỉnh để render template (ví dụ: replicaCount, ingress.host, resources, etc.)
 	// +kubebuilder:pruning:PreserveUnknownFields
 	Values map[string]string `json:"values,omitempty"`

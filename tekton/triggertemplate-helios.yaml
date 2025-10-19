@@ -1,0 +1,66 @@
+---
+# TriggerTemplate creates a PipelineRun when triggered
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: helios-trigger-template
+  namespace: default
+spec:
+  params:
+    - name: git-repo-url
+      description: The git repository URL
+    - name: git-revision
+      description: The git revision (commit SHA)
+      default: main
+    - name: git-repo-name
+      description: The repository name
+    - name: image-registry
+      description: Container registry base (e.g., docker.io/yourname)
+      default: docker.io/yourname
+    - name: gitops-repo-url
+      description: URL of the GitOps repository that holds manifests
+    - name: gitops-repo-branch
+      description: Branch to push manifest updates to
+      default: main
+    - name: manifest-path-in-gitops-repo
+      description: Path to the Kubernetes manifest to update in the GitOps repo
+    - name: pvc-name
+      description: PVC name bound to both workspaces
+      default: shared-workspace-pvc
+    - name: context-subpath
+      description: Subdirectory within repo where Dockerfile is located (empty if at root)
+      default: ""
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: $(tt.params.git-repo-name)-
+        labels:
+          app: $(tt.params.git-repo-name)
+          trigger: github-webhook
+      spec:
+        pipelineRef:
+          name: from-code-to-cluster
+        params:
+          - name: app-repo-url
+            value: $(tt.params.git-repo-url)
+          - name: app-repo-revision
+            value: $(tt.params.git-revision)
+          - name: image-repo
+            value: $(tt.params.image-registry)/$(tt.params.git-repo-name)
+          - name: gitops-repo-url
+            value: $(tt.params.gitops-repo-url)
+          - name: manifest-path-in-gitops-repo
+            value: $(tt.params.manifest-path-in-gitops-repo)
+          - name: gitops-repo-branch
+            value: $(tt.params.gitops-repo-branch)
+          - name: context-subpath
+            value: $(tt.params.context-subpath)
+        serviceAccountName: pipeline-sa
+        workspaces:
+          - name: source-workspace
+            persistentVolumeClaim:
+              claimName: $(tt.params.pvc-name)
+          - name: gitops-workspace
+            persistentVolumeClaim:
+              claimName: $(tt.params.pvc-name)

@@ -39,6 +39,10 @@ spec:
           spec:
             description: HeliosAppSpec defines the desired state of HeliosApp
             properties:
+              contextSubpath:
+                description: 'Subdirectory trong source repo chứa Dockerfile (ví dụ:
+                  "my-app", để trống nếu Dockerfile ở root)'
+                type: string
               gitBranch:
                 default: main
                 type: string

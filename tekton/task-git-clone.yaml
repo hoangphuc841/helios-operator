@@ -17,6 +17,21 @@ spec:
     - name: clone
       image: alpine/git:v2.26.2
       script: |
+        #!/bin/sh
+        set -e
+
+        # Clean the workspace if it exists
+        echo "Cleaning workspace: $(workspaces.output.path)"
+        rm -rf $(workspaces.output.path)/*
+        rm -rf $(workspaces.output.path)/.[!.]*
+
+        # Clone the repository
+        echo "Cloning $(params.url) to $(workspaces.output.path)"
         git clone $(params.url) $(workspaces.output.path)
+
+        # Checkout the specified revision
         cd $(workspaces.output.path)
+        echo "Checking out $(params.revision)"
         git checkout $(params.revision)
+
+        echo "Git clone completed successfully"

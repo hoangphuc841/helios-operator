@@ -19,7 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -86,8 +85,15 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	// Tạo các tài nguyên Tekton Triggers
+	// Generate defaults TriggerBinding based on HeliosApp spec
+	defaultsBinding, err := GenerateDefaultsTriggerBinding(name+"-defaults", namespace, &heliosApp)
+	if err != nil {
+		logger.Error(err, "Failed to generate defaults TriggerBinding")
+		return ctrl.Result{}, err
+	}
+
 	eventListener, err := GenerateEventListener(
-		name+"-el", namespace, name+"-trigger", name+"-trigger-binding", name+"-trigger-template", githubSecret,
+		name+"-el", namespace, name+"-trigger", name+"-trigger-binding", name+"-defaults", name+"-trigger-template", githubSecret,
 	)
 	if err != nil {
 		logger.Error(err, "Failed to generate EventListener")
@@ -106,7 +112,7 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 
-	for _, obj := range []*unstructured.Unstructured{eventListener, triggerBinding, triggerTemplate} {
+	for _, obj := range []*unstructured.Unstructured{defaultsBinding, eventListener, triggerBinding, triggerTemplate} {
 		obj.SetNamespace(namespace)
 		if err := controllerutil.SetControllerReference(&heliosApp, obj, r.Scheme); err != nil {
 			logger.Error(err, "Failed to set owner reference", "name", obj.GetName())
@@ -444,46 +450,6 @@ func (r *HeliosAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *HeliosAppReconciler) deploymentForHeliosApp(h *heliosappv1.HeliosApp) *appsv1.Deployment {
-	labels := map[string]string{"app": h.Name}
-	replicas := h.Spec.Replicas
-	if replicas == 0 {
-		replicas = 1
-	}
-	dep := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{Name: h.Name, Namespace: h.Namespace},
-		Spec: appsv1.DeploymentSpec{
-			Replicas: &replicas,
-			Selector: &metav1.LabelSelector{MatchLabels: labels},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{Labels: labels},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{{
-						Image: h.Spec.ImageRepo,
-						Name:  "app-container",
-						Ports: []corev1.ContainerPort{{ContainerPort: h.Spec.Port, Name: "http"}},
-					}},
-				},
-			},
-		},
-	}
-	if err := ctrl.SetControllerReference(h, dep, r.Scheme); err != nil {
-		return nil
-	}
-	return dep
-}
-
-func (r *HeliosAppReconciler) serviceForHeliosApp(h *heliosappv1.HeliosApp) *corev1.Service {
-	svc := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{Name: h.Name, Namespace: h.Namespace},
-		Spec: corev1.ServiceSpec{
-			Selector: map[string]string{"app": h.Name},
-			Ports:    []corev1.ServicePort{{Protocol: corev1.ProtocolTCP, Port: 80, TargetPort: intstr.FromInt(int(h.Spec.Port))}},
-			Type:     corev1.ServiceTypeNodePort,
-		},
-	}
-	if err := ctrl.SetControllerReference(h, svc, r.Scheme); err != nil {
-		return nil
-	}
-	return svc
-}
+// Note: Deployment and Service creation is handled by ArgoCD via GitOps manifests.
+// If you need the operator to create K8s resources directly, reintroduce helper
+// methods and call them from the reconciliation loop.

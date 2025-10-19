@@ -30,7 +30,7 @@ spec:
       workspaces:
         - name: output
           workspace: source-code
-          
+
     - name: build-and-push
       runAfter: ["git-clone"]
       taskRef:

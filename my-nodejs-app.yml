@@ -13,7 +13,7 @@ spec:
 
   # ===== Application Settings =====
   port: 8080
-  replicas: 2
+  replicas: 3
 
   # ===== CI/CD Pipeline =====
   pipelineName: "from-code-to-cluster"
@@ -27,10 +27,13 @@ spec:
 
   # ===== GitOps Destination =====
   gitopsRepo: "https://github.com/PhuocHoan/helios-gitops"
-  gitopsPath: "apps/dev/my-nodejs-app"
+  gitopsPath: "apps/dev/helios"
+
+  # ===== Context Subpath (where Dockerfile is located) =====
+  contextSubpath: "my-nodejs-app"
 
   # ===== Custom Values =====
   values:
     environment: "dev"
-    replicaCount: "2"
+    replicaCount: "3"
     imageTag: "latest"

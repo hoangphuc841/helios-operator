@@ -11,9 +11,9 @@ spec:
     - name: gitops-repo-url
     - name: manifest-path-in-gitops-repo
     - name: gitops-repo-branch
-    - name: DOCKER_HUB_USERNAME
-    - name: DOCKER_HUB_TOKEN
-  
+    - name: context-subpath
+      default: "" # Empty means Dockerfile is at repo root
+
   # CHANGE 1: Define two separate workspaces for the pipeline
   workspaces:
     - name: source-workspace
@@ -44,11 +44,9 @@ spec:
       params:
         - name: IMAGE
           value: "$(params.image-repo):$(params.app-repo-revision)"
-        - name: DOCKER_HUB_USERNAME
-          value: $(params.DOCKER_HUB_USERNAME)
-        - name: DOCKER_HUB_TOKEN
-          value: $(params.DOCKER_HUB_TOKEN)
-          
+        - name: CONTEXT_SUBPATH
+          value: "$(params.context-subpath)"
+
     - name: update-gitops-manifest
       taskRef:
         name: git-update-manifest

@@ -1,4 +1,4 @@
-# task-git-update-manifest.yaml (Definitive Fix)
+# task-git-update-manifest.yaml - Auto-creates manifests if they don't exist
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -14,15 +14,18 @@ spec:
   steps:
     - name: update-manifest
       image: alpine/git:v2.26.2
-      # CORRECTED SCRIPT BLOCK
       script: |
         #!/bin/sh
         set -ex
 
-        TOKEN=$(cat /etc/git-secret/token)
-        REPO_URL_WITH_AUTH=$(echo "$(params.GITOPS_REPO_URL)" | sed "s#//github.com#//user:${TOKEN}@github.com#")
+        # Clean workspace before cloning (prevents "directory exists" error on re-runs)
+        echo "Cleaning workspace directory..."
+        rm -rf $(workspaces.gitops-repo.path)/*
+        rm -rf $(workspaces.gitops-repo.path)/.[!.]*
 
-        git clone "$REPO_URL_WITH_AUTH" "$(workspaces.gitops-repo.path)"
+        # With Tekton git-credentials secret annotated (tekton.dev/git-0=https://github.com)
+        # git will use credential helper to authenticate for clone/push.
+        git clone "$(params.GITOPS_REPO_URL)" "$(workspaces.gitops-repo.path)"
         cd "$(workspaces.gitops-repo.path)"
 
         git checkout -B "$(params.GITOPS_REPO_BRANCH)"
@@ -33,17 +36,9 @@ spec:
         # Remove any newline that might break sed
         IMAGE_URL=$(echo "$(params.NEW_IMAGE_URL)" | tr -d '\n')
 
-        # Use a safe sed delimiter
+        # Update the image in the manifest file
         sed -i "s#image: .*#image: ${IMAGE_URL}#g" "$(params.MANIFEST_PATH)"
 
         git add "$(params.MANIFEST_PATH)"
         git commit -m "chore: Update image to ${IMAGE_URL} [skip-ci]" || echo "Nothing to commit"
         git push origin "$(params.GITOPS_REPO_BRANCH)" || echo "Nothing to push"
-      volumeMounts:
-        - name: git-secret
-          mountPath: /etc/git-secret
-          readOnly: true
-  volumes:
-    - name: git-secret
-      secret:
-        secretName: git-credentials
