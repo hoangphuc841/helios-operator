@@ -111,34 +111,60 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet setup-envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test $$(go list ./... | grep -v /e2e) -coverprofile cover.out
 
-# TODO(user): To use a different vendor for e2e tests, modify the setup under 'tests/e2e'.
-# The default setup assumes Kind is pre-installed and builds/loads the Manager Docker image locally.
-# CertManager is installed by default; skip with:
-# - CERT_MANAGER_INSTALL_SKIP=true
+##@ E2E Testing
+
 KIND_CLUSTER ?= helios-operator-test-e2e
 
 .PHONY: setup-test-e2e
-setup-test-e2e: ## Set up a Kind cluster for e2e tests if it does not exist
+setup-test-e2e: ## Create Kind cluster and install all dependencies (Tekton + ArgoCD + Pipeline resources)
+	@echo "🔧 Setting up E2E test environment..."
 	@command -v $(KIND) >/dev/null 2>&1 || { \
-		echo "Kind is not installed. Please install Kind manually."; \
+		echo "❌ Kind is not installed. Install: https://kind.sigs.k8s.io/docs/user/quick-start/"; \
 		exit 1; \
 	}
-	@case "$$($(KIND) get clusters)" in \
-		*"$(KIND_CLUSTER)"*) \
-			echo "Kind cluster '$(KIND_CLUSTER)' already exists. Skipping creation." ;; \
-		*) \
-			echo "Creating Kind cluster '$(KIND_CLUSTER)'..."; \
-			$(KIND) create cluster --name $(KIND_CLUSTER) ;; \
-	esac
+	@if $(KIND) get clusters | grep -q "^$(KIND_CLUSTER)$$"; then \
+		echo "✅ Kind cluster '$(KIND_CLUSTER)' already exists"; \
+	else \
+		echo "📦 Creating Kind cluster '$(KIND_CLUSTER)'..."; \
+		$(KIND) create cluster --name $(KIND_CLUSTER); \
+	fi
+	@echo "📦 Installing Tekton Pipelines..."
+	@kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml > /dev/null 2>&1
+	@echo "⏳ Waiting for Tekton Pipelines pods to be created..."
+	@until kubectl get pods -n tekton-pipelines -l app=tekton-pipelines-controller 2>/dev/null | grep -q tekton; do sleep 2; done
+	@kubectl wait --for=condition=ready pod -l app=tekton-pipelines-controller -n tekton-pipelines --timeout=300s
+	@echo "📦 Installing Tekton Triggers..."
+	@kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml > /dev/null 2>&1
+	@kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/interceptors.yaml > /dev/null 2>&1
+	@echo "⏳ Waiting for Tekton Triggers pods to be created..."
+	@until kubectl get pods -n tekton-pipelines -l app=tekton-triggers-controller 2>/dev/null | grep -q tekton; do sleep 2; done
+	@kubectl wait --for=condition=ready pod -l app=tekton-triggers-controller -n tekton-pipelines --timeout=300s
+	@echo "📦 Installing ArgoCD..."
+	@kubectl create namespace argocd 2>/dev/null || true
+	@kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml > /dev/null 2>&1
+	@echo "⏳ Waiting for ArgoCD pods to be created..."
+	@until kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server 2>/dev/null | grep -q argocd; do sleep 2; done
+	@kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
+	@echo "📦 Installing Tekton Pipeline resources (Tasks, Pipeline, ServiceAccounts, PVC)..."
+	@kubectl apply -f tekton/ > /dev/null 2>&1 || true
+	@echo "✅ E2E environment ready!"
+	@echo ""
+	@echo "Next steps:"
+	@echo "  1. Install CRDs: make install"
+	@echo "  2. Build and deploy operator: make docker-build IMG=helios-operator:dev"
+	@echo "  3. Load image to Kind: kind load docker-image helios-operator:dev --name $(KIND_CLUSTER)"
+	@echo "  4. Deploy operator: make deploy IMG=helios-operator:dev"
+	@echo "  5. Test with sample: kubectl apply -f config/samples/heliosapp_v1_heliosapp.yaml"
 
 .PHONY: test-e2e
-test-e2e: setup-test-e2e manifests generate fmt vet ## Run the e2e tests. Expected an isolated environment using Kind.
-	KIND_CLUSTER=$(KIND_CLUSTER) go test ./test/e2e/ -v -ginkgo.v
-	$(MAKE) cleanup-test-e2e
-
-.PHONY: cleanup-test-e2e
-cleanup-test-e2e: ## Tear down the Kind cluster used for e2e tests
+test-e2e: setup-test-e2e ## Run complete E2E test suite (setup + test + cleanup)
+	@echo "🧪 Running E2E tests..."
+	@$(MAKE) install
+	@cd test/fixtures && ./setup-e2e.sh
+	@KIND_CLUSTER=$(KIND_CLUSTER) go test ./test/e2e/ -v -ginkgo.v
+	@echo "🧹 Cleaning up..."
 	@$(KIND) delete cluster --name $(KIND_CLUSTER)
+	@echo "✅ E2E tests complete!"
 
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter
@@ -389,16 +415,11 @@ catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
 
 .PHONY: clean
-clean: ## Clean build artifacts and generated files
-	@echo "Cleaning build artifacts..."
+clean: ## Clean everything (artifacts, generated files, and downloaded tools)
+	@echo "Cleaning build artifacts and tools..."
 	rm -rf bin/
 	rm -rf dist/
 	rm -f cover.out coverage.html
 	rm -f deploy.yaml
-	@echo "Clean complete!"
-
-.PHONY: clean-all
-clean-all: clean ## Clean everything including downloaded tools
-	@echo "Cleaning all tools..."
 	rm -rf $(LOCALBIN)
-	@echo "Clean all complete!"
+	@echo "Clean complete!"

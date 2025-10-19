@@ -1,0 +1,36 @@
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: my-nodejs-app
+  namespace: default
+spec:
+  # ===== Your Application Source Code =====
+  gitRepo: "https://github.com/PhuocHoan/helios"
+  gitBranch: "main"
+
+  # ===== Container Image =====
+  imageRepo: "docker.io/hophuochoan/helios"
+
+  # ===== Application Settings =====
+  port: 8080
+  replicas: 2
+
+  # ===== CI/CD Pipeline =====
+  pipelineName: "from-code-to-cluster"
+  serviceAccount: "pipeline-sa"
+  webhookSecret: "github-webhook-secret"
+  pvcName: "shared-workspace-pvc"
+
+  # ===== GitOps Template (optional - use default or custom) =====
+  templateRepo: "https://github.com/PhuocHoan/helios-template"
+  templatePath: "templates/simple-app"
+
+  # ===== GitOps Destination =====
+  gitopsRepo: "https://github.com/PhuocHoan/helios-gitops"
+  gitopsPath: "apps/dev/my-nodejs-app"
+
+  # ===== Custom Values =====
+  values:
+    environment: "dev"
+    replicaCount: "2"
+    imageTag: "latest"

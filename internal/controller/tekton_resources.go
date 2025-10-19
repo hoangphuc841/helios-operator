@@ -120,31 +120,19 @@ func GeneratePipelineRunForManifestGeneration(heliosApp *heliosappv1.HeliosApp, 
 	prName := fmt.Sprintf("%s-manifest-%s", heliosApp.Name, timestamp)
 
 	// Chuẩn bị các params để truyền vào Pipeline
+	// Match với parameter names trong tekton/pipeline.yaml
 	params := []map[string]any{
-		{"name": "app-name", "value": heliosApp.Name},
-		{"name": "app-namespace", "value": heliosApp.Namespace},
-		{"name": "git-repo", "value": heliosApp.Spec.GitRepo},
-		{"name": "git-branch", "value": heliosApp.Spec.GitBranch},
+		{"name": "app-repo-url", "value": heliosApp.Spec.GitRepo},
+		{"name": "app-repo-revision", "value": heliosApp.Spec.GitBranch},
 		{"name": "image-repo", "value": heliosApp.Spec.ImageRepo},
-		{"name": "template-repo", "value": heliosApp.Spec.TemplateRepo},
-		{"name": "template-path", "value": heliosApp.Spec.TemplatePath},
-		{"name": "gitops-repo", "value": heliosApp.Spec.GitOpsRepo},
-		{"name": "gitops-path", "value": heliosApp.Spec.GitOpsPath},
-		{"name": "port", "value": fmt.Sprintf("%d", heliosApp.Spec.Port)},
-		{"name": "replicas", "value": fmt.Sprintf("%d", heliosApp.Spec.Replicas)},
+		{"name": "gitops-repo-url", "value": heliosApp.Spec.GitOpsRepo},
+		{"name": "manifest-path-in-gitops-repo", "value": heliosApp.Spec.GitOpsPath},
+		{"name": "gitops-repo-branch", "value": "main"},        // Default branch for GitOps repo
+		{"name": "DOCKER_HUB_USERNAME", "value": "dummy-user"}, // TODO: Get from Secret
+		{"name": "DOCKER_HUB_TOKEN", "value": "dummy-token"},   // TODO: Get from Secret
 	}
 
-	// Thêm values tùy chỉnh nếu có
-	if heliosApp.Spec.Values != nil {
-		for key, val := range heliosApp.Spec.Values {
-			params = append(params, map[string]any{
-				"name":  key,
-				"value": val,
-			})
-		}
-	}
-
-	// PVC workspace
+	// PVC workspace - Pipeline expects two workspaces: source-workspace and gitops-workspace
 	pvcName := heliosApp.Spec.PVCName
 	if pvcName == "" {
 		pvcName = "pvc-" + heliosApp.Name
@@ -170,7 +158,13 @@ func GeneratePipelineRunForManifestGeneration(heliosApp *heliosappv1.HeliosApp, 
 			"params":             params,
 			"workspaces": []map[string]any{
 				{
-					"name": "shared-data",
+					"name": "source-workspace",
+					"persistentVolumeClaim": map[string]any{
+						"claimName": pvcName,
+					},
+				},
+				{
+					"name": "gitops-workspace",
 					"persistentVolumeClaim": map[string]any{
 						"claimName": pvcName,
 					},

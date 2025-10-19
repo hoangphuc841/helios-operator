@@ -149,8 +149,11 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	if needsNewPipelineRun {
 		logger.Info("Triggering Tekton PipelineRun for manifest generation", "app", name, "generation", heliosApp.Generation)
 
-		// Tạo PipelineRun với tên manifest-generation-pipeline
-		manifestPipeline := "manifest-generation-pipeline" // Tên pipeline dành riêng cho manifest generation
+		// Use the pipeline name from HeliosApp spec (defaults to "from-code-to-cluster" if not specified)
+		manifestPipeline := heliosApp.Spec.PipelineName
+		if manifestPipeline == "" {
+			manifestPipeline = "from-code-to-cluster" // Default pipeline name
+		}
 		pipelineRun, err := GeneratePipelineRunForManifestGeneration(&heliosApp, manifestPipeline)
 		if err != nil {
 			logger.Error(err, "Failed to generate PipelineRun for manifest generation")
