@@ -161,6 +161,7 @@ The Tekton `git-update-manifest` task uses `sed` to update the `image:` field in
 mkdir -p apps/dev/helios
 
 # Create initial manifest
+# ⚠️ IMPORTANT: Replace 'hophuochoan' with YOUR Docker Hub username!
 cat > apps/dev/helios/deployment.yaml << 'EOF'
 apiVersion: apps/v1
 kind: Deployment
@@ -179,7 +180,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: docker.io/hophuochoan/helios:latest
+        image: docker.io/YOUR_DOCKERHUB_USERNAME/helios:latest
         ports:
         - containerPort: 8080
 ---
@@ -206,17 +207,66 @@ git push origin main
 
 **📝 Important Notes:**
 
-1. **Match your repository name** - The directory name under `apps/dev/` MUST match your GitHub source repository name. The pipeline uses `$(body.repository.name)` from the webhook payload.
+1. **⚠️ UPDATE THE IMAGE FIELD!** - The `image:` field in the manifest **MUST** match your Docker Hub repository:
 
-2. **Update placeholders** - Replace:
+   ```yaml
+   image: docker.io/YOUR_DOCKERHUB_USERNAME/helios:latest
+   ```
 
-   - `YOUR_DOCKERHUB_USERNAME` with your actual Docker Hub username
-   - `my-nodejs-app` with your actual app name (if different)
-   - Port numbers if your app uses different ports
+   - Replace `YOUR_DOCKERHUB_USERNAME` with your actual Docker Hub username
+   - The image name (`helios`) should match your GitHub repository name
+   - This MUST match the `imageRepo` field you'll use in your HeliosApp (Step 7.1)
+   - **Why?** After the first pipeline run, this gets auto-updated with the actual image digest. If the username is wrong, deployment will fail!
 
-3. **One-time setup per app** - You only need to do this once per application. After that, the pipeline automatically updates the `image:` field with new image digests on every build.
+2. **Match your repository name** - The directory name under `apps/dev/` MUST match your GitHub source repository name. The pipeline uses `$(body.repository.name)` from the webhook payload.
 
-4. **Multiple apps** - Repeat this process for each application you want to deploy, creating separate directories like `apps/dev/app1/`, `apps/dev/app2/`, etc.
+   - GitHub repo: `helios` → Directory: `apps/dev/helios/`
+   - GitHub repo: `my-nodejs-app` → Directory: `apps/dev/my-nodejs-app/`
+
+3. **Update other placeholders** - Also replace if needed:
+
+   - App name (if different from repo name)
+   - Port numbers (if your app uses different ports than 8080)
+   - Namespace (if not using `default`)
+
+4. **One-time setup per app** - You only need to do this once per application. After that, the pipeline automatically updates the `image:` field with new image digests on every build.
+
+5. **Multiple apps** - Repeat this process for each application you want to deploy, creating separate directories like `apps/dev/app1/`, `apps/dev/app2/`, etc.
+
+**📋 Example Configuration:**
+
+If your setup is:
+
+- **Docker Hub username**: `johndoe`
+- **GitHub repo name**: `helios`
+- **App port**: `8080`
+
+Then your manifest should look like:
+
+```yaml
+# apps/dev/helios/deployment.yaml
+spec:
+  containers:
+    - name: app
+      image: docker.io/johndoe/helios:latest # ← Must match YOUR username!
+      ports:
+        - containerPort: 8080
+```
+
+And later in Step 7.1, your HeliosApp should have:
+
+```yaml
+# my-app.yaml
+spec:
+  imageRepo: "docker.io/johndoe/helios" # ← Same username and image name!
+  gitopsPath: "apps/dev/helios" # ← Matches GitHub repo name!
+```
+
+**These MUST be consistent across all three places:**
+
+1. ✅ Initial GitOps manifest image: `docker.io/johndoe/helios:latest`
+2. ✅ HeliosApp `imageRepo`: `docker.io/johndoe/helios`
+3. ✅ HeliosApp `gitopsPath`: `apps/dev/helios` (matches repo name)
 
 #### 0.3. Create App Templates Repo (Optional)
 
