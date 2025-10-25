@@ -282,61 +282,85 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 				logger.Info("PipelineRun succeeded! Manifest has been generated in GitOps repo", "PipelineRun", pipelineRun.GetName())
 
 				// ========================================================================
-				// GIAI ĐOẠN 2: Tạo ArgoCD Application
+				// GIAI ĐOẠN 2: Tạo/Cập nhật ArgoCD Application
 				// ========================================================================
 
-				// Kiểm tra xem ArgoCD Application đã tồn tại chưa
-				if heliosApp.Status.ArgoApplication == "" {
-					logger.Info("Manifest generation complete. Creating ArgoCD Application.", "app", name)
+				logger.Info("Manifest generation complete. Ensuring ArgoCD Application is up to date.", "app", name)
 
-					argoApp, err := GenerateArgoApplication(&heliosApp)
-					if err != nil {
-						logger.Error(err, "Failed to generate ArgoCD Application")
+				argoApp, err := GenerateArgoApplication(&heliosApp)
+				if err != nil {
+					logger.Error(err, "Failed to generate ArgoCD Application")
+					return ctrl.Result{}, err
+				}
+
+				// Lưu ý: ArgoCD Application được tạo trong namespace argocd, không set owner reference
+				// vì owner phải cùng namespace
+
+				// Kiểm tra xem Application đã tồn tại chưa
+				existing := &unstructured.Unstructured{}
+				existing.SetGroupVersionKind(argoApp.GroupVersionKind())
+				err = r.Get(ctx, client.ObjectKey{
+					Namespace: argoApp.GetNamespace(),
+					Name:      argoApp.GetName(),
+				}, existing)
+
+				if err != nil {
+					if errors.IsNotFound(err) {
+						if err := r.Create(ctx, argoApp); err != nil {
+							logger.Error(err, "Failed to create ArgoCD Application")
+							return ctrl.Result{}, err
+						}
+						logger.Info("Successfully created ArgoCD Application", "Application", argoApp.GetName())
+
+						// Cập nhật status
+						heliosApp.Status.ArgoApplication = argoApp.GetName()
+					} else {
+						logger.Error(err, "Failed to check ArgoCD Application")
 						return ctrl.Result{}, err
 					}
+				} else {
+					// Application đã tồn tại, cần update nếu có thay đổi
+					logger.Info("ArgoCD Application already exists, checking if update is needed", "Application", argoApp.GetName())
 
-					// Lưu ý: ArgoCD Application được tạo trong namespace argocd, không set owner reference
-					// vì owner phải cùng namespace
+					// So sánh spec của ArgoCD Application - marshal trực tiếp từ Object thay vì dùng NestedMap
+					// để tránh panic "cannot deep copy []string"
+					existingSpecRaw, existingOk := existing.Object["spec"]
+					newSpecRaw, newOk := argoApp.Object["spec"]
 
-					// Kiểm tra xem Application đã tồn tại chưa
-					existing := &unstructured.Unstructured{}
-					existing.SetGroupVersionKind(argoApp.GroupVersionKind())
-					err = r.Get(ctx, client.ObjectKey{
-						Namespace: argoApp.GetNamespace(),
-						Name:      argoApp.GetName(),
-					}, existing)
+					if existingOk && newOk {
+						existingSpecJSON, _ := json.Marshal(existingSpecRaw)
+						newSpecJSON, _ := json.Marshal(newSpecRaw)
 
-					if err != nil {
-						if errors.IsNotFound(err) {
-							if err := r.Create(ctx, argoApp); err != nil {
-								logger.Error(err, "Failed to create ArgoCD Application")
+						if string(existingSpecJSON) != string(newSpecJSON) {
+							logger.Info("Updating ArgoCD Application spec", "Application", argoApp.GetName())
+							argoApp.SetResourceVersion(existing.GetResourceVersion())
+							if err := r.Update(ctx, argoApp); err != nil {
+								logger.Error(err, "Failed to update ArgoCD Application")
 								return ctrl.Result{}, err
 							}
-							logger.Info("Successfully created ArgoCD Application", "Application", argoApp.GetName())
-						} else {
-							logger.Error(err, "Failed to check ArgoCD Application")
-							return ctrl.Result{}, err
+							logger.Info("Successfully updated ArgoCD Application", "Application", argoApp.GetName())
 						}
 					}
 
-					// Cập nhật status
+					// Trigger refresh để ArgoCD nhận manifest mới từ GitOps repo
+					logger.Info("Triggering ArgoCD refresh to pull latest manifests", "Application", argoApp.GetName())
+					if err := r.refreshArgoApplication(ctx, argoApp.GetName(), "argocd"); err != nil {
+						logger.Error(err, "Failed to trigger ArgoCD refresh")
+						// Không return error, vì refresh sẽ tự động diễn ra theo chu kỳ của ArgoCD
+					}
+				}
+
+				// Update status của HeliosApp để lưu tên ArgoCD Application
+				if heliosApp.Status.ArgoApplication == "" {
 					heliosApp.Status.ArgoApplication = argoApp.GetName()
-
-					meta.SetStatusCondition(&heliosApp.Status.Conditions, metav1.Condition{
-						Type:               "Ready",
-						Status:             metav1.ConditionFalse,
-						Reason:             "DeployingWithArgoCD",
-						Message:            fmt.Sprintf("ArgoCD Application %s created. Starting deployment...", argoApp.GetName()),
-						ObservedGeneration: heliosApp.Generation,
-					})
-
 					if err := r.Status().Update(ctx, &heliosApp); err != nil {
-						logger.Error(err, "Failed to update status after creating ArgoCD Application")
+						logger.Error(err, "Failed to update status with ArgoCD Application name")
 						return ctrl.Result{}, err
 					}
-
-					return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 				}
+
+				logger.Info("ArgoCD Application is ready, will check its sync status next")
+				// Không return ở đây, để fall through sang GIAI ĐOẠN 3 để check ArgoCD status ngay
 			}
 		}
 	}
@@ -366,10 +390,16 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 				return ctrl.Result{}, err
 			}
 		} else {
-			// Đọc status từ ArgoCD Application
-			status, found, err := unstructured.NestedMap(argoApp.Object, "status")
-			if err != nil || !found {
+			// Đọc status từ ArgoCD Application - dùng type assertion thay vì NestedMap để tránh panic
+			statusRaw, statusExists := argoApp.Object["status"]
+			if !statusExists {
 				logger.Info("ArgoCD Application status not available yet")
+				return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+			}
+
+			status, ok := statusRaw.(map[string]interface{})
+			if !ok {
+				logger.Info("ArgoCD Application status format unexpected")
 				return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 			}
 
@@ -402,6 +432,14 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 					"Application", argoApp.GetName(),
 					"version", heliosApp.Status.DeployedVersion)
 			} else {
+				// Nếu ArgoCD chưa Synced, có thể cần trigger refresh để pull manifest mới
+				if syncStatus == "OutOfSync" {
+					logger.Info("ArgoCD Application is OutOfSync, triggering refresh", "Application", argoApp.GetName())
+					if err := r.refreshArgoApplication(ctx, argoApp.GetName(), "argocd"); err != nil {
+						logger.Error(err, "Failed to trigger ArgoCD refresh for OutOfSync app")
+					}
+				}
+
 				meta.SetStatusCondition(&heliosApp.Status.Conditions, metav1.Condition{
 					Type:               "Ready",
 					Status:             metav1.ConditionFalse,
@@ -439,6 +477,47 @@ func equalUnstructured(a, b *unstructured.Unstructured) bool {
 	}
 
 	return string(jsonA) == string(jsonB)
+}
+
+// refreshArgoApplication triggers a refresh operation on the ArgoCD Application
+// This forces ArgoCD to pull the latest manifests from the GitOps repository
+func (r *HeliosAppReconciler) refreshArgoApplication(ctx context.Context, appName, namespace string) error {
+	logger := log.FromContext(ctx)
+
+	// Get the ArgoCD Application
+	argoApp := &unstructured.Unstructured{}
+	argoApp.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "argoproj.io",
+		Version: "v1alpha1",
+		Kind:    "Application",
+	})
+
+	err := r.Get(ctx, types.NamespacedName{
+		Name:      appName,
+		Namespace: namespace,
+	}, argoApp)
+
+	if err != nil {
+		return err
+	}
+
+	// Add refresh annotation to trigger ArgoCD to pull latest changes
+	annotations := argoApp.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	// Use current timestamp to ensure annotation changes
+	annotations["argocd.argoproj.io/refresh"] = "hard"
+	annotations["helios.io/refreshed-at"] = time.Now().Format(time.RFC3339)
+	argoApp.SetAnnotations(annotations)
+
+	if err := r.Update(ctx, argoApp); err != nil {
+		return err
+	}
+
+	logger.Info("Triggered ArgoCD refresh via annotation", "Application", appName)
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

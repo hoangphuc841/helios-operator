@@ -83,7 +83,7 @@ type HeliosAppSpec struct {
 	ContextSubpath string `json:"contextSubpath,omitempty"`
 
 	// +kubebuilder:validation:Optional
-	// Các giá trị tùy chỉnh để render template (ví dụ: replicaCount, ingress.host, resources, etc.)
+	// Các giá trị tùy chỉnh để render template (ví dụ: ingress.host, resources, etc.)
 	// +kubebuilder:pruning:PreserveUnknownFields
 	Values map[string]string `json:"values,omitempty"`
 }

@@ -15,7 +15,7 @@ spec:
       description: The workspace where the source code will be cloned.
   steps:
     - name: clone
-      image: alpine/git:v2.26.2
+      image: alpine/git:latest
       script: |
         #!/bin/sh
         set -e

@@ -13,6 +13,10 @@ spec:
     - name: gitops-repo-branch
     - name: context-subpath
       default: "" # Empty means Dockerfile is at repo root
+    - name: replicas
+      default: "2"
+    - name: port
+      default: "8080"
 
   # CHANGE 1: Define two separate workspaces for the pipeline
   workspaces:
@@ -64,3 +68,7 @@ spec:
           value: $(tasks.build-and-push-image.results.IMAGE_URL)
         - name: GITOPS_REPO_BRANCH
           value: $(params.gitops-repo-branch)
+        - name: REPLICAS
+          value: $(params.replicas)
+        - name: PORT
+          value: $(params.port)

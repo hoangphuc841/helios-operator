@@ -9,22 +9,32 @@ spec:
     - name: MANIFEST_PATH
     - name: NEW_IMAGE_URL
     - name: GITOPS_REPO_BRANCH
+    - name: REPLICAS
+      description: Desired replicas to write into Deployment
+      default: "2"
+    - name: PORT
+      description: Desired container port/Service targetPort
+      default: "8080"
   workspaces:
     - name: gitops-repo
   steps:
     - name: update-manifest
-      image: alpine/git:v2.26.2
+      image: alpine:latest
+      envFrom:
+        - secretRef:
+            name: git-credentials
+            optional: true
       script: |
         #!/bin/sh
         set -ex
 
-        # Clean workspace before cloning (prevents "directory exists" error on re-runs)
-        echo "Cleaning workspace directory..."
-        rm -rf $(workspaces.gitops-repo.path)/*
-        rm -rf $(workspaces.gitops-repo.path)/.[!.]*
+        # Install required tools
+        apk add --no-cache git yq
 
-        # With Tekton git-credentials secret annotated (tekton.dev/git-0=https://github.com)
-        # git will use credential helper to authenticate for clone/push.
+        echo "Cleaning workspace directory..."
+        rm -rf "$(workspaces.gitops-repo.path)"/*
+        rm -rf "$(workspaces.gitops-repo.path)"/.[!.]*
+
         git clone "$(params.GITOPS_REPO_URL)" "$(workspaces.gitops-repo.path)"
         cd "$(workspaces.gitops-repo.path)"
 
@@ -33,12 +43,44 @@ spec:
         git config user.email "tekton-pipeline@helios.dev"
         git config user.name "Tekton Pipeline"
 
-        # Remove any newline that might break sed
-        IMAGE_URL=$(echo "$(params.NEW_IMAGE_URL)" | tr -d '\n')
+        # Configure git credentials for push if available
+        if [ -n "${username:-}" ] && [ -n "${password:-}" ]; then
+          REPO_URL_WITH_AUTH="$(echo "$(params.GITOPS_REPO_URL)" | sed "s|https://|https://${username}:${password}@|")"
+          git remote set-url origin "${REPO_URL_WITH_AUTH}"
+          echo "Configured git remote with credentials"
+        else
+          echo "No git credentials found, will try push without auth"
+        fi
 
-        # Update the image in the manifest file
-        sed -i "s#image: .*#image: ${IMAGE_URL}#g" "$(params.MANIFEST_PATH)"
+        # Export environment variables for yq
+        export IMAGE_URL="$(params.NEW_IMAGE_URL)"
+        export REPLICAS="$(params.REPLICAS)"
+        export PORT="$(params.PORT)"
+        MANIFEST_PATH="$(params.MANIFEST_PATH)"
 
-        git add "$(params.MANIFEST_PATH)"
-        git commit -m "chore: Update image to ${IMAGE_URL} [skip-ci]" || echo "Nothing to commit"
+        # If MANIFEST_PATH is a directory, find all YAML files in it
+        if [ -d "${MANIFEST_PATH}" ]; then
+          echo "MANIFEST_PATH is a directory, processing all YAML files in: ${MANIFEST_PATH}"
+          MANIFEST_FILES=$(find "${MANIFEST_PATH}" -type f \( -name "*.yaml" -o -name "*.yml" \) | tr '\n' ' ' | xargs)
+        else
+          echo "MANIFEST_PATH is a file: ${MANIFEST_PATH}"
+          MANIFEST_FILES="${MANIFEST_PATH}"
+        fi
+
+        # Process each manifest file
+        for MANIFEST_FILE in ${MANIFEST_FILES}; do
+          echo "Processing: ${MANIFEST_FILE}"
+          
+          # Update only the Deployment doc for image, replicas, and containerPort
+          yq -i 'select(.kind == "Deployment") .spec.template.spec.containers[].image = env(IMAGE_URL)' "${MANIFEST_FILE}"
+          yq -i 'select(.kind == "Deployment") .spec.replicas = env(REPLICAS)' "${MANIFEST_FILE}"
+          yq -i 'select(.kind == "Deployment") .spec.template.spec.containers[].ports[0].containerPort = env(PORT)' "${MANIFEST_FILE}"
+
+          # Update only the Service doc for targetPort
+          yq -i 'select(.kind == "Service") .spec.ports[0].targetPort = env(PORT)' "${MANIFEST_FILE}"
+        done
+
+        # Add all modified files
+        git add "${MANIFEST_FILES}"
+        git commit -m "chore: Update image=${IMAGE_URL}, replicas=${REPLICAS}, port=${PORT} [skip-ci]" || echo "Nothing to commit"
         git push origin "$(params.GITOPS_REPO_BRANCH)" || echo "Nothing to push"

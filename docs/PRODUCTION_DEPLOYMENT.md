@@ -100,7 +100,6 @@ helm repo add helios https://charts.helios.io
 helm install helios-operator helios/helios-operator \
   --namespace helios-system \
   --set image.tag=v1.0.0 \
-  --set replicaCount=2 \
   --set resources.limits.cpu=500m \
   --set resources.limits.memory=512Mi \
   --set metrics.enabled=true \
@@ -134,8 +133,6 @@ Deploy multiple replicas with leader election:
 
 ```yaml
 # values.yaml for Helm
-replicaCount: 2
-
 podDisruptionBudget:
   enabled: true
   minAvailable: 1

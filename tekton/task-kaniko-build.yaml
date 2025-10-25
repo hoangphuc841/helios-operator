@@ -16,7 +16,7 @@ spec:
     - name: IMAGE_URL
   steps:
     - name: build-and-push
-      image: gcr.io/kaniko-project/executor:v1.9.0
+      image: gcr.io/kaniko-project/executor:latest
       env:
         - name: DOCKER_CONFIG
           value: /kaniko/.docker
@@ -32,7 +32,7 @@ spec:
           mountPath: /kaniko/.docker
 
     - name: write-image-url
-      image: alpine
+      image: alpine:latest
       script: |
         #!/bin/sh
         set -e

@@ -35,5 +35,4 @@ spec:
   # ===== Custom Values =====
   values:
     environment: "dev"
-    replicaCount: "3"
     imageTag: "latest"

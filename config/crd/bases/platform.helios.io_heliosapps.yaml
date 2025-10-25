@@ -85,8 +85,8 @@ spec:
               values:
                 additionalProperties:
                   type: string
-                description: 'Các giá trị tùy chỉnh để render template (ví dụ: replicaCount,
-                  ingress.host, resources, etc.)'
+                description: 'Các giá trị tùy chỉnh để render template (ví dụ: ingress.host,
+                  resources, etc.)'
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               webhookSecret:
@@ -172,12 +172,21 @@ spec:
               deployedVersion:
                 description: Tag của image đã được deploy thành công
                 type: string
+              lastChangeTime:
+                description: Timestamp của lần thay đổi gần nhất (dùng cho debouncing)
+                format: date-time
+                type: string
               manifestPipelineRun:
                 description: Tên của PipelineRun đang chạy hoặc đã hoàn thành cho
                   manifest generation
                 type: string
               observedGeneration:
                 description: Generation của HeliosApp đã được quan sát và xử lý
+                format: int64
+                type: integer
+              pendingGeneration:
+                description: Generation đang chờ xử lý (dùng để debounce nhiều thay
+                  đổi liên tiếp)
                 format: int64
                 type: integer
             type: object

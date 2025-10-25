@@ -77,6 +77,10 @@ func GenerateDefaultsTriggerBinding(name, namespace string, app *heliosappv1.Hel
 	if pvcName == "" {
 		pvcName = "shared-workspace-pvc"
 	}
+	contextSubpath := app.Spec.ContextSubpath
+	if contextSubpath == "" {
+		contextSubpath = ""
+	}
 	tb := map[string]any{
 		"apiVersion": "triggers.tekton.dev/v1beta1",
 		"kind":       "TriggerBinding",
@@ -91,6 +95,9 @@ func GenerateDefaultsTriggerBinding(name, namespace string, app *heliosappv1.Hel
 				{"name": "manifest-path-in-gitops-repo", "value": app.Spec.GitOpsPath},
 				{"name": "gitops-repo-branch", "value": "main"},
 				{"name": "pvc-name", "value": pvcName},
+				{"name": "context-subpath", "value": contextSubpath},
+				{"name": "replicas", "value": fmt.Sprintf("%d", app.Spec.Replicas)},
+				{"name": "port", "value": fmt.Sprintf("%d", app.Spec.Port)},
 			},
 		},
 	}
@@ -115,6 +122,9 @@ func GenerateTriggerTemplate(name, namespace, pipelineRunName, pipelineName, ser
 				{"name": "gitops-repo-branch"},
 				{"name": "manifest-path-in-gitops-repo"},
 				{"name": "pvc-name"},
+				{"name": "context-subpath"},
+				{"name": "replicas"},
+				{"name": "port"},
 			},
 			"resourcetemplates": []map[string]any{
 				{
@@ -129,16 +139,22 @@ func GenerateTriggerTemplate(name, namespace, pipelineRunName, pipelineName, ser
 						},
 						"serviceAccountName": serviceAccount,
 						"params": []map[string]any{
-							{"name": "app-repo-url", "value": "$(params.git-repo-url)"},
-							{"name": "app-repo-revision", "value": "$(params.git-revision)"},
-							{"name": "image-repo", "value": "$(params.image-repo)"},
-							{"name": "gitops-repo-url", "value": "$(params.gitops-repo-url)"},
-							{"name": "manifest-path-in-gitops-repo", "value": "$(params.manifest-path-in-gitops-repo)"},
-							{"name": "gitops-repo-branch", "value": "$(params.gitops-repo-branch)"},
+							{"name": "app-repo-url", "value": "$(tt.params.git-repo-url)"},
+							{"name": "app-repo-revision", "value": "$(tt.params.git-revision)"},
+							{"name": "image-repo", "value": "$(tt.params.image-repo)"},
+							{"name": "gitops-repo-url", "value": "$(tt.params.gitops-repo-url)"},
+							{"name": "manifest-path-in-gitops-repo", "value": "$(tt.params.manifest-path-in-gitops-repo)"},
+							{"name": "gitops-repo-branch", "value": "$(tt.params.gitops-repo-branch)"},
+							{"name": "context-subpath", "value": "$(tt.params.context-subpath)"},
+							{"name": "replicas", "value": "$(tt.params.replicas)"},
+							{"name": "port", "value": "$(tt.params.port)"},
 						},
 						"workspaces": []map[string]any{
-							{"name": "source-workspace", "persistentVolumeClaim": map[string]any{"claimName": "$(params.pvc-name)"}},
-							{"name": "gitops-workspace", "persistentVolumeClaim": map[string]any{"claimName": "$(params.pvc-name)"}},
+							{"name": "source-workspace", "persistentVolumeClaim": map[string]any{"claimName": "$(tt.params.pvc-name)"}},
+							{"name": "gitops-workspace", "persistentVolumeClaim": map[string]any{"claimName": "$(tt.params.pvc-name)"}},
+						},
+						"timeouts": map[string]any{
+							"pipeline": "1h",
 						},
 					},
 				},
@@ -166,9 +182,11 @@ func GeneratePipelineRunForManifestGeneration(heliosApp *heliosappv1.HeliosApp, 
 		{"name": "app-repo-revision", "value": heliosApp.Spec.GitBranch},
 		{"name": "image-repo", "value": heliosApp.Spec.ImageRepo},
 		{"name": "gitops-repo-url", "value": heliosApp.Spec.GitOpsRepo},
-		{"name": "manifest-path-in-gitops-repo", "value": heliosApp.Spec.GitOpsPath + "/deployment.yaml"},
+		{"name": "manifest-path-in-gitops-repo", "value": heliosApp.Spec.GitOpsPath},
 		{"name": "gitops-repo-branch", "value": "main"},
 		{"name": "context-subpath", "value": contextSubpath},
+		{"name": "replicas", "value": fmt.Sprintf("%d", heliosApp.Spec.Replicas)},
+		{"name": "port", "value": fmt.Sprintf("%d", heliosApp.Spec.Port)},
 	}
 
 	// PVC workspace - Pipeline expects two workspaces: source-workspace and gitops-workspace

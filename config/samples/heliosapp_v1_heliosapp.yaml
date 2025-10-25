@@ -36,7 +36,6 @@ spec:
   # ===== Custom Values để render template =====
   values:
     # Helm values hoặc các biến để render template
-    replicaCount: "3"
     image.tag: "latest"
     ingress.enabled: "true"
     ingress.host: "api.mycompany.com"
