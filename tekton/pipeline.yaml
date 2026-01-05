@@ -37,10 +37,23 @@ spec:
         - name: revision
           value: $(params.app-repo-revision)
 
+    # CHANGE: Add Quality Gate (Lint & Test)
+    # This ensures code quality before building the image
+    - name: quality-gate
+      runAfter: [fetch-source-code]
+      taskRef:
+        name: golang-test # Assuming a generic Task or we can inline script
+      workspaces:
+        - name: source
+          workspace: source-workspace
+      params:
+        - name: packages
+          value: "./..."
+
     - name: build-and-push-image
       taskRef:
         name: kaniko-build
-      runAfter: [fetch-source-code]
+      runAfter: [quality-gate] # Only build if Quality Gate passes
       workspaces:
         # CHANGE 3: The build task also uses 'source-workspace'
         - name: source

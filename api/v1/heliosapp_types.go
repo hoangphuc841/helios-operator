@@ -28,6 +28,19 @@ type HeliosAppSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	// +kubebuilder:validation:Optional
+	// Môi trường hoạt động của ứng dụng (Environment Variables)
+	Env []EnvVar `json:"env,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// Cấu hình tài nguyên (CPU, Memory)
+	Resources *ResourceRequirements `json:"resources,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default=false
+	// Bật tính năng tự động tối ưu hóa tài nguyên (Smart Rightsizer)
+	EnableAutoOptimization bool `json:"enableAutoOptimization,omitempty"`
+
 	// +kubebuilder:validation:Required
 	GitRepo string `json:"gitRepo"`
 
@@ -93,6 +106,18 @@ type HeliosAppStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	// Trạng thái tổng quát của App: "Pending", "Syncing", "Healthy", "Failed"
+	// +optional
+	Phase string `json:"phase,omitempty"`
+
+	// Chi tiết về trạng thái tối ưu hóa
+	// +optional
+	OptimizationStatus string `json:"optimizationStatus,omitempty"` // "Idle", "Analyzing", "WasteDetected", "Optimized"
+
+	// Lý do chi tiết cho trạng thái hiện tại (Lỗi gì, chờ gì...)
+	// +optional
+	Message string `json:"message,omitempty"`
+
 	// Trạng thái hiện tại của các tài nguyên được quản lý: "DeploymentReady", "ServiceReady"
 	// +optional
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
@@ -112,6 +137,14 @@ type HeliosAppStatus struct {
 	// Tên của ArgoCD Application đã được tạo
 	// +optional
 	ArgoApplication string `json:"argoApplication,omitempty"`
+
+	// CurrentCPU lưu trữ mức tiêu thụ CPU thực tế (được optimize service đo lường)
+	// +optional
+	CurrentCPU string `json:"currentCPU,omitempty"`
+
+	// CurrentMemory lưu trữ mức tiêu thụ Memory thực tế
+	// +optional
+	CurrentMemory string `json:"currentMemory,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -133,6 +166,20 @@ type HeliosAppList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []HeliosApp `json:"items"`
+}
+
+// EnvVar defines an environment variable
+type EnvVar struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+// ResourceRequirements defines resource requests and limits
+type ResourceRequirements struct {
+	// +kubebuilder:validation:Optional
+	Requests map[string]string `json:"requests,omitempty"`
+	// +kubebuilder:validation:Optional
+	Limits map[string]string `json:"limits,omitempty"`
 }
 
 func init() {

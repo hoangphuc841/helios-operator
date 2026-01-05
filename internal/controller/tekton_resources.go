@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -186,8 +187,22 @@ func GeneratePipelineRunForManifestGeneration(heliosApp *heliosappv1.HeliosApp, 
 		{"name": "gitops-repo-branch", "value": "main"},
 		{"name": "context-subpath", "value": contextSubpath},
 		{"name": "replicas", "value": fmt.Sprintf("%d", heliosApp.Spec.Replicas)},
+		{"name": "replicas", "value": fmt.Sprintf("%d", heliosApp.Spec.Replicas)},
 		{"name": "port", "value": fmt.Sprintf("%d", heliosApp.Spec.Port)},
 	}
+
+	// Serialize Env and Resources to JSON
+	envJSON, err := json.Marshal(heliosApp.Spec.Env)
+	if err != nil {
+		envJSON = []byte("[]")
+	}
+	params = append(params, map[string]any{"name": "env-vars", "value": string(envJSON)})
+
+	resourcesJSON, err := json.Marshal(heliosApp.Spec.Resources)
+	if err != nil {
+		resourcesJSON = []byte("{}")
+	}
+	params = append(params, map[string]any{"name": "resources", "value": string(resourcesJSON)})
 
 	// PVC workspace - Pipeline expects two workspaces: source-workspace and gitops-workspace
 	pvcName := heliosApp.Spec.PVCName

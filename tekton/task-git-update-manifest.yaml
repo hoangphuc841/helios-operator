@@ -1,4 +1,3 @@
-# task-git-update-manifest.yaml - Auto-creates manifests if they don't exist
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -10,10 +9,8 @@ spec:
     - name: NEW_IMAGE_URL
     - name: GITOPS_REPO_BRANCH
     - name: REPLICAS
-      description: Desired replicas to write into Deployment
       default: "2"
     - name: PORT
-      description: Desired container port/Service targetPort
       default: "8080"
   workspaces:
     - name: gitops-repo
@@ -26,61 +23,87 @@ spec:
             optional: true
       script: |
         #!/bin/sh
-        set -ex
+        set -e
 
-        # Install required tools
+        # 1. Install tools
         apk add --no-cache git yq
 
-        echo "Cleaning workspace directory..."
-        rm -rf "$(workspaces.gitops-repo.path)"/*
-        rm -rf "$(workspaces.gitops-repo.path)"/.[!.]*
-
-        git clone "$(params.GITOPS_REPO_URL)" "$(workspaces.gitops-repo.path)"
+        # 2. GO TO WORKSPACE AND CLEAN IT (Aggressive clean)
+        # Di chuyển vào thư mục workspace trước
         cd "$(workspaces.gitops-repo.path)"
+        
+        echo "Cleaning workspace content..."
+        # Xóa tất cả file thường, file ẩn và thư mục .git
+        rm -rf ./*
+        rm -rf ./.??*
+        rm -rf .git
 
+        # 3. Clone Repo (Clone dấu chấm . nghĩa là clone vào thư mục hiện tại)
+        echo "Cloning repo into current directory..."
+        git clone "$(params.GITOPS_REPO_URL)" .
+        
+        # Checkout branch
         git checkout -B "$(params.GITOPS_REPO_BRANCH)"
 
+        # 4. Configure Git
         git config user.email "tekton-pipeline@helios.dev"
         git config user.name "Tekton Pipeline"
-
-        # Configure git credentials for push if available
+        
         if [ -n "${username:-}" ] && [ -n "${password:-}" ]; then
+          # Thay thế https:// thành https://user:pass@ để push được
           REPO_URL_WITH_AUTH="$(echo "$(params.GITOPS_REPO_URL)" | sed "s|https://|https://${username}:${password}@|")"
           git remote set-url origin "${REPO_URL_WITH_AUTH}"
-          echo "Configured git remote with credentials"
-        else
-          echo "No git credentials found, will try push without auth"
         fi
 
-        # Export environment variables for yq
+        # 5. Export vars
         export IMAGE_URL="$(params.NEW_IMAGE_URL)"
         export REPLICAS="$(params.REPLICAS)"
         export PORT="$(params.PORT)"
         MANIFEST_PATH="$(params.MANIFEST_PATH)"
 
-        # If MANIFEST_PATH is a directory, find all YAML files in it
-        if [ -d "${MANIFEST_PATH}" ]; then
-          echo "MANIFEST_PATH is a directory, processing all YAML files in: ${MANIFEST_PATH}"
-          MANIFEST_FILES=$(find "${MANIFEST_PATH}" -type f \( -name "*.yaml" -o -name "*.yml" \) | tr '\n' ' ' | xargs)
+        # 6. AUTO-CREATE LOGIC (Logic tạo file tự động)
+        # Kiểm tra xem MANIFEST_PATH có đuôi .yaml/.yml không
+        if echo "$MANIFEST_PATH" | grep -qvE '\.ya?ml$'; then
+            echo "Path '$MANIFEST_PATH' treated as DIRECTORY."
+            mkdir -p "$MANIFEST_PATH"
+            
+            DEP_FILE="$MANIFEST_PATH/deployment.yaml"
+            SVC_FILE="$MANIFEST_PATH/service.yaml"
+            MANIFEST_FILES="$DEP_FILE $SVC_FILE"
+            APP_NAME=$(basename "$MANIFEST_PATH")
+
+            if [ ! -f "$DEP_FILE" ]; then
+                echo "Creating default manifests..."
+                printf "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: ${APP_NAME}\nspec:\n  replicas: ${REPLICAS}\n  selector:\n    matchLabels:\n      app: ${APP_NAME}\n  template:\n    metadata:\n      labels:\n        app: ${APP_NAME}\n    spec:\n      containers:\n        - name: app\n          image: ${IMAGE_URL}\n          ports:\n            - containerPort: ${PORT}\n" > "$DEP_FILE"
+
+                printf "apiVersion: v1\nkind: Service\nmetadata:\n  name: ${APP_NAME}\nspec:\n  selector:\n    app: ${APP_NAME}\n  ports:\n    - protocol: TCP\n      port: ${PORT}\n      targetPort: ${PORT}\n  type: ClusterIP\n" > "$SVC_FILE"
+            fi
         else
-          echo "MANIFEST_PATH is a file: ${MANIFEST_PATH}"
-          MANIFEST_FILES="${MANIFEST_PATH}"
+            echo "Path '$MANIFEST_PATH' treated as FILE."
+            mkdir -p "$(dirname "$MANIFEST_PATH")"
+            MANIFEST_FILES="$MANIFEST_PATH"
+            APP_NAME=$(basename "$MANIFEST_PATH" | sed 's/\.[^.]*$//')
+
+            if [ ! -f "$MANIFEST_PATH" ]; then
+                echo "Creating combined manifest file..."
+                printf "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: ${APP_NAME}\nspec:\n  replicas: ${REPLICAS}\n  selector:\n    matchLabels:\n      app: ${APP_NAME}\n  template:\n    metadata:\n      labels:\n        app: ${APP_NAME}\n    spec:\n      containers:\n        - name: app\n          image: ${IMAGE_URL}\n          ports:\n            - containerPort: ${PORT}\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: ${APP_NAME}\nspec:\n  selector:\n    app: ${APP_NAME}\n  ports:\n    - protocol: TCP\n      port: ${PORT}\n      targetPort: ${PORT}\n  type: ClusterIP\n" > "$MANIFEST_PATH"
+            fi
         fi
 
-        # Process each manifest file
-        for MANIFEST_FILE in ${MANIFEST_FILES}; do
-          echo "Processing: ${MANIFEST_FILE}"
-          
-          # Update only the Deployment doc for image, replicas, and containerPort
-          yq -i 'select(.kind == "Deployment") .spec.template.spec.containers[].image = env(IMAGE_URL)' "${MANIFEST_FILE}"
-          yq -i 'select(.kind == "Deployment") .spec.replicas = env(REPLICAS)' "${MANIFEST_FILE}"
-          yq -i 'select(.kind == "Deployment") .spec.template.spec.containers[].ports[0].containerPort = env(PORT)' "${MANIFEST_FILE}"
-
-          # Update only the Service doc for targetPort
-          yq -i 'select(.kind == "Service") .spec.ports[0].targetPort = env(PORT)' "${MANIFEST_FILE}"
+        # 7. Update manifests
+        for FILE in $MANIFEST_FILES; do
+          echo "Updating $FILE..."
+          yq -i 'select(.kind == "Deployment") .spec.template.spec.containers[].image = env(IMAGE_URL)' "$FILE"
+          yq -i 'select(.kind == "Deployment") .spec.replicas = env(REPLICAS)' "$FILE"
+          yq -i 'select(.kind == "Deployment") .spec.template.spec.containers[].ports[0].containerPort = env(PORT)' "$FILE"
+          yq -i 'select(.kind == "Service") .spec.ports[0].targetPort = env(PORT)' "$FILE"
         done
 
-        # Add all modified files
-        git add "${MANIFEST_FILES}"
-        git commit -m "chore: Update image=${IMAGE_URL}, replicas=${REPLICAS}, port=${PORT} [skip-ci]" || echo "Nothing to commit"
-        git push origin "$(params.GITOPS_REPO_BRANCH)" || echo "Nothing to push"
+        # 8. Commit and Push
+        git add .
+        if git diff-index --quiet HEAD --; then
+            echo "No changes to commit"
+        else
+            git commit -m "chore: Update image=${IMAGE_URL} [skip-ci]"
+            git push origin "$(params.GITOPS_REPO_BRANCH)"
+        fi

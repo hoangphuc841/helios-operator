@@ -5,15 +5,15 @@ metadata:
   namespace: default
 spec:
   # ===== Your Application Source Code =====
-  gitRepo: "https://github.com/PhuocHoan/helios"
+  gitRepo: "https://github.com/PhamHoangKha1403/helios-app-demo.git"
   gitBranch: "main"
 
   # ===== Container Image =====
-  imageRepo: "docker.io/hophuochoan/helios"
+  imageRepo: "docker.io/phamhoangkha1403/helios"
 
   # ===== Application Settings =====
-  port: 8080
-  replicas: 3
+  port: 80
+  replicas: 2
 
   # ===== CI/CD Pipeline =====
   pipelineName: "from-code-to-cluster"
@@ -22,15 +22,15 @@ spec:
   pvcName: "shared-workspace-pvc"
 
   # ===== GitOps Template (optional - use default or custom) =====
-  templateRepo: "https://github.com/PhuocHoan/helios-template"
+  templateRepo: "https://github.com/PhamHoangKha1403/helios-template"
   templatePath: "templates/simple-app"
 
   # ===== GitOps Destination =====
-  gitopsRepo: "https://github.com/PhuocHoan/helios-gitops"
-  gitopsPath: "apps/dev/helios"
+  gitopsRepo: "https://github.com/PhamHoangKha1403/helios-gitops"
+  gitopsPath: "apps/dev/helios-app-demo"
 
   # ===== Context Subpath (where Dockerfile is located) =====
-  contextSubpath: "my-nodejs-app"
+  contextSubpath: ""
 
   # ===== Custom Values =====
   values:

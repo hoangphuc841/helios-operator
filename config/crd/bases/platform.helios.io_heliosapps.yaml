@@ -43,6 +43,23 @@ spec:
                 description: 'Subdirectory trong source repo chứa Dockerfile (ví dụ:
                   "my-app", để trống nếu Dockerfile ở root)'
                 type: string
+              enableAutoOptimization:
+                default: false
+                description: Bật tính năng tự động tối ưu hóa tài nguyên (Smart Rightsizer)
+                type: boolean
+              env:
+                description: Môi trường hoạt động của ứng dụng (Environment Variables)
+                items:
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                  - name
+                  - value
+                  type: object
+                type: array
               gitBranch:
                 default: main
                 type: string
@@ -73,6 +90,18 @@ spec:
                 format: int32
                 minimum: 0
                 type: integer
+              resources:
+                description: Cấu hình tài nguyên (CPU, Memory)
+                properties:
+                  limits:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  requests:
+                    additionalProperties:
+                      type: string
+                    type: object
+                type: object
               serviceAccount:
                 description: Tên của ServiceAccount mà PipelineRun sẽ sử dụng.
                 type: string
@@ -184,6 +213,18 @@ spec:
                 description: Generation của HeliosApp đã được quan sát và xử lý
                 format: int64
                 type: integer
+              currentCPU:
+                description: CurrentCPU lưu trữ mức tiêu thụ CPU thực tế (được optimize service đo lường)
+                type: string
+              currentMemory:
+                description: CurrentMemory lưu trữ mức tiêu thụ Memory thực tế
+                type: string
+              phase:
+                description: Trạng thái tổng quát của App
+                type: string
+              message:
+                description: Lý do chi tiết cho trạng thái hiện tại
+                type: string
               pendingGeneration:
                 description: Generation đang chờ xử lý (dùng để debounce nhiều thay
                   đổi liên tiếp)

@@ -25,12 +25,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	heliosappv1 "github.com/hoangphuc841/helios-operator/api/v1"
+	"k8s.io/client-go/tools/record"
 )
 
 // HeliosAppReconciler reconciles a HeliosApp object
 type HeliosAppReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+	// Thêm EventRecorder để bắn event ra K8s
+	EventRecorder record.EventRecorder
 }
 
 // +kubebuilder:rbac:groups=platform.helios.io,resources=heliosapps,verbs=get;list;watch;create;update;patch;delete
@@ -42,6 +45,7 @@ type HeliosAppReconciler struct {
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 // +kubebuilder:rbac:groups=triggers.tekton.dev,resources=eventlisteners;triggerbindings;triggertemplates,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=tekton.dev,resources=pipelineruns,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=metrics.k8s.io,resources=pods;podmetrics,verbs=get;list;watch
 // +kubebuilder:rbac:groups=argoproj.io,resources=applications,verbs=get;list;watch;create;update;patch;delete
 
 func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -62,6 +66,49 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	name := heliosApp.Name
 	namespace := heliosApp.Namespace
+
+
+
+	// ========================================================================
+	// BƯỚC 4: Tự động tối ưu hóa tài nguyên (Smart Optimization) & Lấy Metrics
+	// ========================================================================
+	logger.Info("DEBUG: Checking Ready condition", "conditions", heliosApp.Status.Conditions)
+	logger.Info("DEBUG: Checking Ready condition", "conditions", heliosApp.Status.Conditions)
+	isReady := false
+	for _, c := range heliosApp.Status.Conditions {
+		if c.Type == "Ready" && c.Status == "True" {
+			isReady = true
+			break
+		}
+	}
+
+	if isReady {
+		logger.Info("DEBUG: Conditions met! Calling Optimizer...")
+		optimizer := &OptimizerService{}
+		optResult := optimizer.AnalyzeResourceUsage(ctx, r.Client, &heliosApp)
+
+		// Cập nhật Metrics vào Status để Frontend hiển thị
+		if optResult.MeasuredCpu != "" {
+			heliosApp.Status.CurrentCPU = optResult.MeasuredCpu
+		}
+
+		// Save Status
+		if err := r.Status().Update(ctx, &heliosApp); err != nil {
+			logger.Error(err, "Failed to update HeliosApp status with metrics")
+		}
+
+		if heliosApp.Spec.EnableAutoOptimization && optResult.IsWasteful {
+			logger.Info("Waste detected! Triggering auto-fix...", "waste", optResult.WastePercentage)
+
+			// Thực hiện Auto-Fix (GitOps Write-Back)
+			if err := optimizer.AutoFixRepository(ctx, &heliosApp, optResult); err != nil {
+				logger.Error(err, "Failed to auto-fix repository")
+				r.EventRecorder.Event(&heliosApp, corev1.EventTypeWarning, "AutoFixFailed", err.Error())
+			} else {
+				r.EventRecorder.Event(&heliosApp, corev1.EventTypeNormal, "AutoFixTriggered", "Created PR to optimize resources")
+			}
+		}
+	}
 	logger.Info("Reconciling HeliosApp", "name", name, "namespace", namespace, "generation", heliosApp.Generation)
 
 	// ========================================================================
@@ -96,12 +143,20 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		name+"-el", namespace, name+"-trigger", name+"-trigger-binding", name+"-defaults", name+"-trigger-template", githubSecret,
 	)
 	if err != nil {
-		logger.Error(err, "Failed to generate EventListener")
+		logger.Error(err, "Failed to ensure Tekton PipelineRun")
+		// UPDATE STATUS: Failed
+		heliosApp.Status.Phase = "Failed"
+		heliosApp.Status.Message = fmt.Sprintf("Tekton Error: %v", err)
+		r.Status().Update(ctx, &heliosApp)
 		return ctrl.Result{}, err
 	}
 	triggerBinding, err := GenerateTriggerBinding(name+"-trigger-binding", namespace)
 	if err != nil {
 		logger.Error(err, "Failed to generate TriggerBinding")
+		// UPDATE STATUS: Failed
+		heliosApp.Status.Phase = "Failed"
+		heliosApp.Status.Message = fmt.Sprintf("Tekton Error: %v", err)
+		r.Status().Update(ctx, &heliosApp)
 		return ctrl.Result{}, err
 	}
 	triggerTemplate, err := GenerateTriggerTemplate(
@@ -109,6 +164,10 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	)
 	if err != nil {
 		logger.Error(err, "Failed to generate TriggerTemplate")
+		// UPDATE STATUS: Failed
+		heliosApp.Status.Phase = "Failed"
+		heliosApp.Status.Message = fmt.Sprintf("Tekton Error: %v", err)
+		r.Status().Update(ctx, &heliosApp)
 		return ctrl.Result{}, err
 	}
 
@@ -116,6 +175,10 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		obj.SetNamespace(namespace)
 		if err := controllerutil.SetControllerReference(&heliosApp, obj, r.Scheme); err != nil {
 			logger.Error(err, "Failed to set owner reference", "name", obj.GetName())
+			// UPDATE STATUS: Failed
+			heliosApp.Status.Phase = "Failed"
+			heliosApp.Status.Message = fmt.Sprintf("Tekton Error: %v", err)
+			r.Status().Update(ctx, &heliosApp)
 			return ctrl.Result{}, err
 		}
 
@@ -126,11 +189,19 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			if client.IgnoreNotFound(err) == nil {
 				if err := r.Create(ctx, obj); err != nil {
 					logger.Error(err, "Failed to create Tekton Trigger resource", "name", obj.GetName())
+					// UPDATE STATUS: Failed
+					heliosApp.Status.Phase = "Failed"
+					heliosApp.Status.Message = fmt.Sprintf("Tekton Error: %v", err)
+					r.Status().Update(ctx, &heliosApp)
 					return ctrl.Result{}, err
 				}
 				logger.Info("Created Tekton Trigger resource", "name", obj.GetName())
 			} else {
 				logger.Error(err, "Failed to get Tekton Trigger resource", "name", obj.GetName())
+				// UPDATE STATUS: Failed
+				heliosApp.Status.Phase = "Failed"
+				heliosApp.Status.Message = fmt.Sprintf("Tekton Error: %v", err)
+				r.Status().Update(ctx, &heliosApp)
 				return ctrl.Result{}, err
 			}
 		} else {
@@ -138,6 +209,10 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 				obj.SetResourceVersion(existing.GetResourceVersion())
 				if err := r.Update(ctx, obj); err != nil {
 					logger.Error(err, "Failed to update Tekton Trigger resource", "name", obj.GetName())
+					// UPDATE STATUS: Failed
+					heliosApp.Status.Phase = "Failed"
+					heliosApp.Status.Message = fmt.Sprintf("Tekton Error: %v", err)
+					r.Status().Update(ctx, &heliosApp)
 					return ctrl.Result{}, err
 				}
 				logger.Info("Updated Tekton Trigger resource", "name", obj.GetName())
@@ -145,10 +220,19 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 	}
 
-	// ========================================================================
-	// GIAI ĐOẠN 1: Kích hoạt Tekton PipelineRun để sinh Manifest
-	// ========================================================================
+	// ------------------------------------------------------------------
+	// PHASE 0: Initialize Status
+	// ------------------------------------------------------------------
+	if heliosApp.Status.Phase == "" {
+		heliosApp.Status.Phase = "Pending"
+		if err := r.Status().Update(ctx, &heliosApp); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
 
+	// ------------------------------------------------------------------
+	// PHASE 1: Render Manifests (Tekton)
+	// ------------------------------------------------------------------
 	// Kiểm tra xem có cần chạy PipelineRun mới không (dựa vào generation)
 	needsNewPipelineRun := heliosApp.Status.ObservedGeneration != heliosApp.Generation || heliosApp.Status.ManifestPipelineRun == ""
 
@@ -163,18 +247,30 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		pipelineRun, err := GeneratePipelineRunForManifestGeneration(&heliosApp, manifestPipeline)
 		if err != nil {
 			logger.Error(err, "Failed to generate PipelineRun for manifest generation")
+			// UPDATE STATUS: Failed
+			heliosApp.Status.Phase = "Failed"
+			heliosApp.Status.Message = fmt.Sprintf("Tekton Error: %v", err)
+			r.Status().Update(ctx, &heliosApp)
 			return ctrl.Result{}, err
 		}
 
 		// Set owner reference
 		if err := controllerutil.SetControllerReference(&heliosApp, pipelineRun, r.Scheme); err != nil {
 			logger.Error(err, "Failed to set owner reference for PipelineRun")
+			// UPDATE STATUS: Failed
+			heliosApp.Status.Phase = "Failed"
+			heliosApp.Status.Message = fmt.Sprintf("Tekton Error: %v", err)
+			r.Status().Update(ctx, &heliosApp)
 			return ctrl.Result{}, err
 		}
 
 		// Tạo PipelineRun
 		if err := r.Create(ctx, pipelineRun); err != nil {
 			logger.Error(err, "Failed to create PipelineRun for manifest generation")
+			// UPDATE STATUS: Failed
+			heliosApp.Status.Phase = "Failed"
+			heliosApp.Status.Message = fmt.Sprintf("Tekton Error: %v", err)
+			r.Status().Update(ctx, &heliosApp)
 			return ctrl.Result{}, err
 		}
 
@@ -183,6 +279,8 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		// Cập nhật status
 		heliosApp.Status.ManifestPipelineRun = pipelineRun.GetName()
 		heliosApp.Status.ObservedGeneration = heliosApp.Generation
+		heliosApp.Status.Phase = "ManifestGeneration"
+		heliosApp.Status.Message = fmt.Sprintf("PipelineRun %s is generating manifest in GitOps repository", pipelineRun.GetName())
 
 		// Cập nhật Condition
 		meta.SetStatusCondition(&heliosApp.Status.Conditions, metav1.Condition{
@@ -222,8 +320,18 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		if err != nil {
 			if errors.IsNotFound(err) {
 				logger.Info("PipelineRun not found, may have been deleted", "PipelineRun", heliosApp.Status.ManifestPipelineRun)
+				// Reset ManifestPipelineRun to trigger a new one next reconcile
+				heliosApp.Status.ManifestPipelineRun = ""
+				heliosApp.Status.Phase = "ManifestGenerationFailed"
+				heliosApp.Status.Message = "PipelineRun not found, triggering new manifest generation."
+				r.Status().Update(ctx, &heliosApp)
+				return ctrl.Result{Requeue: true}, nil
 			} else {
 				logger.Error(err, "Failed to get PipelineRun")
+				// UPDATE STATUS: Failed
+				heliosApp.Status.Phase = "Failed"
+				heliosApp.Status.Message = fmt.Sprintf("Tekton Error: %v", err)
+				r.Status().Update(ctx, &heliosApp)
 				return ctrl.Result{}, err
 			}
 		} else {
@@ -231,12 +339,18 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			status, found, err := unstructured.NestedMap(pipelineRun.Object, "status")
 			if err != nil || !found {
 				logger.Info("PipelineRun status not available yet", "PipelineRun", pipelineRun.GetName())
+				heliosApp.Status.Phase = "ManifestGeneration"
+				heliosApp.Status.Message = fmt.Sprintf("PipelineRun %s status not available yet.", pipelineRun.GetName())
+				r.Status().Update(ctx, &heliosApp)
 				return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 			}
 
 			conditions, found, err := unstructured.NestedSlice(status, "conditions")
 			if err != nil || !found || len(conditions) == 0 {
 				logger.Info("PipelineRun conditions not available yet", "PipelineRun", pipelineRun.GetName())
+				heliosApp.Status.Phase = "ManifestGeneration"
+				heliosApp.Status.Message = fmt.Sprintf("PipelineRun %s conditions not available yet.", pipelineRun.GetName())
+				r.Status().Update(ctx, &heliosApp)
 				return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 			}
 
@@ -255,6 +369,9 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			// Nếu PipelineRun đang chạy
 			if conditionStatus == "Unknown" {
 				logger.Info("PipelineRun is still running", "PipelineRun", pipelineRun.GetName())
+				heliosApp.Status.Phase = "ManifestGeneration"
+				heliosApp.Status.Message = fmt.Sprintf("PipelineRun %s is running. Reason: %s", pipelineRun.GetName(), reason)
+				r.Status().Update(ctx, &heliosApp)
 				return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 			}
 
@@ -269,6 +386,8 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 					Message:            fmt.Sprintf("PipelineRun %s failed: %s", pipelineRun.GetName(), reason),
 					ObservedGeneration: heliosApp.Generation,
 				})
+				heliosApp.Status.Phase = "Failed"
+				heliosApp.Status.Message = fmt.Sprintf("Manifest generation failed: %s", reason)
 
 				if err := r.Status().Update(ctx, &heliosApp); err != nil {
 					logger.Error(err, "Failed to update status after PipelineRun failure")
@@ -281,15 +400,19 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			if conditionStatus == "True" && conditionType == "Succeeded" {
 				logger.Info("PipelineRun succeeded! Manifest has been generated in GitOps repo", "PipelineRun", pipelineRun.GetName())
 
-				// ========================================================================
-				// GIAI ĐOẠN 2: Tạo/Cập nhật ArgoCD Application
-				// ========================================================================
+				// ------------------------------------------------------------------
+				// PHASE 2: Register ArgoCD Application
+				// ------------------------------------------------------------------
 
 				logger.Info("Manifest generation complete. Ensuring ArgoCD Application is up to date.", "app", name)
 
 				argoApp, err := GenerateArgoApplication(&heliosApp)
 				if err != nil {
-					logger.Error(err, "Failed to generate ArgoCD Application")
+					logger.Error(err, "Failed to ensure ArgoCD Application")
+					// UPDATE STATUS: Failed
+					heliosApp.Status.Phase = "Failed"
+					heliosApp.Status.Message = fmt.Sprintf("ArgoCD Error: %v", err)
+					r.Status().Update(ctx, &heliosApp)
 					return ctrl.Result{}, err
 				}
 
@@ -308,14 +431,24 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 					if errors.IsNotFound(err) {
 						if err := r.Create(ctx, argoApp); err != nil {
 							logger.Error(err, "Failed to create ArgoCD Application")
+							// UPDATE STATUS: Failed
+							heliosApp.Status.Phase = "Failed"
+							heliosApp.Status.Message = fmt.Sprintf("ArgoCD Error: %v", err)
+							r.Status().Update(ctx, &heliosApp)
 							return ctrl.Result{}, err
 						}
 						logger.Info("Successfully created ArgoCD Application", "Application", argoApp.GetName())
 
 						// Cập nhật status
 						heliosApp.Status.ArgoApplication = argoApp.GetName()
+						heliosApp.Status.Phase = "ArgoCDRegistration"
+						heliosApp.Status.Message = fmt.Sprintf("ArgoCD Application %s created.", argoApp.GetName())
 					} else {
 						logger.Error(err, "Failed to check ArgoCD Application")
+						// UPDATE STATUS: Failed
+						heliosApp.Status.Phase = "Failed"
+						heliosApp.Status.Message = fmt.Sprintf("ArgoCD Error: %v", err)
+						r.Status().Update(ctx, &heliosApp)
 						return ctrl.Result{}, err
 					}
 				} else {
@@ -336,9 +469,15 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 							argoApp.SetResourceVersion(existing.GetResourceVersion())
 							if err := r.Update(ctx, argoApp); err != nil {
 								logger.Error(err, "Failed to update ArgoCD Application")
+								// UPDATE STATUS: Failed
+								heliosApp.Status.Phase = "Failed"
+								heliosApp.Status.Message = fmt.Sprintf("ArgoCD Error: %v", err)
+								r.Status().Update(ctx, &heliosApp)
 								return ctrl.Result{}, err
 							}
 							logger.Info("Successfully updated ArgoCD Application", "Application", argoApp.GetName())
+							heliosApp.Status.Phase = "ArgoCDRegistration"
+							heliosApp.Status.Message = fmt.Sprintf("ArgoCD Application %s updated.", argoApp.GetName())
 						}
 					}
 
@@ -369,6 +508,7 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	// GIAI ĐOẠN 3: Đồng bộ trạng thái từ ArgoCD Application
 	// ========================================================================
 
+	var syncStatus, healthStatus string
 	if heliosApp.Status.ArgoApplication != "" {
 		argoApp := &unstructured.Unstructured{}
 		argoApp.SetGroupVersionKind(schema.GroupVersionKind{
@@ -385,8 +525,17 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		if err != nil {
 			if errors.IsNotFound(err) {
 				logger.Info("ArgoCD Application not found", "Application", heliosApp.Status.ArgoApplication)
+				heliosApp.Status.Phase = "ArgoCDAppNotFound"
+				heliosApp.Status.Message = fmt.Sprintf("ArgoCD Application %s not found. Recreating.", heliosApp.Status.ArgoApplication)
+				heliosApp.Status.ArgoApplication = "" // Reset to trigger recreation
+				r.Status().Update(ctx, &heliosApp)
+				return ctrl.Result{Requeue: true}, nil
 			} else {
 				logger.Error(err, "Failed to get ArgoCD Application")
+				// UPDATE STATUS: Failed
+				heliosApp.Status.Phase = "Failed"
+				heliosApp.Status.Message = fmt.Sprintf("ArgoCD Error: %v", err)
+				r.Status().Update(ctx, &heliosApp)
 				return ctrl.Result{}, err
 			}
 		} else {
@@ -394,18 +543,24 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			statusRaw, statusExists := argoApp.Object["status"]
 			if !statusExists {
 				logger.Info("ArgoCD Application status not available yet")
+				heliosApp.Status.Phase = "ArgoCDSyncing"
+				heliosApp.Status.Message = fmt.Sprintf("ArgoCD Application %s status not available yet.", argoApp.GetName())
+				r.Status().Update(ctx, &heliosApp)
 				return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 			}
 
 			status, ok := statusRaw.(map[string]interface{})
 			if !ok {
 				logger.Info("ArgoCD Application status format unexpected")
+				heliosApp.Status.Phase = "ArgoCDSyncing"
+				heliosApp.Status.Message = fmt.Sprintf("ArgoCD Application %s status format unexpected.", argoApp.GetName())
+				r.Status().Update(ctx, &heliosApp)
 				return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 			}
 
 			// Lấy sync status
-			syncStatus, _, _ := unstructured.NestedString(status, "sync", "status")
-			healthStatus, _, _ := unstructured.NestedString(status, "health", "status")
+			syncStatus, _, _ = unstructured.NestedString(status, "sync", "status")
+			healthStatus, _, _ = unstructured.NestedString(status, "health", "status")
 
 			logger.Info("ArgoCD Application status",
 				"Application", argoApp.GetName(),
@@ -461,8 +616,68 @@ func (r *HeliosAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 	}
 
+	// Helper to update status safely
+	updateStatus := func(phase, msg string) {
+		heliosApp.Status.Phase = phase
+		heliosApp.Status.Message = msg
+		// We ignore error here to not block flow, mostly just for visibility
+		if err := r.Status().Update(ctx, &heliosApp); err != nil {
+			logger.Error(err, "Failed to update HeliosApp status in updateStatus helper")
+		}
+	}
+
+	// Update Healthy Status if we reached here
+	isHealthy := meta.IsStatusConditionTrue(heliosApp.Status.Conditions, "Ready")
+	if isHealthy {
+		updateStatus("Healthy", "App is running and synced")
+	} else {
+		updateStatus("Syncing", fmt.Sprintf("ArgoCD Status: %s/%s", syncStatus, healthStatus))
+	}
+
+	// ------------------------------------------------------------------
+	// PHASE 4: Helios Smart Rightsizer (Auto-Optimization)
+	// ------------------------------------------------------------------
+	// Đây là tính năng "Killer" của đồ án: Tự động tối ưu tài nguyên
+
+	// Chỉ chạy tối ưu khi App đã Healthy và User đã BẬT tính năng này
+	isOptIn := heliosApp.Spec.EnableAutoOptimization
+
+	if isHealthy && isOptIn {
+		logger.Info("Auto-Optimization Condition Met", "isHealthy", isHealthy, "isOptIn", isOptIn)
+		optimizer := &OptimizerService{}
+		analysis := optimizer.AnalyzeResourceUsage(ctx, r.Client, &heliosApp)
+
+		if analysis.IsWasteful {
+			logger.Info("DETECTED RESOURCE WASTE",
+				"app", heliosApp.Name,
+				"current", analysis.CurrentCpu,
+				"suggested", analysis.SuggestedCpu,
+				"waste_percent", analysis.WastePercentage)
+
+			// Execute Auto-Fix (Closed Loop GitOps)
+			err := optimizer.AutoFixRepository(ctx, &heliosApp, analysis)
+			if err != nil {
+				logger.Error(err, "Failed to auto-optimize repository")
+				updateStatus("OptimizationFailed", fmt.Sprintf("Could not create PR: %v", err))
+			} else {
+				// Success
+				r.EventRecorder.Event(&heliosApp, corev1.EventTypeNormal, "AutoOptimized",
+					fmt.Sprintf("Reduced CPU from %s to %s via GitOps", analysis.CurrentCpu, analysis.SuggestedCpu))
+				updateStatus("Optimized", fmt.Sprintf("Waste detected (%d%%). PR created to fix.", analysis.WastePercentage))
+			}
+			if err != nil {
+				logger.Error(err, "Failed to auto-optimize repository")
+				// Không return error để tránh crash loop reconcile chính, chỉ log error
+			} else {
+				// Nếu fix thành công, update Event để thông báo cho user
+				r.EventRecorder.Event(&heliosApp, corev1.EventTypeNormal, "AutoOptimized",
+					fmt.Sprintf("Reduced CPU from %s to %s via GitOps", analysis.CurrentCpu, analysis.SuggestedCpu))
+			}
+		}
+	}
+
 	logger.Info("Reconciliation loop completed successfully for HeliosApp", "name", name)
-	return ctrl.Result{}, nil
+	return ctrl.Result{RequeueAfter: 60 * time.Second}, nil
 }
 
 // Hàm so sánh spec của hai unstructured (chỉ so sánh phần spec)

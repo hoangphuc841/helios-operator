@@ -66,6 +66,9 @@ spec:
         image: controller:latest
         imagePullPolicy: IfNotPresent
         name: manager
+        env:
+          - name: PROMETHEUS_URL
+            value: "http://prometheus-server.monitoring.svc.cluster.local:9090"
         ports: []
         securityContext:
           allowPrivilegeEscalation: false

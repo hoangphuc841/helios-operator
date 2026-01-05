@@ -1,0 +1,35 @@
+apiVersion: platform.helios.io/v1
+kind: HeliosApp
+metadata:
+  name: test-optimization-flow
+  namespace: default
+spec:
+  # --- QUAN TRỌNG: Sửa dòng này thành Repo CỦA BẠN (nơi bạn có quyền Push) ---
+  gitRepo: "https://github.com/PhamHoangKha1403/helios-app-demo.git"
+  gitBranch: "main"
+  
+  # Context chứa file helios.yaml (nếu có)
+  contextSubpath: ""
+
+  # --- CẤU HÌNH GÂY LÃNG PHÍ (Để kích hoạt Auto-Optimize) ---
+  # Operator mock logic bảo rằng chỉ cần 50m.
+  # Ta set 250m để nó thấy "Dư thừa" và tự sửa.
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m" 
+      memory: "512Mi"
+
+  # Các trường bắt buộc khác (giữ nguyên để không lỗi validate)
+  imageRepo: "docker.io/phamhoangkha1403/helios"
+  port: 80
+  replicas: 1
+  pipelineName: "from-code-to-cluster"
+  serviceAccount: "pipeline-sa"
+  webhookSecret: "github-webhook-secret"
+  templateRepo: "https://github.com/PhamHoangKha1403/helios-template"
+  templatePath: "templates/simple-app"
+  gitopsRepo: "https://github.com/PhamHoangKha1403/helios-gitops"
+  gitopsPath: "apps/dev/test-optimization"
